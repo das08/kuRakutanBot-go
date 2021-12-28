@@ -1,6 +1,6 @@
 // This file was generated from JSON Schema using quicktype, do not modify it directly.
 
-package model
+package richmenu
 
 import "encoding/json"
 

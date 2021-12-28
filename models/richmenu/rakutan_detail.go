@@ -1,27 +1,27 @@
 // This file was generated from JSON Schema using quicktype, do not modify it directly.
 
-package model
+package richmenu
 
 import "encoding/json"
 
-func UnmarshalRakuranDetail(data []byte) (RakuranDetail, error) {
-	var r RakuranDetail
+func UnmarshalRakutanDetail(data []byte) (RakutanDetail, error) {
+	var r RakutanDetail
 	err := json.Unmarshal(data, &r)
 	return r, err
 }
 
-func (r *RakuranDetail) Marshal() ([]byte, error) {
+func (r *RakutanDetail) Marshal() ([]byte, error) {
 	return json.Marshal(r)
 }
 
-type RakuranDetail struct {
+type RakutanDetail struct {
 	Type   string              `json:"type"`
-	Header RakuranDetailHeader `json:"header"`
-	Body   RakuranDetailBody   `json:"body"`
+	Header RakutanDetailHeader `json:"header"`
+	Body   RakutanDetailBody   `json:"body"`
 	Styles Styles              `json:"styles"`
 }
 
-type RakuranDetailBody struct {
+type RakutanDetailBody struct {
 	Type     BodyType                   `json:"type"`
 	Layout   string                     `json:"layout"`
 	Contents []RakutanDetailBodyContent `json:"contents"`
@@ -32,13 +32,13 @@ type RakutanDetailBodyContent struct {
 	Layout   *string                `json:"layout,omitempty"`
 	Margin   string                 `json:"margin"`
 	Spacing  *Spacing               `json:"spacing,omitempty"`
-	Contents []RakuranDetailContent `json:"contents,omitempty"`
+	Contents []RakutanDetailContent `json:"contents,omitempty"`
 }
 
-type RakuranDetailContent struct {
+type RakutanDetailContent struct {
 	Type     BodyType                `json:"type"`
 	Layout   *string                 `json:"layout,omitempty"`
-	Contents []RakuranDetailContents `json:"contents,omitempty"`
+	Contents []RakutanDetailContents `json:"contents,omitempty"`
 	Margin   *string                 `json:"margin,omitempty"`
 	Text     *string                 `json:"text,omitempty"`
 	Size     *Spacing                `json:"size,omitempty"`
@@ -47,7 +47,7 @@ type RakuranDetailContent struct {
 	Wrap     *bool                   `json:"wrap,omitempty"`
 }
 
-type RakuranDetailContents struct {
+type RakutanDetailContents struct {
 	Type        PurpleType `json:"type"`
 	Text        *string    `json:"text,omitempty"`
 	Size        *Spacing   `json:"size,omitempty"`
@@ -64,20 +64,20 @@ type RakuranDetailContents struct {
 	AspectRatio *string    `json:"aspectRatio,omitempty"`
 }
 
-type RakuranDetailHeader struct {
+type RakutanDetailHeader struct {
 	Type          BodyType                     `json:"type"`
 	Layout        string                       `json:"layout"`
-	Contents      []RakuranDetailHeaderContent `json:"contents"`
+	Contents      []RakutanDetailHeaderContent `json:"contents"`
 	PaddingAll    string                       `json:"paddingAll"`
 	Spacing       string                       `json:"spacing"`
 	PaddingTop    string                       `json:"paddingTop"`
 	PaddingBottom string                       `json:"paddingBottom"`
 }
 
-type RakuranDetailHeaderContent struct {
+type RakutanDetailHeaderContent struct {
 	Type     BodyType                      `json:"type"`
 	Layout   *string                       `json:"layout,omitempty"`
-	Contents []RakuranDetailHeaderContents `json:"contents,omitempty"`
+	Contents []RakutanDetailHeaderContents `json:"contents,omitempty"`
 	Text     *string                       `json:"text,omitempty"`
 	Weight   *string                       `json:"weight,omitempty"`
 	Size     *string                       `json:"size,omitempty"`
@@ -87,7 +87,7 @@ type RakuranDetailHeaderContent struct {
 	Spacing  *Spacing                      `json:"spacing,omitempty"`
 }
 
-type RakuranDetailHeaderContents struct {
+type RakutanDetailHeaderContents struct {
 	Type        PurpleType      `json:"type"`
 	URL         *string         `json:"url,omitempty"`
 	AspectRatio *string         `json:"aspectRatio,omitempty"`

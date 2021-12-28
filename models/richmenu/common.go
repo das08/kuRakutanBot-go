@@ -1,4 +1,4 @@
-package model
+package richmenu
 
 type Styles struct {
 	Header HeaderClass `json:"header"`

@@ -21,12 +21,12 @@ type SearchResult struct {
 }
 
 type SearchResultBody struct {
-	Type     string                     `json:"type"`
-	Layout   string                     `json:"layout"`
-	Contents []RakutanDetailBodyContent `json:"contents"`
+	Type     string             `json:"type"`
+	Layout   string             `json:"layout"`
+	Contents []SearchResultBody `json:"contents"`
 }
 
-type BodyContent struct {
+type SearchResultBodyContent struct {
 	Type     string                `json:"type"`
 	Layout   *string               `json:"layout,omitempty"`
 	Contents []SearchResultContent `json:"contents,omitempty"`

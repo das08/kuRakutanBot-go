@@ -101,14 +101,6 @@ type RakuranDetailHeaderContents struct {
 	Align       *string         `json:"align,omitempty"`
 }
 
-type Spacing string
-
-const (
-	Sm  Spacing = "sm"
-	Xs  Spacing = "xs"
-	Xxs Spacing = "xxs"
-)
-
 type PurpleType string
 
 const (

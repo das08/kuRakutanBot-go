@@ -16,6 +16,14 @@ type Footer struct {
 	SeparatorColor  string `json:"separatorColor"`
 }
 
+type Spacing string
+
+const (
+	Sm  Spacing = "sm"
+	Xs  Spacing = "xs"
+	Xxs Spacing = "xxs"
+)
+
 type TextAction struct {
 	Type  string `json:"type"`
 	Label string `json:"label"`

@@ -1,0 +1,242 @@
+{
+  "type": "bubble",
+  "size": "kilo",
+  "body": {
+    "type": "box",
+    "layout": "vertical",
+    "contents": [
+      {
+        "type": "text",
+        "text": "コマンド一覧",
+        "weight": "bold",
+        "size": "lg",
+        "align": "center"
+      },
+      {
+        "type": "text",
+        "text": "↓以下の太字をタップしてください↓",
+        "size": "sm",
+        "align": "center"
+      },
+      {
+        "type": "separator",
+        "margin": "sm"
+      },
+      {
+        "type": "box",
+        "layout": "vertical",
+        "margin": "md",
+        "spacing": "sm",
+        "contents": [
+          {
+            "type": "box",
+            "layout": "vertical",
+            "margin": "xs",
+            "contents": [
+              {
+                "type": "text",
+                "text": "・help",
+                "size": "sm",
+                "align": "start",
+                "weight": "bold",
+                "flex": 1,
+                "action": {
+                  "type": "message",
+                  "label": "action",
+                  "text": "help"
+                }
+              },
+              {
+                "type": "text",
+                "text": "このヘルプメッセージです。",
+                "size": "sm",
+                "color": "#111111",
+                "align": "start",
+                "offsetStart": "12px"
+              }
+            ]
+          },
+          {
+            "type": "box",
+            "layout": "vertical",
+            "margin": "xs",
+            "contents": [
+              {
+                "type": "text",
+                "text": "・判定詳細",
+                "size": "sm",
+                "align": "start",
+                "weight": "bold",
+                "flex": 1,
+                "gravity": "center",
+                "action": {
+                  "type": "message",
+                  "label": "action",
+                  "text": "判定詳細"
+                }
+              },
+              {
+                "type": "text",
+                "text": "らくたん判定の詳細が確認できます。",
+                "size": "sm",
+                "color": "#111111",
+                "align": "start",
+                "flex": 2,
+                "wrap": true,
+                "offsetStart": "12px"
+              }
+            ]
+          },
+          {
+            "type": "box",
+            "layout": "vertical",
+            "margin": "xs",
+            "contents": [
+              {
+                "type": "text",
+                "text": "・(講義名)",
+                "size": "sm",
+                "align": "start",
+                "weight": "bold",
+                "flex": 1,
+                "gravity": "center"
+              },
+              {
+                "type": "text",
+                "text": "単位取得率、過去問が確認できます。",
+                "size": "sm",
+                "color": "#111111",
+                "align": "start",
+                "flex": 2,
+                "wrap": true,
+                "offsetStart": "12px"
+              }
+            ]
+          },
+          {
+            "type": "box",
+            "layout": "vertical",
+            "margin": "xs",
+            "contents": [
+              {
+                "type": "text",
+                "text": "・お気に入り",
+                "size": "sm",
+                "align": "start",
+                "weight": "bold",
+                "flex": 1,
+                "gravity": "center",
+                "action": {
+                  "type": "message",
+                  "label": "action",
+                  "text": "お気に入り"
+                }
+              },
+              {
+                "type": "text",
+                "text": "お気に入り登録した講義の一覧が表示されます。",
+                "size": "sm",
+                "color": "#111111",
+                "align": "start",
+                "flex": 2,
+                "wrap": true,
+                "offsetStart": "12px"
+              }
+            ]
+          },
+          {
+            "type": "box",
+            "layout": "vertical",
+            "margin": "xs",
+            "contents": [
+              {
+                "type": "text",
+                "text": "・おみくじ",
+                "size": "sm",
+                "align": "start",
+                "weight": "bold",
+                "flex": 1,
+                "gravity": "center",
+                "action": {
+                  "type": "message",
+                  "label": "action",
+                  "text": "おみくじ"
+                }
+              },
+              {
+                "type": "text",
+                "text": "ランダムに楽単講義が表示されます。",
+                "size": "sm",
+                "color": "#111111",
+                "align": "start",
+                "flex": 2,
+                "wrap": true,
+                "offsetStart": "12px"
+              }
+            ]
+          },
+          {
+            "type": "box",
+            "layout": "vertical",
+            "margin": "xs",
+            "contents": [
+              {
+                "type": "text",
+                "text": "・お問い合わせ",
+                "size": "sm",
+                "align": "start",
+                "weight": "bold",
+                "flex": 1,
+                "gravity": "center",
+                "action": {
+                  "type": "message",
+                  "label": "action",
+                  "text": "お問い合わせ"
+                }
+              },
+              {
+                "type": "text",
+                "text": "お問い合わせページが表示されます。",
+                "size": "sm",
+                "color": "#111111",
+                "align": "start",
+                "flex": 2,
+                "wrap": true,
+                "offsetStart": "12px"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "footer": {
+    "type": "box",
+    "layout": "vertical",
+    "contents": [
+      {
+        "type": "text",
+        "text": "【検索のヒント】 %を頭に付けて検索すると部分一致検索になります。",
+        "wrap": true,
+        "size": "xs",
+        "color": "#aaaaaa"
+      },
+      {
+        "type": "text",
+        "text": "例えば「%地理」と検索すると「自然地理学」もヒットします。",
+        "size": "xs",
+        "wrap": true,
+        "color": "#aaaaaa"
+      }
+    ]
+  },
+  "styles": {
+    "body": {
+      "backgroundColor": "#F4F3F9"
+    },
+    "footer": {
+      "separator": true,
+      "backgroundColor": "#F4F3F9"
+    }
+  }
+}

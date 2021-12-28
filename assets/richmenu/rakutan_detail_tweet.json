@@ -1,0 +1,326 @@
+{
+  "type": "bubble",
+  "header": {
+    "type": "box",
+    "layout": "vertical",
+    "contents": [
+      {
+        "type": "box",
+        "layout": "horizontal",
+        "contents": [
+          {
+            "type": "image",
+            "url": "https://scdn.line-apps.com/n/channel_devcenter/img/fx/review_gray_star_28.png",
+            "aspectRatio": "2:1",
+            "flex": 1,
+            "offsetStart": "-5px",
+            "action": {
+              "type": "postback",
+              "label": "action",
+              "data": "hello"
+            }
+          },
+          {
+            "type": "text",
+            "text": "Search ID:#12345",
+            "weight": "bold",
+            "color": "#01E550",
+            "size": "sm",
+            "flex": 7,
+            "offsetStart": "-5px"
+          }
+        ]
+      },
+      {
+        "type": "text",
+        "text": "[Lecture Name]",
+        "weight": "bold",
+        "size": "xxl",
+        "margin": "md",
+        "color": "#E6E7E2",
+        "wrap": true
+      },
+      {
+        "type": "separator"
+      },
+      {
+        "type": "box",
+        "layout": "baseline",
+        "contents": [
+          {
+            "type": "text",
+            "text": "開講部局",
+            "size": "xs",
+            "color": "#81817F",
+            "align": "start",
+            "flex": 1,
+            "weight": "bold"
+          },
+          {
+            "type": "text",
+            "text": "[Faculty Name]",
+            "size": "xs",
+            "align": "start",
+            "flex": 3,
+            "color": "#E6E7E2",
+            "weight": "bold"
+          }
+        ],
+        "spacing": "sm"
+      },
+      {
+        "type": "box",
+        "layout": "baseline",
+        "contents": [
+          {
+            "type": "text",
+            "text": "群",
+            "size": "xs",
+            "color": "#81817F",
+            "weight": "bold"
+          },
+          {
+            "type": "text",
+            "text": "[Group Name]",
+            "size": "xs",
+            "color": "#E6E7E2",
+            "weight": "bold"
+          },
+          {
+            "type": "text",
+            "text": "単位数",
+            "size": "xs",
+            "color": "#81817F",
+            "weight": "bold"
+          },
+          {
+            "type": "text",
+            "text": "[Credit(s)]",
+            "size": "xs",
+            "color": "#E6E7E2",
+            "weight": "bold"
+          }
+        ]
+      },
+      {
+        "type": "spacer",
+        "size": "lg"
+      }
+    ],
+    "paddingAll": "20px",
+    "spacing": "md",
+    "paddingTop": "22px",
+    "paddingBottom": "0px"
+  },
+  "body": {
+    "type": "box",
+    "layout": "vertical",
+    "contents": [
+      {
+        "type": "box",
+        "layout": "vertical",
+        "margin": "xxl",
+        "spacing": "sm",
+        "contents": [
+          {
+            "type": "box",
+            "layout": "horizontal",
+            "contents": [
+              {
+                "type": "text",
+                "text": "単位取得率",
+                "size": "xxs",
+                "color": "#aaaaaa",
+                "flex": 0
+              }
+            ]
+          },
+          {
+            "type": "box",
+            "layout": "horizontal",
+            "contents": [
+              {
+                "type": "text",
+                "text": "2018年度",
+                "size": "sm",
+                "color": "#555555",
+                "flex": 0
+              },
+              {
+                "type": "text",
+                "text": "0%",
+                "size": "sm",
+                "color": "#111111",
+                "align": "end"
+              }
+            ]
+          },
+          {
+            "type": "box",
+            "layout": "horizontal",
+            "contents": [
+              {
+                "type": "text",
+                "text": "2017年度",
+                "size": "sm",
+                "color": "#555555",
+                "flex": 0
+              },
+              {
+                "type": "text",
+                "text": "0%",
+                "size": "sm",
+                "color": "#111111",
+                "align": "end"
+              }
+            ]
+          },
+          {
+            "type": "box",
+            "layout": "horizontal",
+            "contents": [
+              {
+                "type": "text",
+                "text": "2016年度",
+                "size": "sm",
+                "color": "#555555",
+                "flex": 0
+              },
+              {
+                "type": "text",
+                "text": "0%",
+                "size": "sm",
+                "color": "#111111",
+                "align": "end"
+              }
+            ]
+          },
+          {
+            "type": "separator",
+            "margin": "xxl"
+          },
+          {
+            "type": "box",
+            "layout": "horizontal",
+            "margin": "xxl",
+            "contents": [
+              {
+                "type": "text",
+                "text": "らくたん判定",
+                "size": "sm",
+                "color": "#555555"
+              },
+              {
+                "type": "text",
+                "text": "SSS",
+                "size": "sm",
+                "color": "#c3c45b",
+                "align": "end",
+                "style": "italic",
+                "weight": "bold",
+                "offsetEnd": "6px"
+              }
+            ]
+          },
+          {
+            "type": "box",
+            "layout": "baseline",
+            "contents": [
+              {
+                "type": "text",
+                "text": "過去問",
+                "size": "sm",
+                "color": "#555555",
+                "flex": 4,
+                "wrap": true
+              },
+              {
+                "type": "text",
+                "text": "△",
+                "weight": "bold",
+                "align": "end",
+                "color": "#ffb101",
+                "flex": 4
+              },
+              {
+                "type": "text",
+                "text": "追加する",
+                "size": "sm",
+                "align": "end",
+                "flex": 3,
+                "color": "#777777",
+                "decoration": "underline",
+                "action": {
+                  "type": "uri",
+                  "label": "action",
+                  "uri": "https://sites.google.com/view/siketai/%E9%81%8E%E5%8E%BB%E5%95%8F"
+                }
+              }
+            ]
+          },
+          {
+            "type": "box",
+            "layout": "horizontal",
+            "contents": [
+              {
+                "type": "filler",
+                "flex": 4
+              },
+              {
+                "type": "image",
+                "url": "https://das82.com/images/tweet.png",
+                "size": "xs",
+                "aspectRatio": "8:3",
+                "action": {
+                  "type": "uri",
+                  "label": "tweet",
+                  "uri": "https://ku-rakutan.das82.com/"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "separator",
+        "margin": "xxl"
+      },
+      {
+        "type": "box",
+        "layout": "vertical",
+        "margin": "md",
+        "contents": [
+          {
+            "type": "text",
+            "text": "※単位取得率は「各授業の平均学生在籍数」をもとに表示しています。",
+            "size": "xxs",
+            "color": "#aaaaaa",
+            "flex": 0,
+            "wrap": true
+          },
+          {
+            "type": "text",
+            "text": "※らくたん判定は単位取得率をもとに判定しています。詳しくは「判定詳細」と送信してください。",
+            "size": "xxs",
+            "color": "#aaaaaa",
+            "flex": 0,
+            "wrap": true
+          }
+        ]
+      }
+    ]
+  },
+  "styles": {
+    "header": {
+      "backgroundColor": "#3C3C3A"
+    },
+    "body": {
+      "backgroundColor": "#F4F3F9"
+    },
+    "footer": {
+      "separator": true,
+      "backgroundColor": "#E7E8E3",
+      "separatorColor": "#D6D6D4"
+    }
+  }
+}

@@ -33,3 +33,10 @@ type PostbackAction struct {
 	Label string `json:"label"`
 	Data  string `json:"data"`
 }
+
+type TextandPBAction struct {
+	Type  string  `json:"type"`
+	Label string  `json:"label"`
+	Text  *string `json:"text,omitempty"`
+	Data  *string `json:"data,omitempty"`
+}

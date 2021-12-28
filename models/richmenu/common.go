@@ -24,6 +24,12 @@ const (
 	Xxs Spacing = "xxs"
 )
 
+type Type string
+
+const (
+	Text Type = "text"
+)
+
 type TextAction struct {
 	Type  string `json:"type"`
 	Label string `json:"label"`

@@ -9,5 +9,5 @@ import (
 func main() {
 	fmt.Println("Hello world!")
 	r := module.LoadRakutanDetail()
-	fmt.Println(r.Header.Contents)
+	fmt.Println(r)
 }

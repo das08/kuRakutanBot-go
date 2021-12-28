@@ -1,4 +1,8 @@
 // This file was generated from JSON Schema using quicktype, do not modify it directly.
+// To parse and unparse this JSON data, add this code to your project and do:
+//
+//    rakutanDetail, err := UnmarshalRakutanDetail(bytes)
+//    bytes, err = rakutanDetail.Marshal()
 
 package richmenu
 
@@ -22,50 +26,53 @@ type RakutanDetail struct {
 }
 
 type RakutanDetailBody struct {
-	Type     BodyType                   `json:"type"`
+	Type     string                     `json:"type"`
 	Layout   string                     `json:"layout"`
 	Contents []RakutanDetailBodyContent `json:"contents"`
 }
 
 type RakutanDetailBodyContent struct {
-	Type     BodyType               `json:"type"`
+	Type     string                      `json:"type"`
+	Layout   *string                     `json:"layout,omitempty"`
+	Margin   string                      `json:"margin"`
+	Spacing  *Spacing                    `json:"spacing,omitempty"`
+	Contents []RakutanDetailBodyContents `json:"contents,omitempty"`
+}
+
+type RakutanDetailBodyContents struct {
+	Type     string                 `json:"type"`
 	Layout   *string                `json:"layout,omitempty"`
-	Margin   string                 `json:"margin"`
-	Spacing  *Spacing               `json:"spacing,omitempty"`
 	Contents []RakutanDetailContent `json:"contents,omitempty"`
+	Margin   *string                `json:"margin,omitempty"`
+	Text     *string                `json:"text,omitempty"`
+	Size     *Spacing               `json:"size,omitempty"`
+	Color    *string                `json:"color,omitempty"`
+	Flex     *int64                 `json:"flex,omitempty"`
+	Wrap     *bool                  `json:"wrap,omitempty"`
 }
 
 type RakutanDetailContent struct {
-	Type     BodyType                `json:"type"`
-	Layout   *string                 `json:"layout,omitempty"`
-	Contents []RakutanDetailContents `json:"contents,omitempty"`
-	Margin   *string                 `json:"margin,omitempty"`
-	Text     *string                 `json:"text,omitempty"`
-	Size     *Spacing                `json:"size,omitempty"`
-	Color    *string                 `json:"color,omitempty"`
-	Flex     *int64                  `json:"flex,omitempty"`
-	Wrap     *bool                   `json:"wrap,omitempty"`
+	Type       Type          `json:"type"`
+	Text       string        `json:"text"`
+	Size       *Spacing      `json:"size,omitempty"`
+	Color      string        `json:"color"`
+	Flex       *int64        `json:"flex,omitempty"`
+	Align      *string       `json:"align,omitempty"`
+	Style      *string       `json:"style,omitempty"`
+	Weight     *string       `json:"weight,omitempty"`
+	OffsetEnd  *string       `json:"offsetEnd,omitempty"`
+	Decoration *string       `json:"decoration,omitempty"`
+	Action     *PurpleAction `json:"action,omitempty"`
 }
 
-type RakutanDetailContents struct {
-	Type        PurpleType `json:"type"`
-	Text        *string    `json:"text,omitempty"`
-	Size        *Spacing   `json:"size,omitempty"`
-	Color       *string    `json:"color,omitempty"`
-	Flex        *int64     `json:"flex,omitempty"`
-	Align       *string    `json:"align,omitempty"`
-	Style       *string    `json:"style,omitempty"`
-	Weight      *string    `json:"weight,omitempty"`
-	OffsetEnd   *string    `json:"offsetEnd,omitempty"`
-	Wrap        *bool      `json:"wrap,omitempty"`
-	Decoration  *string    `json:"decoration,omitempty"`
-	Action      *URIAction `json:"action,omitempty"`
-	URL         *string    `json:"url,omitempty"`
-	AspectRatio *string    `json:"aspectRatio,omitempty"`
+type PurpleAction struct {
+	Type  string `json:"type"`
+	Label string `json:"label"`
+	URI   string `json:"uri"`
 }
 
 type RakutanDetailHeader struct {
-	Type          BodyType                     `json:"type"`
+	Type          string                       `json:"type"`
 	Layout        string                       `json:"layout"`
 	Contents      []RakutanDetailHeaderContent `json:"contents"`
 	PaddingAll    string                       `json:"paddingAll"`
@@ -75,7 +82,7 @@ type RakutanDetailHeader struct {
 }
 
 type RakutanDetailHeaderContent struct {
-	Type     BodyType                      `json:"type"`
+	Type     string                        `json:"type"`
 	Layout   *string                       `json:"layout,omitempty"`
 	Contents []RakutanDetailHeaderContents `json:"contents,omitempty"`
 	Text     *string                       `json:"text,omitempty"`
@@ -88,7 +95,7 @@ type RakutanDetailHeaderContent struct {
 }
 
 type RakutanDetailHeaderContents struct {
-	Type        PurpleType      `json:"type"`
+	Type        string          `json:"type"`
 	URL         *string         `json:"url,omitempty"`
 	AspectRatio *string         `json:"aspectRatio,omitempty"`
 	Flex        *int64          `json:"flex,omitempty"`
@@ -97,23 +104,6 @@ type RakutanDetailHeaderContents struct {
 	Text        *string         `json:"text,omitempty"`
 	Weight      *string         `json:"weight,omitempty"`
 	Color       *string         `json:"color,omitempty"`
-	Size        *Spacing        `json:"size,omitempty"`
+	Size        *string         `json:"size,omitempty"`
 	Align       *string         `json:"align,omitempty"`
 }
-
-type PurpleType string
-
-const (
-	Filler     PurpleType = "filler"
-	Image      PurpleType = "image"
-	PurpleText PurpleType = "text"
-)
-
-type BodyType string
-
-const (
-	Box        BodyType = "box"
-	FluffyText BodyType = "text"
-	Separator  BodyType = "separator"
-	Spacer     BodyType = "spacer"
-)

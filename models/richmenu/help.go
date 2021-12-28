@@ -94,9 +94,3 @@ type Align string
 const (
 	Start Align = "start"
 )
-
-type Type string
-
-const (
-	Text Type = "text"
-)

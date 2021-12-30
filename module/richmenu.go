@@ -4,7 +4,7 @@ import (
 	"io/ioutil"
 	"log"
 
-	"github.com/das08/ApexStalker-go/models/richmenu"
+	"github.com/das08/kuRakutanBot-go/models/richmenu"
 )
 
 func LoadRakutanDetail() richmenu.RakutanDetail {

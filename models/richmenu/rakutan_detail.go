@@ -52,23 +52,17 @@ type RakutanDetailBodyContents struct {
 }
 
 type RakutanDetailContent struct {
-	Type       Type          `json:"type"`
-	Text       string        `json:"text"`
-	Size       *Spacing      `json:"size,omitempty"`
-	Color      string        `json:"color"`
-	Flex       *int64        `json:"flex,omitempty"`
-	Align      *string       `json:"align,omitempty"`
-	Style      *string       `json:"style,omitempty"`
-	Weight     *string       `json:"weight,omitempty"`
-	OffsetEnd  *string       `json:"offsetEnd,omitempty"`
-	Decoration *string       `json:"decoration,omitempty"`
-	Action     *PurpleAction `json:"action,omitempty"`
-}
-
-type PurpleAction struct {
-	Type  string `json:"type"`
-	Label string `json:"label"`
-	URI   string `json:"uri"`
+	Type       Type       `json:"type"`
+	Text       string     `json:"text"`
+	Size       *Spacing   `json:"size,omitempty"`
+	Color      string     `json:"color"`
+	Flex       *int64     `json:"flex,omitempty"`
+	Align      *string    `json:"align,omitempty"`
+	Style      *string    `json:"style,omitempty"`
+	Weight     *string    `json:"weight,omitempty"`
+	OffsetEnd  *string    `json:"offsetEnd,omitempty"`
+	Decoration *string    `json:"decoration,omitempty"`
+	Action     *URIAction `json:"action,omitempty"`
 }
 
 type RakutanDetailHeader struct {

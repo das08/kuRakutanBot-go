@@ -3,7 +3,7 @@ services:
     app:
         build:
             context: .
-            dockerfile: ./build/Dockerfile
+            dockerfile: ./docker/app/Dockerfile
         tty: true
         volumes:
             - ./cmd/app:/go/src/github.com/das08/kuRakutanBot-go

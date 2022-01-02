@@ -11,8 +11,9 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func CreateClient() {
-	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://********:********@localhost:27017"))
+func CreateDBClient(e *Environments) {
+	mongoURI := "mongodb://" + e.DB_USER + ":" + e.DB_PASS + "@" + e.DB_HOST + ":" + e.DB_PORT + ""
+	client, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -24,7 +25,7 @@ func CreateClient() {
 	}
 
 	var result bson.D
-	collection := client.Database("rakutanDB").Collection("rakutan2021")
+	collection := client.Database(e.DB_NAME).Collection(e.DB_COLLECTION)
 
 	err = collection.FindOne(ctx, bson.D{{"facultyname", "工学部"}}).Decode(&result)
 	if err != nil {

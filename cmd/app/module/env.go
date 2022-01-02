@@ -13,9 +13,10 @@ type Environments struct {
 	LINE_ADMIN_UID            string
 	DB_HOST                   string
 	DB_PORT                   string
-	DB_NAME                   string
 	DB_USER                   string
 	DB_PASS                   string
+	DB_NAME                   string
+	DB_COLLECTION             string
 	KUWIKI_ENDPOINT           string
 	KUWIKI_ACCESS_TOKEN       string
 }
@@ -41,9 +42,10 @@ func LoadEnv(debug bool) Environments {
 	env.LINE_ADMIN_UID = os.Getenv("LINE_ADMIN_UID")
 	env.DB_HOST = os.Getenv("DB_HOST")
 	env.DB_PORT = os.Getenv("DB_PORT")
-	env.DB_NAME = os.Getenv("DB_NAME")
 	env.DB_USER = os.Getenv("DB_USER")
 	env.DB_PASS = os.Getenv("DB_PASS")
+	env.DB_NAME = os.Getenv("DB_NAME")
+	env.DB_COLLECTION = os.Getenv("DB_COLLECTION")
 	env.KUWIKI_ENDPOINT = os.Getenv("KUWIKI_ENDPOINT")
 	env.KUWIKI_ACCESS_TOKEN = os.Getenv("KUWIKI_ACCESS_TOKEN")
 

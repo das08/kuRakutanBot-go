@@ -2,11 +2,11 @@ package module
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
-	models "github.com/das08/kuRakutanBot-go/models/rakutan"
+	rakutan "github.com/das08/kuRakutanBot-go/models/rakutan"
+	status "github.com/das08/kuRakutanBot-go/models/status"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -33,13 +33,20 @@ func CreateDBClient(e *Environments) *MongoDB {
 	return &MongoDB{Client: client, Ctx: ctx, Cancel: cancel}
 }
 
-func FindOne(e *Environments, m *MongoDB) {
-	result := models.RakutanInfo{}
+func findOne(e *Environments, m *MongoDB, fieldName string, value interface{}) (status.QueryStatus, rakutan.RakutanInfo) {
+	result := rakutan.RakutanInfo{}
 	collection := m.Client.Database(e.DB_NAME).Collection(e.DB_COLLECTION)
+	var queryStatus status.QueryStatus
 
-	err := collection.FindOne(m.Ctx, bson.D{{"lecture_name", "半導体工学"}}).Decode(&result)
+	err := collection.FindOne(m.Ctx, bson.D{{fieldName, value}}).Decode(&result)
 	if err != nil {
-		panic(err)
+		queryStatus.Success = false
+	} else {
+		queryStatus.Success = true
 	}
-	fmt.Printf("result: %#v", result)
+	return queryStatus, result
+}
+
+func FindByLectureID(e *Environments, m *MongoDB, lectureID int) (status.QueryStatus, rakutan.RakutanInfo) {
+	return findOne(e, m, "id", lectureID)
 }

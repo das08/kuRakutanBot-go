@@ -17,5 +17,6 @@ func main() {
 	// fmt.Println(fmt.Sprintf("%s", s))
 	// module.CreateDBClient(&env)
 
-	module.FindOne(&env, mongo)
+	status, result := module.FindByLectureID(&env, mongo, 12156)
+	fmt.Printf("status: %v, result: %#v", status, result)
 }

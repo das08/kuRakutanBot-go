@@ -8,6 +8,7 @@ import (
 	rakutan "github.com/das08/kuRakutanBot-go/models/rakutan"
 	status "github.com/das08/kuRakutanBot-go/models/status"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -49,4 +50,21 @@ func findOne(e *Environments, m *MongoDB, fieldName string, value interface{}) (
 
 func FindByLectureID(e *Environments, m *MongoDB, lectureID int) (status.QueryStatus, rakutan.RakutanInfo) {
 	return findOne(e, m, "id", lectureID)
+}
+
+func FindByLectureName(e *Environments, m *MongoDB, lectureName string) (status.QueryStatus, []rakutan.RakutanInfo) {
+	var result []rakutan.RakutanInfo
+	collection := m.Client.Database(e.DB_NAME).Collection(e.DB_COLLECTION)
+	var queryStatus status.QueryStatus
+
+	filterCursor, err := collection.Find(m.Ctx, bson.D{{"lecture_name", primitive.Regex{Pattern: "^" + lectureName, Options: "i"}}})
+	queryStatus.Success = true
+
+	if err != nil {
+		queryStatus.Success = false
+	}
+	if err = filterCursor.All(m.Ctx, &result); err != nil {
+		queryStatus.Success = false
+	}
+	return queryStatus, result
 }

@@ -1,13 +1,11 @@
 package models
 
 type RakutanInfo struct {
-	ID          int           `bson:"id"`
-	FacultyName string        `bson:"facultyname"`
-	LectureName string        `bson:"lecturename"`
-	Groups      string        `bson:"groups,omitempty"`
-	Credits     string        `bson:"credits,omitempty"`
-	Detail      RakutanDetail `bson:"detail,omitempty"`
-	URL         string        `bson:"url,omitempty"`
+	ID          int             `bson:"id"`
+	FacultyName string          `bson:"faculty_name"`
+	LectureName string          `bson:"lecture_name"`
+	Detail      []RakutanDetail `bson:"detail"`
+	URL         string          `bson:"url,omitempty"`
 }
 
 type RakutanDetail struct {

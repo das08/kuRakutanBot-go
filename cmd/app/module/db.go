@@ -19,7 +19,7 @@ type MongoDB struct {
 }
 
 func CreateDBClient(e *Environments) *MongoDB {
-	mongoURI := "mongodb://" + e.DB_USER + ":" + e.DB_PASS + "@" + e.DB_HOST + ":" + e.DB_PORT + ""
+	mongoURI := "mongodb://" + e.DB_USER + ":" + e.DB_PASS + "@" + e.DB_HOST + ":" + e.DB_PORT + "/?authSource=" + e.DB_NAME
 	client, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))
 	if err != nil {
 		log.Fatal(err)
@@ -37,9 +37,9 @@ func FindOne(e *Environments, m *MongoDB) {
 	result := models.RakutanInfo{}
 	collection := m.Client.Database(e.DB_NAME).Collection(e.DB_COLLECTION)
 
-	err := collection.FindOne(m.Ctx, bson.D{{"facultyname", "工学部"}}).Decode(&result)
+	err := collection.FindOne(m.Ctx, bson.D{{"lecture_name", "半導体工学"}}).Decode(&result)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(result)
+	fmt.Printf("result: %#v", result)
 }

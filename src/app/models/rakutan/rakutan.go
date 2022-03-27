@@ -9,6 +9,7 @@ type RakutanInfo struct {
 }
 
 type RakutanDetail struct {
+	Year     int `bson:"year,omitempty"`
 	Accepted int `bson:"accepted,omitempty"`
 	Total    int `bson:"total,omitempty"`
 }

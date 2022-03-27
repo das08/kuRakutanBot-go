@@ -23,11 +23,3 @@ func (rds RakutanDetails) AcceptedList() []int {
 	}
 	return list
 }
-
-func (rds RakutanDetails) TotalList() []int {
-	var list []int
-	for _, rd := range rds {
-		list = append(list, rd.Total)
-	}
-	return list
-}

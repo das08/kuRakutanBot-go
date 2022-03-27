@@ -47,19 +47,19 @@ type RakutanJudge struct {
 	color        string
 }
 
-func calculateRakutanJudge(rds models.RakutanDetails) RakutanJudge {
-	judgeList := [9]RakutanJudge{
-		{percentBound: 90, rank: "SSS", color: "#c3c45b"},
-		{percentBound: 85, rank: "SS", color: "#c3c45b"},
-		{percentBound: 80, rank: "S", color: "#c3c45b"},
-		{percentBound: 75, rank: "A", color: "#cf2904"},
-		{percentBound: 70, rank: "B", color: "#098ae0"},
-		{percentBound: 60, rank: "C", color: "#f48a1c"},
-		{percentBound: 50, rank: "D", color: "#8a30c9"},
-		{percentBound: 0, rank: "F", color: "#837b8a"},
-		{percentBound: -1, rank: "---", color: "#837b8a"},
-	}
+var judgeList = [9]RakutanJudge{
+	{percentBound: 90, rank: "SSS", color: "#c3c45b"},
+	{percentBound: 85, rank: "SS", color: "#c3c45b"},
+	{percentBound: 80, rank: "S", color: "#c3c45b"},
+	{percentBound: 75, rank: "A", color: "#cf2904"},
+	{percentBound: 70, rank: "B", color: "#098ae0"},
+	{percentBound: 60, rank: "C", color: "#f48a1c"},
+	{percentBound: 50, rank: "D", color: "#8a30c9"},
+	{percentBound: 0, rank: "F", color: "#837b8a"},
+	{percentBound: -1, rank: "---", color: "#837b8a"},
+}
 
+func calculateRakutanJudge(rds models.RakutanDetails) RakutanJudge {
 	accept, total := 0, 0
 	for _, rd := range rds {
 		if rd.Total != 0 {
@@ -73,7 +73,6 @@ func calculateRakutanJudge(rds models.RakutanDetails) RakutanJudge {
 	}
 
 	percentage := float32(100*accept) / float32(total)
-	fmt.Println("percent: ", percentage)
 	var res = judgeList[8]
 	for i, j := range judgeList {
 		if percentage >= j.percentBound {

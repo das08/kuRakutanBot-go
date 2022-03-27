@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/das08/kuRakutanBot-go/module"
 	"github.com/gin-gonic/gin"
+	"github.com/line/line-bot-sdk-go/v7/linebot"
 	"net/http"
 )
 
@@ -12,7 +13,7 @@ func main() {
 	mongo := module.CreateDBClient(&env)
 	defer mongo.Cancel()
 	defer mongo.Client.Disconnect(mongo.Ctx)
-	fmt.Println("Hello world!")
+	lb := module.CreateLINEBotClient(&env)
 	// r := module.LoadRakutanDetail()
 	// s, _ := r.Marshal()
 	// fmt.Println(fmt.Sprintf("%s", s))
@@ -28,6 +29,28 @@ func main() {
 	router.GET("/hello", func(c *gin.Context) {
 		c.String(http.StatusOK, "Hello World!!")
 	})
+
+	router.POST("/callback", func(c *gin.Context) {
+		events, err := lb.Bot.ParseRequest(c.Request)
+		if err != nil {
+			if err == linebot.ErrInvalidSignature {
+				c.Writer.WriteHeader(400)
+			} else {
+				c.Writer.WriteHeader(500)
+			}
+			return
+		}
+		for _, event := range events {
+			if event.Type == linebot.EventTypeMessage {
+				lb.SetReplyToken(event.ReplyToken)
+				switch message := event.Message.(type) {
+				case *linebot.TextMessage:
+					lb.SendTextMessage(message.Text)
+				}
+			}
+		}
+	})
+
 	err := router.Run(":" + env.APP_PORT)
 	if err != nil {
 		fmt.Println("Error: creating router failed.")

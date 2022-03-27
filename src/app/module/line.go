@@ -5,13 +5,30 @@ import (
 	"log"
 )
 
-func CreateLINEBotClient(e *Environments) *linebot.Client {
-	client, err := linebot.New(
+type LINEBot struct {
+	Bot        *linebot.Client
+	replyToken string
+}
+
+func CreateLINEBotClient(e *Environments) *LINEBot {
+	bot, err := linebot.New(
 		e.LINE_CHANNEL_SECRET,
 		e.LINE_CHANNEL_ACCESS_TOKEN,
 	)
 	if err != nil {
 		log.Fatal(err)
 	}
-	return client
+	lb := LINEBot{Bot: bot}
+	return &lb
+}
+
+func (lb *LINEBot) SetReplyToken(replyToken string) {
+	lb.replyToken = replyToken
+}
+
+func (lb *LINEBot) SendTextMessage(text string) {
+	_, err := lb.Bot.ReplyMessage(lb.replyToken, linebot.NewTextMessage(text)).Do()
+	if err != nil {
+		log.Print(err)
+	}
 }

@@ -1,0 +1,127 @@
+{
+  "type": "bubble",
+  "header": {
+    "type": "box",
+    "layout": "vertical",
+    "contents": [
+      {
+        "type": "text",
+        "text": "「(Search Text)」の検索結果 (m/n)",
+        "weight": "bold",
+        "color": "#c9c9bf",
+        "size": "sm",
+        "wrap": true
+      },
+      {
+        "type": "text",
+        "text": "[n] 件の候補が見つかりました。目的の講義を選択してください。",
+        "weight": "bold",
+        "size": "md",
+        "margin": "md",
+        "color": "#E6E7E2",
+        "wrap": true
+      },
+      {
+        "type": "separator"
+      },
+      {
+        "type": "spacer",
+        "size": "lg"
+      }
+    ],
+    "paddingAll": "20px",
+    "spacing": "md",
+    "paddingTop": "22px",
+    "paddingBottom": "0px"
+  },
+  "body": {
+    "type": "box",
+    "layout": "vertical",
+    "contents": [
+      {
+        "type": "box",
+        "layout": "horizontal",
+        "contents": [
+          {
+            "type": "text",
+            "text": "検索候補",
+            "size": "xxs",
+            "color": "#aaaaaa",
+            "flex": 0
+          }
+        ]
+      },
+      {
+        "type": "box",
+        "layout": "vertical",
+        "margin": "xxl",
+        "spacing": "sm",
+        "contents": [
+          {
+            "type": "box",
+            "layout": "horizontal",
+            "contents": [
+              {
+                "type": "text",
+                "text": "[Lecture Name]",
+                "size": "sm",
+                "color": "#555555",
+                "flex": 10,
+                "wrap": true
+              },
+              {
+                "type": "text",
+                "text": "選択",
+                "size": "md",
+                "color": "#4c7cf5",
+                "align": "end",
+                "weight": "bold",
+                "decoration": "underline",
+                "margin": "none",
+                "action": {
+                  "type": "message",
+                  "label": "action",
+                  "text": "#123456"
+                },
+                "offsetBottom": "3px",
+                "flex": 2
+              }
+            ],
+            "margin": "lg"
+          }
+        ]
+      },
+      {
+        "type": "separator",
+        "margin": "xxl"
+      },
+      {
+        "type": "box",
+        "layout": "horizontal",
+        "margin": "md",
+        "contents": [
+          {
+            "type": "text",
+            "text": "※前方一致するものを表示しています。",
+            "size": "xs",
+            "color": "#aaaaaa",
+            "flex": 0
+          }
+        ]
+      }
+    ]
+  },
+  "styles": {
+    "header": {
+      "backgroundColor": "#3C3C3A"
+    },
+    "body": {
+      "backgroundColor": "#F4F3F9"
+    },
+    "footer": {
+      "separator": true,
+      "backgroundColor": "#E7E8E3",
+      "separatorColor": "#D6D6D4"
+    }
+  }
+}

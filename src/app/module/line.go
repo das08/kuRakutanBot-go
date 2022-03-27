@@ -32,3 +32,11 @@ func (lb *LINEBot) SendTextMessage(text string) {
 		log.Print(err)
 	}
 }
+
+func (lb *LINEBot) SendFlexMessage(flex []byte, altText string) {
+	flexContainer, _ := linebot.UnmarshalFlexMessageJSON(flex)
+	_, err := lb.Bot.ReplyMessage(lb.replyToken, linebot.NewFlexMessage(altText, flexContainer)).Do()
+	if err != nil {
+		log.Print(err)
+	}
+}

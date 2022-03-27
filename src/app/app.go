@@ -14,13 +14,14 @@ func main() {
 	defer mongo.Cancel()
 	defer mongo.Client.Disconnect(mongo.Ctx)
 	lb := module.CreateLINEBotClient(&env)
-	// r := module.LoadRakutanDetail()
+	r := module.LoadRakutanDetail()
+	rr, _ := r.Marshal()
 	// s, _ := r.Marshal()
 	// fmt.Println(fmt.Sprintf("%s", s))
 	// module.CreateDBClient(&env)
 
-	// status, result := module.FindByLectureID(&env, mongo, 12156)
-	// fmt.Printf("status: %v, result: %#v", status, result)
+	//_, result := module.FindByLectureID(&env, mongo, 12156)
+	//fmt.Printf("status: %v, result: %#v", status, result)
 
 	//status, result := module.FindByLectureName(&env, mongo, "中国語")
 	//fmt.Printf("status: %v, result: %#v", status, result)
@@ -45,7 +46,9 @@ func main() {
 				lb.SetReplyToken(event.ReplyToken)
 				switch message := event.Message.(type) {
 				case *linebot.TextMessage:
-					lb.SendTextMessage(message.Text)
+					fmt.Println(message.Text)
+					//lb.SendTextMessage(message.Text)
+					lb.SendFlexMessage(rr, message.Text)
 				}
 			}
 		}

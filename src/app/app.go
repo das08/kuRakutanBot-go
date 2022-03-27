@@ -28,7 +28,7 @@ func main() {
 	router.GET("/hello", func(c *gin.Context) {
 		c.String(http.StatusOK, "Hello World!!")
 	})
-	err := router.Run(":8081")
+	err := router.Run(":" + env.APP_PORT)
 	if err != nil {
 		fmt.Println("Error: creating router failed.")
 		return

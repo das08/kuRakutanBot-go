@@ -1,5 +1,9 @@
 package richmenu
 
+type Marshal interface {
+	Marshal() ([]byte, error)
+}
+
 type Styles struct {
 	Header HeaderClass `json:"header"`
 	Body   HeaderClass `json:"body"`

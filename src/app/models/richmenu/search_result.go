@@ -85,3 +85,10 @@ type HeaderContent struct {
 	Wrap   *bool   `json:"wrap,omitempty"`
 	Margin *string `json:"margin,omitempty"`
 }
+
+func (pc PurpleContent) DeepCopy() PurpleContent {
+	tmp := pc
+	tmp.Contents = make([]FluffyContent, len(pc.Contents))
+	copy(tmp.Contents, pc.Contents)
+	return tmp
+}

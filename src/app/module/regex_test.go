@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestIsLectureNumber(t *testing.T) {
+func TestIsLectureID(t *testing.T) {
 	type expectOutputs struct {
 		success bool
 		id      int
@@ -14,24 +14,24 @@ func TestIsLectureNumber(t *testing.T) {
 		expect expectOutputs // expectation
 		given  string        // given input
 	}{
+		{expectOutputs{false, 0}, "12345"},
 		{expectOutputs{false, 0}, "123456"},
-		{expectOutputs{false, 0}, "1234567"},
-		{expectOutputs{false, 0}, "#1234567"},
-		{expectOutputs{false, 0}, "#000000"},
-		{expectOutputs{false, 0}, "#012345"},
-		{expectOutputs{false, 0}, "1#123456"},
-		{expectOutputs{false, 0}, "##123456"},
+		{expectOutputs{false, 0}, "#123456"},
+		{expectOutputs{false, 0}, "#00000"},
+		{expectOutputs{false, 0}, "#01234"},
+		{expectOutputs{false, 0}, "1#12345"},
+		{expectOutputs{false, 0}, "##12345"},
 		{expectOutputs{false, 0}, "#1"},
-		{expectOutputs{false, 0}, "#12345"},
-		{expectOutputs{false, 0}, "＃123456"},
-		{expectOutputs{false, 0}, "# 123456"},
-		{expectOutputs{false, 0}, "#１１１１１１"},
-		{expectOutputs{true, 123456}, "#123456"},
-		{expectOutputs{true, 999999}, "#999999"},
+		{expectOutputs{false, 0}, "#1234"},
+		{expectOutputs{false, 0}, "＃12345"},
+		{expectOutputs{false, 0}, "# 12345"},
+		{expectOutputs{false, 0}, "#１１１１１"},
+		{expectOutputs{true, 12345}, "#12345"},
+		{expectOutputs{true, 99999}, "#99999"},
 	}
 
 	for _, p := range patterns {
-		success, id := IsLectureNumber(p.given)
+		success, id := IsLectureID(p.given)
 		assert.Equal(t, p.expect.success, success)
 		assert.Equal(t, p.expect.id, id)
 	}

@@ -5,8 +5,8 @@ import (
 	"strconv"
 )
 
-func IsLectureNumber(messageText string) (bool, int) {
-	assined := regexp.MustCompile("^#([1-9][0-9]{5})$")
+func IsLectureID(messageText string) (bool, int) {
+	assined := regexp.MustCompile("^#([1-9][0-9]{4})$")
 	group := assined.FindSubmatch([]byte(messageText))
 	if len(group) == 2 {
 		id, _ := strconv.Atoi(string(group[1]))

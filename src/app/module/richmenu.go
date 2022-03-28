@@ -71,3 +71,16 @@ func LoadHelp() richmenu.Help {
 
 	return jsonData
 }
+
+func LoadJudgeDetail() richmenu.JudgeDetail {
+	jsonFile, err := ioutil.ReadFile("./assets/richmenu/judge_detail.json")
+	if err != nil {
+		log.Fatal(err)
+	}
+	jsonData, err := richmenu.UnmarshalJudgeDetail(jsonFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return jsonData
+}

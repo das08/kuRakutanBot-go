@@ -85,20 +85,13 @@ const (
 func searchRakutan(env *module.Environments, searchText string) (bool, []module.FlexMessage) {
 	success := false
 	var flexMessages []module.FlexMessage
-	//mongoDB := module.CreateDBClient(env)
-	//defer mongoDB.Cancel()
-	//defer mongoDB.Client.Disconnect(mongoDB.Ctx)
-
-	isLectureNumber, lectureID := module.IsLectureID(searchText)
-
 	var queryStatus status.QueryStatus
 	var result []models.RakutanInfo
 
+	isLectureNumber, lectureID := module.IsLectureID(searchText)
 	if isLectureNumber {
-		//queryStatus, result = module.FindByLectureID(env, mongoDB, lectureID)
 		queryStatus, result = getRakutanInfo(env, ID, lectureID)
 	} else {
-		//queryStatus, result = module.FindByLectureName(env, mongoDB, searchText)
 		queryStatus, result = getRakutanInfo(env, Name, searchText)
 	}
 
@@ -115,7 +108,6 @@ func searchRakutan(env *module.Environments, searchText string) (bool, []module.
 			success = true
 		}
 	}
-
 	return success, flexMessages
 }
 

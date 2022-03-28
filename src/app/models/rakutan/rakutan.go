@@ -16,10 +16,14 @@ type RakutanDetail struct {
 
 type RakutanDetails []RakutanDetail
 
-func (rds RakutanDetails) AcceptedList() []int {
-	var list []int
+func (rds RakutanDetails) GetLatestDetail() (int, int) {
+	accept, total := 0, 0
 	for _, rd := range rds {
-		list = append(list, rd.Accepted)
+		if rd.Total != 0 {
+			accept = rd.Accepted
+			total = rd.Total
+			break
+		}
 	}
-	return list
+	return accept, total
 }

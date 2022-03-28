@@ -15,6 +15,8 @@ type FlexMessage struct {
 	AltText       string
 }
 
+var MaxResultsPerPage = 25
+
 func CreateRakutanDetail(info models.RakutanInfo) []FlexMessage {
 	rakutanDetail := LoadRakutanDetail()
 	rakutanDetail.Header.Contents[0].Contents[1].Text = toPtr("Search ID:#" + toStr(info.ID))
@@ -47,36 +49,44 @@ func CreateSearchResult(searchText string, infos []models.RakutanInfo) []FlexMes
 	searchResult := LoadSearchResult()
 	searchResultMore := LoadSearchResultMore()
 
-	MaxResultsPerPage := 20
 	pageCount := 0
-	maxPageCount := len(infos)/20 + 1
+	maxPageCount := len(infos)/MaxResultsPerPage + 1
 
 	for pageCount = 1; pageCount <= maxPageCount; pageCount++ {
-		switch pageCount {
-		case 1:
-			altText := fmt.Sprintf("「%s」の検索結果(%d/%d)", searchText, pageCount, maxPageCount)
+		altText := fmt.Sprintf("「%s」の検索結果(%d/%d)", searchText, pageCount, maxPageCount)
+		switch {
+		case pageCount == 1:
 			searchResult.Header.Contents[0].Text = toPtr(altText)
 			searchResult.Header.Contents[1].Text = toPtr(fmt.Sprintf("%d 件の候補が見つかりました。目的の講義を選択してください。", len(infos)))
 
-			var lectureList []richmenu.PurpleContent
-			lecture := searchResult.Body.Contents[1].Contents[0]
-
-			for i := 0; i < int(math.Max(float64(maxPageCount), float64(MaxResultsPerPage))); i++ {
-				tmp := lecture.DeepCopy()
-				tmp.Contents[0].Text = infos[i].LectureName
-				lectureList = append(lectureList, tmp)
-			}
-
-			searchResult.Body.Contents[1].Contents = lectureList
-
+			searchResult.Body.Contents[1].Contents = getLectureList(infos, pageCount)
 			flexContainer := toFlexContainer(&searchResult)
 			messages = append(messages, FlexMessage{FlexContainer: flexContainer, AltText: altText})
-		default:
-			searchResultMore.Header.Contents[0].Text = toPtr("")
+		case pageCount >= 2:
+			searchResultMore.Header.Contents[0].Text = toPtr(altText)
+
+			searchResultMore.Body.Contents[1].Contents = getLectureList(infos, pageCount)
+			flexContainer := toFlexContainer(&searchResultMore)
+			messages = append(messages, FlexMessage{FlexContainer: flexContainer, AltText: altText})
 		}
 	}
 
 	return messages
+}
+
+func getLectureList(infos []models.RakutanInfo, pageCount int) []richmenu.PurpleContent {
+	searchResult := LoadSearchResult()
+	var lectureList []richmenu.PurpleContent
+	lecture := searchResult.Body.Contents[1].Contents[0]
+
+	for i := (pageCount - 1) * MaxResultsPerPage; i < int(math.Min(float64(len(infos)), float64(MaxResultsPerPage+(pageCount-1)*MaxResultsPerPage))); i++ {
+		fmt.Println(infos[i].LectureName)
+		tmp := lecture.DeepCopy()
+		tmp.Contents[0].Text = infos[i].LectureName
+		lectureList = append(lectureList, tmp)
+	}
+
+	return lectureList
 }
 
 func toFlexContainer(json richmenu.Marshal) linebot.FlexContainer {

@@ -17,6 +17,10 @@ var Commands = [...]Command{
 	{Keyword: "判定詳細", SendFunction: judgeDetailCmd},
 	{Keyword: "楽単詳細", SendFunction: judgeDetailCmd},
 	{Keyword: "楽単", SendFunction: rakutanCmd},
+	{Keyword: "おみくじ", SendFunction: rakutanCmd},
+	{Keyword: "楽単おみくじ", SendFunction: rakutanCmd},
+	{Keyword: "鬼単", SendFunction: onitanCmd},
+	{Keyword: "鬼単おみくじ", SendFunction: onitanCmd},
 }
 
 func IsCommand(messageText string) (bool, func(env *Environments, lb *LINEBot)) {

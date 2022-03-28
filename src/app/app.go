@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/line/line-bot-sdk-go/v7/linebot"
 	"net/http"
+	"strings"
 )
 
 func main() {
@@ -43,9 +44,11 @@ func main() {
 				lb.SetReplyToken(event.ReplyToken)
 				switch message := event.Message.(type) {
 				case *linebot.TextMessage:
-					fmt.Println(message.Text)
+					messageText := strings.TrimSpace(message.Text)
+					fmt.Println(messageText)
+					fmt.Println(module.IsLectureNumber(messageText))
 
-					success, flexMessages := searchRakutan(&env, message.Text)
+					success, flexMessages := searchRakutan(&env, messageText)
 					if success {
 						lb.SendFlexMessage(flexMessages)
 					} else {

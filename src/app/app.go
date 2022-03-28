@@ -45,9 +45,9 @@ func main() {
 				case *linebot.TextMessage:
 					fmt.Println(message.Text)
 
-					success, flex := searchRakutan(&env, message.Text)
+					success, flexMessages := searchRakutan(&env, message.Text)
 					if success {
-						lb.SendFlexMessage(flex, message.Text)
+						lb.SendFlexMessage(flexMessages)
 					} else {
 						lb.SendTextMessage(message.Text)
 					}
@@ -64,9 +64,9 @@ func main() {
 	}
 }
 
-func searchRakutan(env *module.Environments, searchText string) (bool, []byte) {
+func searchRakutan(env *module.Environments, searchText string) (bool, []module.FlexMessage) {
 	success := false
-	var flex []byte
+	var flexMessages []module.FlexMessage
 	mongoDB := module.CreateDBClient(env)
 	defer mongoDB.Cancel()
 	defer mongoDB.Client.Disconnect(mongoDB.Ctx)
@@ -77,10 +77,14 @@ func searchRakutan(env *module.Environments, searchText string) (bool, []byte) {
 		recordCount := len(result)
 		fmt.Println(recordCount)
 		if recordCount == 1 {
-			flex = module.SetRakutanData(result[0])
+			flexMessages = module.CreateRakutanDetail(result[0])
 			success = true
+		} else {
+			for i, v := range result {
+				fmt.Println(i, ": ", v.LectureName)
+			}
 		}
 	}
 
-	return success, flex
+	return success, flexMessages
 }

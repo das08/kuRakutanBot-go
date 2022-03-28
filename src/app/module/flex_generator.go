@@ -3,11 +3,17 @@ package module
 import (
 	"fmt"
 	models "github.com/das08/kuRakutanBot-go/models/rakutan"
+	"github.com/line/line-bot-sdk-go/v7/linebot"
 	"log"
 	"strconv"
 )
 
-func SetRakutanData(info models.RakutanInfo) []byte {
+type FlexMessage struct {
+	FlexContainer linebot.FlexContainer
+	AltText       string
+}
+
+func CreateRakutanDetail(info models.RakutanInfo) []FlexMessage {
 	rakutanDetail := LoadRakutanDetail()
 	rakutanDetail.Header.Contents[0].Contents[1].Text = toPtr("Search ID:#" + toStr(info.ID))
 	rakutanDetail.Header.Contents[1].Text = &info.LectureName             // Lecture name
@@ -28,8 +34,10 @@ func SetRakutanData(info models.RakutanInfo) []byte {
 	if err != nil {
 		log.Fatal(err)
 	}
+	flexContainer, _ := linebot.UnmarshalFlexMessageJSON(flex)
+	altText := "「" + info.LectureName + "」のらくたん情報"
 
-	return flex
+	return []FlexMessage{{FlexContainer: flexContainer, AltText: altText}}
 }
 
 func getRakutanPercent(accept int, total int) string {

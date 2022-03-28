@@ -33,9 +33,12 @@ func (lb *LINEBot) SendTextMessage(text string) {
 	}
 }
 
-func (lb *LINEBot) SendFlexMessage(flex []byte, altText string) {
-	flexContainer, _ := linebot.UnmarshalFlexMessageJSON(flex)
-	_, err := lb.Bot.ReplyMessage(lb.replyToken, linebot.NewFlexMessage(altText, flexContainer)).Do()
+func (lb *LINEBot) SendFlexMessage(flexMessages []FlexMessage) {
+	var messages []linebot.SendingMessage
+	for _, fm := range flexMessages {
+		messages = append(messages, linebot.NewFlexMessage(fm.AltText, fm.FlexContainer))
+	}
+	_, err := lb.Bot.ReplyMessage(lb.replyToken, messages...).Do()
 	if err != nil {
 		log.Print(err)
 	}

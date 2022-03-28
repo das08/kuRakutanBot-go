@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	models "github.com/das08/kuRakutanBot-go/models/rakutan"
+	status "github.com/das08/kuRakutanBot-go/models/status"
 	"github.com/das08/kuRakutanBot-go/module"
 	"github.com/gin-gonic/gin"
 	"github.com/line/line-bot-sdk-go/v7/linebot"
@@ -45,8 +47,6 @@ func main() {
 				switch message := event.Message.(type) {
 				case *linebot.TextMessage:
 					messageText := strings.TrimSpace(message.Text)
-					fmt.Println(messageText)
-					fmt.Println(module.IsLectureNumber(messageText))
 
 					success, flexMessages := searchRakutan(&env, messageText)
 					if success {
@@ -75,9 +75,20 @@ func searchRakutan(env *module.Environments, searchText string) (bool, []module.
 	defer mongoDB.Cancel()
 	defer mongoDB.Client.Disconnect(mongoDB.Ctx)
 
-	status, result := module.FindByLectureName(env, mongoDB, searchText)
+	isLectureNumber, lectureID := module.IsLectureID(searchText)
 
-	if status.Success {
+	var queryStatus status.QueryStatus
+	var result []models.RakutanInfo
+
+	if isLectureNumber {
+
+		queryStatus, result = module.FindByLectureID(env, mongoDB, lectureID)
+		fmt.Println("is lecture id", lectureID, queryStatus)
+	} else {
+		queryStatus, result = module.FindByLectureName(env, mongoDB, searchText)
+	}
+
+	if queryStatus.Success {
 		recordCount := len(result)
 		fmt.Println(recordCount)
 		switch recordCount {

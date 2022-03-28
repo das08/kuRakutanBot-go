@@ -57,6 +57,7 @@ func CreateSearchResult(searchText string, infos []models.RakutanInfo) []FlexMes
 			altText := fmt.Sprintf("「%s」の検索結果(%d/%d)", searchText, pageCount, maxPageCount)
 			searchResult.Header.Contents[0].Text = toPtr(altText)
 			searchResult.Header.Contents[1].Text = toPtr(fmt.Sprintf("%d 件の候補が見つかりました。目的の講義を選択してください。", len(infos)))
+
 			var lectureList []richmenu.PurpleContent
 			lecture := searchResult.Body.Contents[1].Contents[0]
 

@@ -13,11 +13,8 @@
         "wrap": true
       },
       {
-        "type": "separator"
-      },
-      {
-        "type": "spacer",
-        "size": "lg"
+        "type": "separator",
+        "margin": "xl"
       }
     ],
     "paddingAll": "20px",
@@ -54,10 +51,20 @@
             "contents": [
               {
                 "type": "text",
+                "text": "---",
+                "flex": 2,
+                "size": "sm",
+                "weight": "bold",
+                "color": "#555555",
+                "align": "start",
+                "offsetStart": "sm"
+              },
+              {
+                "type": "text",
                 "text": "[Lecture Name]",
                 "size": "sm",
-                "color": "#555555",
-                "flex": 10,
+                "color": "#666666",
+                "flex": 11,
                 "wrap": true
               },
               {

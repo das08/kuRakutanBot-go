@@ -28,22 +28,11 @@ type SearchResultMoreBody struct {
 }
 
 type SearchResultMoreBodyContent struct {
-	Type     string                         `json:"type"`
-	Layout   *string                        `json:"layout,omitempty"`
-	Contents []SearchResultMoreBodyContents `json:"contents,omitempty"`
-	Margin   *string                        `json:"margin,omitempty"`
-	Spacing  *string                        `json:"spacing,omitempty"`
-}
-
-type SearchResultMoreBodyContents struct {
-	Type     string                 `json:"type"`
-	Text     *string                `json:"text,omitempty"`
-	Size     *string                `json:"size,omitempty"`
-	Color    *string                `json:"color,omitempty"`
-	Flex     *int64                 `json:"flex,omitempty"`
-	Layout   *string                `json:"layout,omitempty"`
-	Contents []SearchResultContents `json:"contents,omitempty"`
-	Margin   *string                `json:"margin,omitempty"`
+	Type     string          `json:"type"`
+	Layout   *string         `json:"layout,omitempty"`
+	Contents []PurpleContent `json:"contents,omitempty"`
+	Margin   *string         `json:"margin,omitempty"`
+	Spacing  *string         `json:"spacing,omitempty"`
 }
 
 type SearchResultMoreHeader struct {

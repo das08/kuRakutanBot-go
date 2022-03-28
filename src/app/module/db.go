@@ -34,7 +34,7 @@ func CreateDBClient(e *Environments) *MongoDB {
 	return &MongoDB{Client: client, Ctx: ctx, Cancel: cancel}
 }
 
-func findOne(e *Environments, m *MongoDB, fieldName string, value interface{}) (status.QueryStatus, rakutan.RakutanInfo) {
+func findOne(e *Environments, m *MongoDB, fieldName string, value interface{}) (status.QueryStatus, []rakutan.RakutanInfo) {
 	result := rakutan.RakutanInfo{}
 	collection := m.Client.Database(e.DB_NAME).Collection(e.DB_COLLECTION)
 	var queryStatus status.QueryStatus
@@ -45,10 +45,10 @@ func findOne(e *Environments, m *MongoDB, fieldName string, value interface{}) (
 	} else {
 		queryStatus.Success = true
 	}
-	return queryStatus, result
+	return queryStatus, []rakutan.RakutanInfo{result}
 }
 
-func FindByLectureID(e *Environments, m *MongoDB, lectureID int) (status.QueryStatus, rakutan.RakutanInfo) {
+func FindByLectureID(e *Environments, m *MongoDB, lectureID int) (status.QueryStatus, []rakutan.RakutanInfo) {
 	return findOne(e, m, "id", lectureID)
 }
 

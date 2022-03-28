@@ -1,7 +1,10 @@
 // This file was generated from JSON Schema using quicktype, do not modify it directly.
+
 package richmenu
 
-import "encoding/json"
+import (
+	"encoding/json"
+)
 
 func UnmarshalSearchResult(data []byte) (SearchResult, error) {
 	var r SearchResult
@@ -21,56 +24,63 @@ type SearchResult struct {
 }
 
 type SearchResultBody struct {
-	Type     string             `json:"type"`
-	Layout   string             `json:"layout"`
-	Contents []SearchResultBody `json:"contents"`
+	Type     string        `json:"type"`
+	Layout   string        `json:"layout"`
+	Contents []BodyContent `json:"contents"`
 }
 
-type SearchResultBodyContent struct {
-	Type     string                `json:"type"`
-	Layout   *string               `json:"layout,omitempty"`
-	Contents []SearchResultContent `json:"contents,omitempty"`
-	Margin   *string               `json:"margin,omitempty"`
-	Spacing  *string               `json:"spacing,omitempty"`
+type BodyContent struct {
+	Type     string          `json:"type"`
+	Layout   *string         `json:"layout,omitempty"`
+	Contents []PurpleContent `json:"contents,omitempty"`
+	Margin   *string         `json:"margin,omitempty"`
+	Spacing  *string         `json:"spacing,omitempty"`
 }
 
-type SearchResultContent struct {
-	Type     string                 `json:"type"`
-	Text     *string                `json:"text,omitempty"`
-	Size     *string                `json:"size,omitempty"`
-	Color    *string                `json:"color,omitempty"`
-	Flex     *int64                 `json:"flex,omitempty"`
-	Layout   *string                `json:"layout,omitempty"`
-	Contents []SearchResultContents `json:"contents,omitempty"`
-	Margin   *string                `json:"margin,omitempty"`
+type PurpleContent struct {
+	Type     string          `json:"type"`
+	Text     *string         `json:"text,omitempty"`
+	Size     *string         `json:"size,omitempty"`
+	Color    *string         `json:"color,omitempty"`
+	Flex     *int64          `json:"flex,omitempty"`
+	Layout   *string         `json:"layout,omitempty"`
+	Contents []FluffyContent `json:"contents,omitempty"`
+	Margin   *string         `json:"margin,omitempty"`
 }
 
-type SearchResultContents struct {
-	Type         string      `json:"type"`
-	Text         string      `json:"text"`
-	Size         string      `json:"size"`
-	Color        string      `json:"color"`
-	Flex         int64       `json:"flex"`
-	Wrap         *bool       `json:"wrap,omitempty"`
-	Align        *string     `json:"align,omitempty"`
-	Weight       *string     `json:"weight,omitempty"`
-	Decoration   *string     `json:"decoration,omitempty"`
-	Margin       *string     `json:"margin,omitempty"`
-	Action       *TextAction `json:"action,omitempty"`
-	OffsetBottom *string     `json:"offsetBottom,omitempty"`
+type FluffyContent struct {
+	Type         string  `json:"type"`
+	Text         string  `json:"text"`
+	Flex         int64   `json:"flex"`
+	Size         string  `json:"size"`
+	Weight       *string `json:"weight,omitempty"`
+	Color        string  `json:"color"`
+	Align        *string `json:"align,omitempty"`
+	OffsetStart  *string `json:"offsetStart,omitempty"`
+	Wrap         *bool   `json:"wrap,omitempty"`
+	Decoration   *string `json:"decoration,omitempty"`
+	Margin       *string `json:"margin,omitempty"`
+	Action       *Action `json:"action,omitempty"`
+	OffsetBottom *string `json:"offsetBottom,omitempty"`
+}
+
+type Action struct {
+	Type  string `json:"type"`
+	Label string `json:"label"`
+	Text  string `json:"text"`
 }
 
 type SearchResultHeader struct {
-	Type          string                      `json:"type"`
-	Layout        string                      `json:"layout"`
-	Contents      []SearchResultHeaderContent `json:"contents"`
-	PaddingAll    string                      `json:"paddingAll"`
-	Spacing       string                      `json:"spacing"`
-	PaddingTop    string                      `json:"paddingTop"`
-	PaddingBottom string                      `json:"paddingBottom"`
+	Type          string          `json:"type"`
+	Layout        string          `json:"layout"`
+	Contents      []HeaderContent `json:"contents"`
+	PaddingAll    string          `json:"paddingAll"`
+	Spacing       string          `json:"spacing"`
+	PaddingTop    string          `json:"paddingTop"`
+	PaddingBottom string          `json:"paddingBottom"`
 }
 
-type SearchResultHeaderContent struct {
+type HeaderContent struct {
 	Type   string  `json:"type"`
 	Text   *string `json:"text,omitempty"`
 	Weight *string `json:"weight,omitempty"`
@@ -78,4 +88,18 @@ type SearchResultHeaderContent struct {
 	Size   *string `json:"size,omitempty"`
 	Wrap   *bool   `json:"wrap,omitempty"`
 	Margin *string `json:"margin,omitempty"`
+}
+
+func (pc PurpleContent) DeepCopy() PurpleContent {
+	tmp := pc
+	tmp.Contents = make([]FluffyContent, len(pc.Contents))
+	copy(tmp.Contents, pc.Contents)
+
+	for i, v := range pc.Contents {
+		if v.Action != nil {
+			tmpAction := Action{Text: "#12345", Type: "message", Label: "action"}
+			tmp.Contents[i].Action = &tmpAction
+		}
+	}
+	return tmp
 }

@@ -11,10 +11,6 @@
         "color": "#c9c9bf",
         "size": "sm",
         "wrap": true
-      },
-      {
-        "type": "separator",
-        "margin": "xl"
       }
     ],
     "paddingAll": "20px",

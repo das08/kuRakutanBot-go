@@ -20,10 +20,6 @@
         "margin": "md",
         "color": "#E6E7E2",
         "wrap": true
-      },
-      {
-        "type": "separator",
-        "margin": "xl"
       }
     ],
     "paddingAll": "20px",

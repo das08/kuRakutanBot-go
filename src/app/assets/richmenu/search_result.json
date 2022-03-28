@@ -65,8 +65,8 @@
                 "size": "sm",
                 "weight": "bold",
                 "color": "#555555",
-                "align": "end",
-                "offsetEnd": "sm"
+                "align": "start",
+                "offsetStart": "sm"
               },
               {
                 "type": "text",

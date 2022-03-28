@@ -93,6 +93,33 @@ func FindByOmikuji(e *Environments, m *MongoDB, omikujiType string) (status.Quer
 	return queryStatus, []rakutan.RakutanInfo{result[randomIdx]}
 }
 
+type FindByMethod int
+
+const (
+	Name FindByMethod = iota
+	ID
+	Omikuji
+)
+
+func GetRakutanInfo(env *Environments, method FindByMethod, value interface{}) (status.QueryStatus, []rakutan.RakutanInfo) {
+	mongoDB := CreateDBClient(env)
+	defer mongoDB.Cancel()
+	defer mongoDB.Client.Disconnect(mongoDB.Ctx)
+	var queryStatus status.QueryStatus
+	var result []rakutan.RakutanInfo
+
+	switch method {
+	case ID:
+		queryStatus, result = FindByLectureID(env, mongoDB, value.(int))
+	case Name:
+		queryStatus, result = FindByLectureName(env, mongoDB, value.(string))
+	case Omikuji:
+		queryStatus, result = FindByOmikuji(env, mongoDB, value.(string))
+	}
+
+	return queryStatus, result
+}
+
 func randomIndex(max int) int {
 	rand.Seed(time.Now().UnixNano())
 	return rand.Intn(max)

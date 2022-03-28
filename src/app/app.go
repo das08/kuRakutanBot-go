@@ -50,7 +50,7 @@ func main() {
 
 					isCommand, function := module.IsCommand(messageText)
 					if isCommand {
-						function(lb)
+						function(&env, lb)
 						break
 					}
 
@@ -74,13 +74,13 @@ func main() {
 	}
 }
 
-type FindByMethod int
-
-const (
-	Name FindByMethod = iota
-	ID
-	Omikuji
-)
+//type FindByMethod int
+//
+//const (
+//	Name FindByMethod = iota
+//	ID
+//	Omikuji
+//)
 
 func searchRakutan(env *module.Environments, searchText string) (bool, []module.FlexMessage) {
 	success := false
@@ -90,9 +90,9 @@ func searchRakutan(env *module.Environments, searchText string) (bool, []module.
 
 	isLectureNumber, lectureID := module.IsLectureID(searchText)
 	if isLectureNumber {
-		queryStatus, result = getRakutanInfo(env, ID, lectureID)
+		queryStatus, result = module.GetRakutanInfo(env, module.ID, lectureID)
 	} else {
-		queryStatus, result = getRakutanInfo(env, Name, searchText)
+		queryStatus, result = module.GetRakutanInfo(env, module.Name, searchText)
 	}
 
 	if queryStatus.Success {
@@ -111,21 +111,21 @@ func searchRakutan(env *module.Environments, searchText string) (bool, []module.
 	return success, flexMessages
 }
 
-func getRakutanInfo(env *module.Environments, method FindByMethod, value interface{}) (status.QueryStatus, []models.RakutanInfo) {
-	mongoDB := module.CreateDBClient(env)
-	defer mongoDB.Cancel()
-	defer mongoDB.Client.Disconnect(mongoDB.Ctx)
-	var queryStatus status.QueryStatus
-	var result []models.RakutanInfo
-
-	switch method {
-	case ID:
-		queryStatus, result = module.FindByLectureID(env, mongoDB, value.(int))
-	case Name:
-		queryStatus, result = module.FindByLectureName(env, mongoDB, value.(string))
-	case Omikuji:
-		queryStatus, result = module.FindByOmikuji(env, mongoDB, value.(string))
-	}
-
-	return queryStatus, result
-}
+//func getRakutanInfo(env *module.Environments, method FindByMethod, value interface{}) (status.QueryStatus, []models.RakutanInfo) {
+//	mongoDB := module.CreateDBClient(env)
+//	defer mongoDB.Cancel()
+//	defer mongoDB.Client.Disconnect(mongoDB.Ctx)
+//	var queryStatus status.QueryStatus
+//	var result []models.RakutanInfo
+//
+//	switch method {
+//	case ID:
+//		queryStatus, result = module.FindByLectureID(env, mongoDB, value.(int))
+//	case Name:
+//		queryStatus, result = module.FindByLectureName(env, mongoDB, value.(string))
+//	case Omikuji:
+//		queryStatus, result = module.FindByOmikuji(env, mongoDB, value.(string))
+//	}
+//
+//	return queryStatus, result
+//}

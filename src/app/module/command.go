@@ -4,8 +4,7 @@ import "strings"
 
 type Command struct {
 	Keyword      string
-	DBFunction   func()
-	SendFunction func(lb *LINEBot)
+	SendFunction func(env *Environments, lb *LINEBot)
 }
 
 var Commands = [...]Command{
@@ -17,11 +16,12 @@ var Commands = [...]Command{
 	{Keyword: "詳細", SendFunction: judgeDetailCmd},
 	{Keyword: "判定詳細", SendFunction: judgeDetailCmd},
 	{Keyword: "楽単詳細", SendFunction: judgeDetailCmd},
+	{Keyword: "楽単", SendFunction: rakutanCmd},
 }
 
-func IsCommand(messageText string) (bool, func(lb *LINEBot)) {
+func IsCommand(messageText string) (bool, func(env *Environments, lb *LINEBot)) {
 	isCommand := false
-	var function func(lb *LINEBot)
+	var function func(env *Environments, lb *LINEBot)
 	for _, cmd := range Commands {
 		// Case-insensitive
 		if strings.EqualFold(cmd.Keyword, messageText) {
@@ -32,20 +32,32 @@ func IsCommand(messageText string) (bool, func(lb *LINEBot)) {
 	return isCommand, function
 }
 
-func helpCmd(lb *LINEBot) {
+func helpCmd(_ *Environments, lb *LINEBot) {
 	help := LoadHelp()
 	helpJson, _ := help.Marshal()
 	flexMessages := CreateFlexMessage(helpJson, "ヘルプ")
 	lb.SendFlexMessage(flexMessages)
 }
 
-func judgeDetailCmd(lb *LINEBot) {
+func judgeDetailCmd(_ *Environments, lb *LINEBot) {
 	judgeDetail := LoadJudgeDetail()
 	judgeDetailJson, _ := judgeDetail.Marshal()
 	flexMessages := CreateFlexMessage(judgeDetailJson, "らくたん判定の詳細")
 	lb.SendFlexMessage(flexMessages)
 }
 
-//func omikujiCmd(lb *LINEBot) {
-//	queryStatus, result := FindByOmikuji(env, mongoDB, "rakutan")
-//}
+func rakutanCmd(env *Environments, lb *LINEBot) {
+	queryStatus, result := GetRakutanInfo(env, Omikuji, "rakutan")
+	if queryStatus.Success {
+		flexMessages := CreateRakutanDetail(result[0])
+		lb.SendFlexMessage(flexMessages)
+	}
+}
+
+func onitanCmd(env *Environments, lb *LINEBot) {
+	queryStatus, result := GetRakutanInfo(env, Omikuji, "onitan")
+	if queryStatus.Success {
+		flexMessages := CreateRakutanDetail(result[0])
+		lb.SendFlexMessage(flexMessages)
+	}
+}

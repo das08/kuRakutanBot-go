@@ -1,4 +1,5 @@
 // This file was generated from JSON Schema using quicktype, do not modify it directly.
+
 package richmenu
 
 import "encoding/json"
@@ -52,8 +53,9 @@ type FluffyContent struct {
 	Size         string  `json:"size"`
 	Weight       *string `json:"weight,omitempty"`
 	Color        string  `json:"color"`
-	Wrap         *bool   `json:"wrap,omitempty"`
 	Align        *string `json:"align,omitempty"`
+	OffsetEnd    *string `json:"offsetEnd,omitempty"`
+	Wrap         *bool   `json:"wrap,omitempty"`
 	Decoration   *string `json:"decoration,omitempty"`
 	Margin       *string `json:"margin,omitempty"`
 	Action       *Action `json:"action,omitempty"`

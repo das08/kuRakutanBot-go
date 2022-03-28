@@ -20,6 +20,10 @@
         "margin": "md",
         "color": "#E6E7E2",
         "wrap": true
+      },
+      {
+        "type": "separator",
+        "margin": "xl"
       }
     ],
     "paddingAll": "20px",
@@ -56,18 +60,20 @@
             "contents": [
               {
                 "type": "text",
-                "text": "般教",
+                "text": "---",
                 "flex": 2,
                 "size": "sm",
                 "weight": "bold",
-                "color": "#666666"
+                "color": "#555555",
+                "align": "end",
+                "offsetEnd": "sm"
               },
               {
                 "type": "text",
                 "text": "[Lecture Name]",
                 "size": "sm",
-                "color": "#555555",
-                "flex": 10,
+                "color": "#666666",
+                "flex": 11,
                 "wrap": true
               },
               {

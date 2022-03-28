@@ -33,6 +33,11 @@ var judgeList = [9]RakutanJudge{
 	{percentBound: 0, rank: "F", color: "#837b8a"},
 	{percentBound: -1, rank: "---", color: "#837b8a"},
 }
+var facultyAbbr = map[string]string{
+	"文学部": "文", "教育学部": "教", "法学部": "法", "経済学部": "経", "理学部": "理", "医学部": "医医",
+	"医学部（人間健康科学科）": "人健", "医学部(人間健康科学科)": "人健",
+	"薬学部": "薬", "工学部": "工", "農学部": "農", "総合人間学部": "総人", "国際高等教育院": "般教",
+}
 
 func CreateRakutanDetail(info models.RakutanInfo) []FlexMessage {
 	rakutanDetail := LoadRakutanDetail()
@@ -103,6 +108,11 @@ func getLectureList(infos []models.RakutanInfo, pageCount int) []richmenu.Purple
 	for i := offset; i < int(math.Min(float64(len(infos)), float64(MaxResultsPerPage+offset))); i++ {
 		tmp := lecture.DeepCopy()
 		tmp.Contents[1].Text = infos[i].LectureName
+		abbr, ok := facultyAbbr[infos[i].FacultyName]
+		if ok {
+			tmp.Contents[0].Text = abbr
+		}
+
 		lectureList = append(lectureList, tmp)
 	}
 

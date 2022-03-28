@@ -35,17 +35,6 @@ type SearchResultMoreBodyContent struct {
 	Spacing  *string         `json:"spacing,omitempty"`
 }
 
-//type SearchResultMoreBodyContents struct {
-//	Type     string          `json:"type"`
-//	Text     *string         `json:"text,omitempty"`
-//	Size     *string         `json:"size,omitempty"`
-//	Color    *string         `json:"color,omitempty"`
-//	Flex     *int64          `json:"flex,omitempty"`
-//	Layout   *string         `json:"layout,omitempty"`
-//	Contents []FluffyContent `json:"contents,omitempty"`
-//	Margin   *string         `json:"margin,omitempty"`
-//}
-
 type SearchResultMoreHeader struct {
 	Type          string                          `json:"type"`
 	Layout        string                          `json:"layout"`

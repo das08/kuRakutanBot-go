@@ -18,9 +18,9 @@ func SetRakutanData(info models.RakutanInfo) []byte {
 	// 単位取得率
 	for i, v := range info.Detail {
 		rakutanDetail.Body.Contents[0].Contents[i+1].Contents[0].Text = toStr(v.Year) + "年度"
-		rakutanDetail.Body.Contents[0].Contents[i+1].Contents[1].Text = calculateRakutanPercent(v.Accepted, v.Total)
+		rakutanDetail.Body.Contents[0].Contents[i+1].Contents[1].Text = getRakutanPercent(v.Accepted, v.Total)
 	}
-	rakutanJudge := calculateRakutanJudge(info.Detail)
+	rakutanJudge := getRakutanJudge(info.Detail)
 	rakutanDetail.Body.Contents[0].Contents[5].Contents[1].Text = rakutanJudge.rank
 	rakutanDetail.Body.Contents[0].Contents[5].Contents[1].Color = rakutanJudge.color
 
@@ -32,12 +32,12 @@ func SetRakutanData(info models.RakutanInfo) []byte {
 	return flex
 }
 
-func calculateRakutanPercent(accept int, total int) string {
+func getRakutanPercent(accept int, total int) string {
 	breakdown := "(" + toStr(accept) + "/" + toStr(total) + ")"
 	if total == 0 {
 		return "---% " + breakdown
 	} else {
-		return fmt.Sprintf("%.1f%% ", float32(100*accept)/float32(total)) + breakdown
+		return fmt.Sprintf("%.1f%% ", getPercentage(accept, total)) + breakdown
 	}
 }
 
@@ -59,20 +59,13 @@ var judgeList = [9]RakutanJudge{
 	{percentBound: -1, rank: "---", color: "#837b8a"},
 }
 
-func calculateRakutanJudge(rds models.RakutanDetails) RakutanJudge {
-	accept, total := 0, 0
-	for _, rd := range rds {
-		if rd.Total != 0 {
-			accept = rd.Accepted
-			total = rd.Total
-			break
-		}
-	}
+func getRakutanJudge(rds models.RakutanDetails) RakutanJudge {
+	accept, total := rds.GetLatestDetail()
 	if total == 0 {
 		return judgeList[8]
 	}
 
-	percentage := float32(100*accept) / float32(total)
+	percentage := getPercentage(accept, total)
 	var res = judgeList[8]
 	for i, j := range judgeList {
 		if percentage >= j.percentBound {
@@ -81,6 +74,10 @@ func calculateRakutanJudge(rds models.RakutanDetails) RakutanJudge {
 		}
 	}
 	return res
+}
+
+func getPercentage(accept int, total int) float32 {
+	return float32(100*accept) / float32(total)
 }
 
 func toStr(i int) string {

@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestCalculateRakutanPercent(t *testing.T) {
+func TestGetRakutanPercent(t *testing.T) {
 	type inputs struct {
 		arg1 int
 		arg2 int
@@ -24,12 +24,12 @@ func TestCalculateRakutanPercent(t *testing.T) {
 	}
 
 	for _, p := range patterns {
-		actual := calculateRakutanPercent(p.given.arg1, p.given.arg2)
+		actual := getRakutanPercent(p.given.arg1, p.given.arg2)
 		assert.Equal(t, p.expect, actual)
 	}
 }
 
-func TestCalculateRakutanJudge(t *testing.T) {
+func TestGetRakutanJudge(t *testing.T) {
 	patterns := []struct {
 		expect RakutanJudge          // expectation
 		given  models.RakutanDetails // given input
@@ -49,7 +49,7 @@ func TestCalculateRakutanJudge(t *testing.T) {
 	}
 
 	for _, p := range patterns {
-		actual := calculateRakutanJudge(p.given)
+		actual := getRakutanJudge(p.given)
 		assert.Equal(t, p.expect, actual)
 	}
 }

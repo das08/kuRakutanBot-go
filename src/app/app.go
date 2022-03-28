@@ -14,17 +14,6 @@ import (
 func main() {
 	env := module.LoadEnv(true)
 	lb := module.CreateLINEBotClient(&env)
-	//r := module.LoadRakutanDetail()
-	//rr, _ := r.Marshal()
-	// s, _ := r.Marshal()
-	// fmt.Println(fmt.Sprintf("%s", s))
-	// module.CreateDBClient(&env)
-
-	//_, result := module.FindByLectureID(&env, mongo, 12156)
-	//fmt.Printf("status: %v, result: %#v", status, result)
-
-	//status, result := module.FindByLectureName(&env, mongo, "中国語")
-	//fmt.Printf("status: %v, result: %#v", status, result)
 
 	router := gin.Default()
 	router.GET("/hello", func(c *gin.Context) {
@@ -74,14 +63,6 @@ func main() {
 	}
 }
 
-//type FindByMethod int
-//
-//const (
-//	Name FindByMethod = iota
-//	ID
-//	Omikuji
-//)
-
 func searchRakutan(env *module.Environments, searchText string) (bool, []module.FlexMessage) {
 	success := false
 	var flexMessages []module.FlexMessage
@@ -110,22 +91,3 @@ func searchRakutan(env *module.Environments, searchText string) (bool, []module.
 	}
 	return success, flexMessages
 }
-
-//func getRakutanInfo(env *module.Environments, method FindByMethod, value interface{}) (status.QueryStatus, []models.RakutanInfo) {
-//	mongoDB := module.CreateDBClient(env)
-//	defer mongoDB.Cancel()
-//	defer mongoDB.Client.Disconnect(mongoDB.Ctx)
-//	var queryStatus status.QueryStatus
-//	var result []models.RakutanInfo
-//
-//	switch method {
-//	case ID:
-//		queryStatus, result = module.FindByLectureID(env, mongoDB, value.(int))
-//	case Name:
-//		queryStatus, result = module.FindByLectureName(env, mongoDB, value.(string))
-//	case Omikuji:
-//		queryStatus, result = module.FindByOmikuji(env, mongoDB, value.(string))
-//	}
-//
-//	return queryStatus, result
-//}

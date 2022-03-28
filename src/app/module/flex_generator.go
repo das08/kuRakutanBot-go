@@ -82,7 +82,7 @@ func CreateSearchResult(searchText string, infos []models.RakutanInfo) []FlexMes
 			searchResult.Header.Contents[0].Text = toPtr(altText)
 			searchResult.Header.Contents[1].Text = toPtr(fmt.Sprintf("%d 件の候補が見つかりました。目的の講義を選択してください。", len(infos)))
 
-			// Set header text
+			// Set body text
 			searchResult.Body.Contents[1].Contents = getLectureList(infos, pageCount)
 			flexContainer := toFlexContainer(&searchResult)
 			messages = append(messages, FlexMessage{FlexContainer: flexContainer, AltText: altText})
@@ -90,7 +90,7 @@ func CreateSearchResult(searchText string, infos []models.RakutanInfo) []FlexMes
 			// Set header text
 			searchResultMore.Header.Contents[0].Text = toPtr(altText)
 
-			// Set header text
+			// Set body text
 			searchResultMore.Body.Contents[1].Contents = getLectureList(infos, pageCount)
 			flexContainer := toFlexContainer(&searchResultMore)
 			messages = append(messages, FlexMessage{FlexContainer: flexContainer, AltText: altText})
@@ -108,6 +108,8 @@ func getLectureList(infos []models.RakutanInfo, pageCount int) []richmenu.Purple
 	for i := offset; i < int(math.Min(float64(len(infos)), float64(MaxResultsPerPage+offset))); i++ {
 		tmp := lecture.DeepCopy()
 		tmp.Contents[1].Text = infos[i].LectureName
+		tmp.Contents[2].Action.Text = fmt.Sprintf("#%d", infos[i].ID)
+
 		abbr, ok := facultyAbbr[infos[i].FacultyName]
 		if ok {
 			tmp.Contents[0].Text = abbr

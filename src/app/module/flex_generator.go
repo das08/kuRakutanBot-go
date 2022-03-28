@@ -3,8 +3,10 @@ package module
 import (
 	"fmt"
 	models "github.com/das08/kuRakutanBot-go/models/rakutan"
+	"github.com/das08/kuRakutanBot-go/models/richmenu"
 	"github.com/line/line-bot-sdk-go/v7/linebot"
 	"log"
+	"math"
 	"strconv"
 )
 
@@ -38,6 +40,51 @@ func CreateRakutanDetail(info models.RakutanInfo) []FlexMessage {
 	altText := "「" + info.LectureName + "」のらくたん情報"
 
 	return []FlexMessage{{FlexContainer: flexContainer, AltText: altText}}
+}
+
+func CreateSearchResult(searchText string, infos []models.RakutanInfo) []FlexMessage {
+	var messages []FlexMessage
+	searchResult := LoadSearchResult()
+	searchResultMore := LoadSearchResultMore()
+
+	MaxResultsPerPage := 20
+	pageCount := 0
+	maxPageCount := len(infos)/20 + 1
+
+	for pageCount = 1; pageCount <= maxPageCount; pageCount++ {
+		switch pageCount {
+		case 1:
+			altText := fmt.Sprintf("「%s」の検索結果(%d/%d)", searchText, pageCount, maxPageCount)
+			searchResult.Header.Contents[0].Text = toPtr(altText)
+			searchResult.Header.Contents[1].Text = toPtr(fmt.Sprintf("%d 件の候補が見つかりました。目的の講義を選択してください。", len(infos)))
+			var lectureList []richmenu.PurpleContent
+			lecture := searchResult.Body.Contents[1].Contents[0]
+
+			for i := 0; i < int(math.Max(float64(maxPageCount), float64(MaxResultsPerPage))); i++ {
+				tmp := lecture.DeepCopy()
+				tmp.Contents[0].Text = infos[i].LectureName
+				lectureList = append(lectureList, tmp)
+			}
+
+			searchResult.Body.Contents[1].Contents = lectureList
+
+			flexContainer := toFlexContainer(&searchResult)
+			messages = append(messages, FlexMessage{FlexContainer: flexContainer, AltText: altText})
+		default:
+			searchResultMore.Header.Contents[0].Text = toPtr("")
+		}
+	}
+
+	return messages
+}
+
+func toFlexContainer(json richmenu.Marshal) linebot.FlexContainer {
+	flex, err := json.Marshal()
+	if err != nil {
+		log.Fatal(err)
+	}
+	flexContainer, _ := linebot.UnmarshalFlexMessageJSON(flex)
+	return flexContainer
 }
 
 func getRakutanPercent(accept int, total int) string {

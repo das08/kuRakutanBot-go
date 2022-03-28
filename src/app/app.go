@@ -53,6 +53,7 @@ func main() {
 					}
 
 				}
+
 			}
 		}
 	})
@@ -76,13 +77,15 @@ func searchRakutan(env *module.Environments, searchText string) (bool, []module.
 	if status.Success {
 		recordCount := len(result)
 		fmt.Println(recordCount)
-		if recordCount == 1 {
+		switch recordCount {
+		case 0:
+			break
+		case 1:
 			flexMessages = module.CreateRakutanDetail(result[0])
 			success = true
-		} else {
-			for i, v := range result {
-				fmt.Println(i, ": ", v.LectureName)
-			}
+		default:
+			flexMessages = module.CreateSearchResult(searchText, result)
+			success = true
 		}
 	}
 

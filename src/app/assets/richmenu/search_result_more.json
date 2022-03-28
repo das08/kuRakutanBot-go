@@ -13,11 +13,8 @@
         "wrap": true
       },
       {
-        "type": "separator"
-      },
-      {
-        "type": "spacer",
-        "size": "lg"
+        "type": "separator",
+        "margin": "xl"
       }
     ],
     "paddingAll": "20px",
@@ -52,6 +49,14 @@
             "type": "box",
             "layout": "horizontal",
             "contents": [
+              {
+                "type": "text",
+                "text": "般教",
+                "flex": 2,
+                "size": "sm",
+                "weight": "bold",
+                "color": "#666666"
+              },
               {
                 "type": "text",
                 "text": "[Lecture Name]",

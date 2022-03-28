@@ -48,12 +48,12 @@ type PurpleContent struct {
 type FluffyContent struct {
 	Type         string  `json:"type"`
 	Text         string  `json:"text"`
-	Size         string  `json:"size"`
-	Color        string  `json:"color"`
 	Flex         int64   `json:"flex"`
+	Size         string  `json:"size"`
+	Weight       *string `json:"weight,omitempty"`
+	Color        string  `json:"color"`
 	Wrap         *bool   `json:"wrap,omitempty"`
 	Align        *string `json:"align,omitempty"`
-	Weight       *string `json:"weight,omitempty"`
 	Decoration   *string `json:"decoration,omitempty"`
 	Margin       *string `json:"margin,omitempty"`
 	Action       *Action `json:"action,omitempty"`

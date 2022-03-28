@@ -15,7 +15,24 @@ type FlexMessage struct {
 	AltText       string
 }
 
+type RakutanJudge struct {
+	percentBound float32
+	rank         string
+	color        string
+}
+
 var MaxResultsPerPage = 25
+var judgeList = [9]RakutanJudge{
+	{percentBound: 90, rank: "SSS", color: "#c3c45b"},
+	{percentBound: 85, rank: "SS", color: "#c3c45b"},
+	{percentBound: 80, rank: "S", color: "#c3c45b"},
+	{percentBound: 75, rank: "A", color: "#cf2904"},
+	{percentBound: 70, rank: "B", color: "#098ae0"},
+	{percentBound: 60, rank: "C", color: "#f48a1c"},
+	{percentBound: 50, rank: "D", color: "#8a30c9"},
+	{percentBound: 0, rank: "F", color: "#837b8a"},
+	{percentBound: -1, rank: "---", color: "#837b8a"},
+}
 
 func CreateRakutanDetail(info models.RakutanInfo) []FlexMessage {
 	rakutanDetail := LoadRakutanDetail()
@@ -27,7 +44,7 @@ func CreateRakutanDetail(info models.RakutanInfo) []FlexMessage {
 
 	// 単位取得率
 	for i, v := range info.Detail {
-		rakutanDetail.Body.Contents[0].Contents[i+1].Contents[0].Text = toStr(v.Year) + "年度"
+		rakutanDetail.Body.Contents[0].Contents[i+1].Contents[0].Text = fmt.Sprintf("%d年度", v.Year)
 		rakutanDetail.Body.Contents[0].Contents[i+1].Contents[1].Text = getRakutanPercent(v.Accepted, v.Total)
 	}
 	rakutanJudge := getRakutanJudge(info.Detail)
@@ -39,7 +56,7 @@ func CreateRakutanDetail(info models.RakutanInfo) []FlexMessage {
 		log.Fatal(err)
 	}
 	flexContainer, _ := linebot.UnmarshalFlexMessageJSON(flex)
-	altText := "「" + info.LectureName + "」のらくたん情報"
+	altText := fmt.Sprintf("「%s」のらくたん情報", info.LectureName)
 
 	return []FlexMessage{{FlexContainer: flexContainer, AltText: altText}}
 }
@@ -85,7 +102,7 @@ func getLectureList(infos []models.RakutanInfo, pageCount int) []richmenu.Purple
 	offset := (pageCount - 1) * MaxResultsPerPage
 	for i := offset; i < int(math.Min(float64(len(infos)), float64(MaxResultsPerPage+offset))); i++ {
 		tmp := lecture.DeepCopy()
-		tmp.Contents[0].Text = infos[i].LectureName
+		tmp.Contents[1].Text = infos[i].LectureName
 		lectureList = append(lectureList, tmp)
 	}
 
@@ -108,24 +125,6 @@ func getRakutanPercent(accept int, total int) string {
 	} else {
 		return fmt.Sprintf("%.1f%% ", getPercentage(accept, total)) + breakdown
 	}
-}
-
-type RakutanJudge struct {
-	percentBound float32
-	rank         string
-	color        string
-}
-
-var judgeList = [9]RakutanJudge{
-	{percentBound: 90, rank: "SSS", color: "#c3c45b"},
-	{percentBound: 85, rank: "SS", color: "#c3c45b"},
-	{percentBound: 80, rank: "S", color: "#c3c45b"},
-	{percentBound: 75, rank: "A", color: "#cf2904"},
-	{percentBound: 70, rank: "B", color: "#098ae0"},
-	{percentBound: 60, rank: "C", color: "#f48a1c"},
-	{percentBound: 50, rank: "D", color: "#8a30c9"},
-	{percentBound: 0, rank: "F", color: "#837b8a"},
-	{percentBound: -1, rank: "---", color: "#837b8a"},
 }
 
 func getRakutanJudge(rds models.RakutanDetails) RakutanJudge {

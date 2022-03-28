@@ -99,6 +99,11 @@ func CreateSearchResult(searchText string, infos []models.RakutanInfo) []FlexMes
 	return messages
 }
 
+func CreateFlexMessage(flex []byte, altText string) []FlexMessage {
+	flexContainer, _ := linebot.UnmarshalFlexMessageJSON(flex)
+	return []FlexMessage{{FlexContainer: flexContainer, AltText: altText}}
+}
+
 func getLectureList(infos []models.RakutanInfo, pageCount int) []richmenu.PurpleContent {
 	searchResult := LoadSearchResult()
 	var lectureList []richmenu.PurpleContent

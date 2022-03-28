@@ -48,6 +48,12 @@ func main() {
 				case *linebot.TextMessage:
 					messageText := strings.TrimSpace(message.Text)
 
+					isCommand, function := module.IsCommand(messageText)
+					if isCommand {
+						function(lb)
+						break
+					}
+
 					success, flexMessages := searchRakutan(&env, messageText)
 					if success {
 						lb.SendFlexMessage(flexMessages)

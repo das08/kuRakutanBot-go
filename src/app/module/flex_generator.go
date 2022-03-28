@@ -56,21 +56,24 @@ func CreateSearchResult(searchText string, infos []models.RakutanInfo) []FlexMes
 		altText := fmt.Sprintf("「%s」の検索結果(%d/%d)", searchText, pageCount, maxPageCount)
 		switch {
 		case pageCount == 1:
+			// Set header text
 			searchResult.Header.Contents[0].Text = toPtr(altText)
 			searchResult.Header.Contents[1].Text = toPtr(fmt.Sprintf("%d 件の候補が見つかりました。目的の講義を選択してください。", len(infos)))
 
+			// Set header text
 			searchResult.Body.Contents[1].Contents = getLectureList(infos, pageCount)
 			flexContainer := toFlexContainer(&searchResult)
 			messages = append(messages, FlexMessage{FlexContainer: flexContainer, AltText: altText})
 		case pageCount >= 2:
+			// Set header text
 			searchResultMore.Header.Contents[0].Text = toPtr(altText)
 
+			// Set header text
 			searchResultMore.Body.Contents[1].Contents = getLectureList(infos, pageCount)
 			flexContainer := toFlexContainer(&searchResultMore)
 			messages = append(messages, FlexMessage{FlexContainer: flexContainer, AltText: altText})
 		}
 	}
-
 	return messages
 }
 
@@ -79,8 +82,8 @@ func getLectureList(infos []models.RakutanInfo, pageCount int) []richmenu.Purple
 	var lectureList []richmenu.PurpleContent
 	lecture := searchResult.Body.Contents[1].Contents[0]
 
-	for i := (pageCount - 1) * MaxResultsPerPage; i < int(math.Min(float64(len(infos)), float64(MaxResultsPerPage+(pageCount-1)*MaxResultsPerPage))); i++ {
-		fmt.Println(infos[i].LectureName)
+	offset := (pageCount - 1) * MaxResultsPerPage
+	for i := offset; i < int(math.Min(float64(len(infos)), float64(MaxResultsPerPage+offset))); i++ {
 		tmp := lecture.DeepCopy()
 		tmp.Contents[0].Text = infos[i].LectureName
 		lectureList = append(lectureList, tmp)

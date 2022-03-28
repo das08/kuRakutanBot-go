@@ -2,7 +2,9 @@ package module
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"math/rand"
 	"time"
 
 	rakutan "github.com/das08/kuRakutanBot-go/models/rakutan"
@@ -52,6 +54,7 @@ func FindByLectureID(e *Environments, m *MongoDB, lectureID int) (status.QuerySt
 	return findOne(e, m, "id", lectureID)
 }
 
+// TODO: Add error message to query status
 func FindByLectureName(e *Environments, m *MongoDB, lectureName string) (status.QueryStatus, []rakutan.RakutanInfo) {
 	var result []rakutan.RakutanInfo
 	collection := m.Client.Database(e.DB_NAME).Collection(e.DB_COLLECTION)
@@ -61,10 +64,36 @@ func FindByLectureName(e *Environments, m *MongoDB, lectureName string) (status.
 	queryStatus.Success = true
 
 	if err != nil {
+		fmt.Println(err)
 		queryStatus.Success = false
 	}
 	if err = filterCursor.All(m.Ctx, &result); err != nil {
 		queryStatus.Success = false
 	}
 	return queryStatus, result
+}
+
+func FindByOmikuji(e *Environments, m *MongoDB, omikujiType string) (status.QueryStatus, []rakutan.RakutanInfo) {
+	var result []rakutan.RakutanInfo
+	collection := m.Client.Database(e.DB_NAME).Collection(e.DB_COLLECTION)
+	var queryStatus status.QueryStatus
+
+	filter := bson.D{{"omikuji", omikujiType}}
+	filterCursor, err := collection.Find(m.Ctx, filter)
+	queryStatus.Success = true
+
+	if err != nil {
+		queryStatus.Success = false
+	}
+	if err = filterCursor.All(m.Ctx, &result); err != nil {
+		queryStatus.Success = false
+	}
+
+	randomIdx := randomIndex(len(result))
+	return queryStatus, []rakutan.RakutanInfo{result[randomIdx]}
+}
+
+func randomIndex(max int) int {
+	rand.Seed(time.Now().UnixNano())
+	return rand.Intn(max)
 }

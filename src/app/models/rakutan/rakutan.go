@@ -5,6 +5,7 @@ type RakutanInfo struct {
 	FacultyName string         `bson:"faculty_name"`
 	LectureName string         `bson:"lecture_name"`
 	Detail      RakutanDetails `bson:"detail"`
+	OmikujiType string         `bson:"omikuji,omitempty"`
 	URL         string         `bson:"url,omitempty"`
 }
 

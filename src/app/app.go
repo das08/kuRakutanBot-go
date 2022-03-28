@@ -87,11 +87,11 @@ func searchRakutan(env *module.Environments, searchText string) (bool, []module.
 	var result []models.RakutanInfo
 
 	if isLectureNumber {
-
 		queryStatus, result = module.FindByLectureID(env, mongoDB, lectureID)
 		fmt.Println("is lecture id", lectureID, queryStatus)
 	} else {
-		queryStatus, result = module.FindByLectureName(env, mongoDB, searchText)
+		//queryStatus, result = module.FindByLectureName(env, mongoDB, searchText)
+		queryStatus, result = module.FindByOmikuji(env, mongoDB, "rakutan")
 	}
 
 	if queryStatus.Success {

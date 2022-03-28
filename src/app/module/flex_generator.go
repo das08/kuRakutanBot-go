@@ -109,6 +109,9 @@ func getLectureList(infos []models.RakutanInfo, pageCount int) []richmenu.Purple
 		tmp := lecture.DeepCopy()
 		tmp.Contents[1].Text = infos[i].LectureName
 		tmp.Contents[2].Action.Text = fmt.Sprintf("#%d", infos[i].ID)
+		//tmp.Contents[2].Action.Text = toStr(infos[i].ID)
+		//fmt.Printf("%p, %#v", &tmp.Contents[2].Action.Text, tmp.Contents[2].Action.Text)
+		//fmt.Println(infos[i].ID, infos[i].LectureName)
 
 		abbr, ok := facultyAbbr[infos[i].FacultyName]
 		if ok {

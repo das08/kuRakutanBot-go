@@ -2,7 +2,9 @@
 
 package richmenu
 
-import "encoding/json"
+import (
+	"encoding/json"
+)
 
 func UnmarshalSearchResult(data []byte) (SearchResult, error) {
 	var r SearchResult
@@ -54,7 +56,7 @@ type FluffyContent struct {
 	Weight       *string `json:"weight,omitempty"`
 	Color        string  `json:"color"`
 	Align        *string `json:"align,omitempty"`
-	OffsetEnd    *string `json:"offsetEnd,omitempty"`
+	OffsetStart  *string `json:"offsetStart,omitempty"`
 	Wrap         *bool   `json:"wrap,omitempty"`
 	Decoration   *string `json:"decoration,omitempty"`
 	Margin       *string `json:"margin,omitempty"`
@@ -92,5 +94,12 @@ func (pc PurpleContent) DeepCopy() PurpleContent {
 	tmp := pc
 	tmp.Contents = make([]FluffyContent, len(pc.Contents))
 	copy(tmp.Contents, pc.Contents)
+
+	for i, v := range pc.Contents {
+		if v.Action != nil {
+			tmpAction := Action{Text: "#12345", Type: "message", Label: "action"}
+			tmp.Contents[i].Action = &tmpAction
+		}
+	}
 	return tmp
 }

@@ -53,7 +53,7 @@ func judgeDetailCmd(_ *Environments, lb *LINEBot) {
 func rakutanCmd(env *Environments, lb *LINEBot) {
 	queryStatus, result := GetRakutanInfo(env, Omikuji, "rakutan")
 	if queryStatus.Success {
-		flexMessages := CreateRakutanDetail(result[0])
+		flexMessages := CreateRakutanDetail(result[0], Rakutan)
 		lb.SendFlexMessage(flexMessages)
 	}
 }
@@ -61,7 +61,7 @@ func rakutanCmd(env *Environments, lb *LINEBot) {
 func onitanCmd(env *Environments, lb *LINEBot) {
 	queryStatus, result := GetRakutanInfo(env, Omikuji, "onitan")
 	if queryStatus.Success {
-		flexMessages := CreateRakutanDetail(result[0])
+		flexMessages := CreateRakutanDetail(result[0], Onitan)
 		lb.SendFlexMessage(flexMessages)
 	}
 }

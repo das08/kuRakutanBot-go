@@ -82,7 +82,7 @@ func searchRakutan(env *module.Environments, searchText string) (bool, []module.
 		case 0:
 			break
 		case 1:
-			flexMessages = module.CreateRakutanDetail(result[0])
+			flexMessages = module.CreateRakutanDetail(result[0], module.Normal)
 			success = true
 		default:
 			flexMessages = module.CreateSearchResult(searchText, result)

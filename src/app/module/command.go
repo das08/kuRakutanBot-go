@@ -3,19 +3,20 @@ package module
 import "strings"
 
 type Command struct {
-	Keyword  string
-	Function func(lb *LINEBot)
+	Keyword      string
+	DBFunction   func()
+	SendFunction func(lb *LINEBot)
 }
 
 var Commands = [...]Command{
-	{Keyword: "help", Function: helpCmd},
-	{Keyword: "へるぷ", Function: helpCmd},
-	{Keyword: "ヘルプ", Function: helpCmd},
-	{Keyword: "はんてい", Function: judgeDetailCmd},
-	{Keyword: "判定", Function: judgeDetailCmd},
-	{Keyword: "詳細", Function: judgeDetailCmd},
-	{Keyword: "判定詳細", Function: judgeDetailCmd},
-	{Keyword: "楽単詳細", Function: judgeDetailCmd},
+	{Keyword: "help", SendFunction: helpCmd},
+	{Keyword: "へるぷ", SendFunction: helpCmd},
+	{Keyword: "ヘルプ", SendFunction: helpCmd},
+	{Keyword: "はんてい", SendFunction: judgeDetailCmd},
+	{Keyword: "判定", SendFunction: judgeDetailCmd},
+	{Keyword: "詳細", SendFunction: judgeDetailCmd},
+	{Keyword: "判定詳細", SendFunction: judgeDetailCmd},
+	{Keyword: "楽単詳細", SendFunction: judgeDetailCmd},
 }
 
 func IsCommand(messageText string) (bool, func(lb *LINEBot)) {
@@ -25,7 +26,7 @@ func IsCommand(messageText string) (bool, func(lb *LINEBot)) {
 		// Case-insensitive
 		if strings.EqualFold(cmd.Keyword, messageText) {
 			isCommand = true
-			function = cmd.Function
+			function = cmd.SendFunction
 		}
 	}
 	return isCommand, function
@@ -44,3 +45,7 @@ func judgeDetailCmd(lb *LINEBot) {
 	flexMessages := CreateFlexMessage(judgeDetailJson, "らくたん判定の詳細")
 	lb.SendFlexMessage(flexMessages)
 }
+
+//func omikujiCmd(lb *LINEBot) {
+//	queryStatus, result := FindByOmikuji(env, mongoDB, "rakutan")
+//}

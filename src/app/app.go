@@ -74,12 +74,20 @@ func main() {
 	}
 }
 
+type FindByMethod int
+
+const (
+	Name FindByMethod = iota
+	ID
+	Omikuji
+)
+
 func searchRakutan(env *module.Environments, searchText string) (bool, []module.FlexMessage) {
 	success := false
 	var flexMessages []module.FlexMessage
-	mongoDB := module.CreateDBClient(env)
-	defer mongoDB.Cancel()
-	defer mongoDB.Client.Disconnect(mongoDB.Ctx)
+	//mongoDB := module.CreateDBClient(env)
+	//defer mongoDB.Cancel()
+	//defer mongoDB.Client.Disconnect(mongoDB.Ctx)
 
 	isLectureNumber, lectureID := module.IsLectureID(searchText)
 
@@ -87,16 +95,15 @@ func searchRakutan(env *module.Environments, searchText string) (bool, []module.
 	var result []models.RakutanInfo
 
 	if isLectureNumber {
-		queryStatus, result = module.FindByLectureID(env, mongoDB, lectureID)
-		fmt.Println("is lecture id", lectureID, queryStatus)
+		//queryStatus, result = module.FindByLectureID(env, mongoDB, lectureID)
+		queryStatus, result = getRakutanInfo(env, ID, lectureID)
 	} else {
 		//queryStatus, result = module.FindByLectureName(env, mongoDB, searchText)
-		queryStatus, result = module.FindByOmikuji(env, mongoDB, "rakutan")
+		queryStatus, result = getRakutanInfo(env, Name, searchText)
 	}
 
 	if queryStatus.Success {
 		recordCount := len(result)
-		fmt.Println(recordCount)
 		switch recordCount {
 		case 0:
 			break
@@ -110,4 +117,23 @@ func searchRakutan(env *module.Environments, searchText string) (bool, []module.
 	}
 
 	return success, flexMessages
+}
+
+func getRakutanInfo(env *module.Environments, method FindByMethod, value interface{}) (status.QueryStatus, []models.RakutanInfo) {
+	mongoDB := module.CreateDBClient(env)
+	defer mongoDB.Cancel()
+	defer mongoDB.Client.Disconnect(mongoDB.Ctx)
+	var queryStatus status.QueryStatus
+	var result []models.RakutanInfo
+
+	switch method {
+	case ID:
+		queryStatus, result = module.FindByLectureID(env, mongoDB, value.(int))
+	case Name:
+		queryStatus, result = module.FindByLectureName(env, mongoDB, value.(string))
+	case Omikuji:
+		queryStatus, result = module.FindByOmikuji(env, mongoDB, value.(string))
+	}
+
+	return queryStatus, result
 }

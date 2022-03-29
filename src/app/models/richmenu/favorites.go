@@ -75,3 +75,18 @@ type FavoritesHeaderContent struct {
 	Wrap   *bool   `json:"wrap,omitempty"`
 	Align  *string `json:"align,omitempty"`
 }
+
+func (fbc FavoritesBodyContents) DeepCopy() FavoritesBodyContents {
+	tmp := fbc
+	tmp.Contents = make([]FavoritesContent, len(fbc.Contents))
+	copy(tmp.Contents, fbc.Contents)
+
+	for i, v := range fbc.Contents {
+		if v.Action != nil {
+			s := "#12345"
+			tmpAction := TextandPBAction{Text: &s, Type: "message", Label: "action"}
+			tmp.Contents[i].Action = &tmpAction
+		}
+	}
+	return tmp
+}

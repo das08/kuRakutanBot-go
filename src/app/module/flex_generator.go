@@ -133,18 +133,10 @@ func CreateFavorites(favs []models.Favorite) []FlexMessage {
 
 	for pageCount = 1; pageCount <= maxPageCount; pageCount++ {
 		altText := fmt.Sprintf("「%s」の検索結果(%d/%d)", "searchText", pageCount, maxPageCount)
-		switch {
-		case pageCount == 1:
-			// Set body text
-			//searchResult.Body.Contents[1].Contents = getLectureList(infos, pageCount)
-			flexContainer := toFlexContainer(&favorites)
-			messages = append(messages, FlexMessage{FlexContainer: flexContainer, AltText: altText})
-		case pageCount >= 2:
-			// Set body text
-			//searchResultMore.Body.Contents[1].Contents = getLectureList(infos, pageCount)
-			flexContainer := toFlexContainer(&favorites)
-			messages = append(messages, FlexMessage{FlexContainer: flexContainer, AltText: altText})
-		}
+		// Set body text
+		favorites.Body.Contents[0].Contents = getFavoriteList(favs, pageCount)
+		flexContainer := toFlexContainer(&favorites)
+		messages = append(messages, FlexMessage{FlexContainer: flexContainer, AltText: altText})
 	}
 	return messages
 }
@@ -174,6 +166,23 @@ func getLectureList(infos []models.RakutanInfo, pageCount int) []richmenu.Purple
 	}
 
 	return lectureList
+}
+
+func getFavoriteList(favs []models.Favorite, pageCount int) []richmenu.FavoritesBodyContents {
+	favorites := LoadFavorites()
+	var favoriteList []richmenu.FavoritesBodyContents
+	favorite := favorites.Body.Contents[0].Contents[0]
+
+	offset := (pageCount - 1) * MaxResultsPerPage
+	for i := offset; i < int(math.Min(float64(len(favs)), float64(MaxResultsPerPage+offset))); i++ {
+		tmp := favorite.DeepCopy()
+		tmp.Contents[0].Text = favs[i].LectureName
+		tmp.Contents[1].Action.Text = toPtr(fmt.Sprintf("#%d", favs[i].ID))
+
+		favoriteList = append(favoriteList, tmp)
+	}
+
+	return favoriteList
 }
 
 func toFlexContainer(json richmenu.Marshal) linebot.FlexContainer {

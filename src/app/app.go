@@ -32,7 +32,9 @@ func main() {
 		for _, event := range events {
 			switch event.Type {
 			case linebot.EventTypeMessage:
+				uid := event.Source.UserID
 				lb.SetReplyToken(event.ReplyToken)
+				lb.SetSenderUid(uid)
 				switch message := event.Message.(type) {
 				case *linebot.TextMessage:
 					messageText := strings.TrimSpace(message.Text)

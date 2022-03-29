@@ -56,12 +56,26 @@ func findOne(e *Environments, m *MongoDB, col Collection, kvs []KV) *mongo.Singl
 func insertOne(e *Environments, m *MongoDB, col Collection, kvs []KV) QueryStatus {
 	var queryStatus QueryStatus
 	collection := m.Client.Database(e.DB_NAME).Collection(col)
-	entry := generateBsonD(kvs)
-	_, err := collection.InsertOne(m.Ctx, entry)
+	filter := generateBsonD(kvs)
+	_, err := collection.InsertOne(m.Ctx, filter)
 	queryStatus.Success = true
 
 	if err != nil {
-		queryStatus = QueryStatus{false, "DB接続でエラーが起きました。"}
+		queryStatus = QueryStatus{false, "[i]DB接続でエラーが起きました。"}
+		fmt.Println(err)
+	}
+	return queryStatus
+}
+
+func deleteOne(e *Environments, m *MongoDB, col Collection, kvs []KV) QueryStatus {
+	var queryStatus QueryStatus
+	collection := m.Client.Database(e.DB_NAME).Collection(col)
+	filter := generateBsonD(kvs)
+	_, err := collection.DeleteOne(m.Ctx, filter)
+	queryStatus.Success = true
+
+	if err != nil {
+		queryStatus = QueryStatus{false, "[d]DB接続でエラーが起きました。"}
 		fmt.Println(err)
 	}
 	return queryStatus
@@ -74,7 +88,7 @@ func FindByLectureID(e *Environments, m *MongoDB, lectureID int) (QueryStatus, [
 
 	err := singleResult.Decode(&result)
 	if err != nil {
-		queryStatus = QueryStatus{false, "DB接続でエラーが起きました。"}
+		queryStatus = QueryStatus{false, "[f]DB接続でエラーが起きました。"}
 		fmt.Println(err)
 	} else {
 		queryStatus.Success = true
@@ -153,7 +167,7 @@ func GetRakutanInfo(env *Environments, method FindByMethod, value interface{}) (
 	return queryStatus, result
 }
 
-func InsertFavorite(env *Environments, col Collection, pbe PostbackEntry) QueryStatus {
+func InsertFavorite(env *Environments, pbe PostbackEntry) QueryStatus {
 	mongoDB := CreateDBClient(env)
 	defer mongoDB.Cancel()
 	defer func() {
@@ -163,7 +177,7 @@ func InsertFavorite(env *Environments, col Collection, pbe PostbackEntry) QueryS
 		}
 	}()
 	kvs := []KV{{"uid", pbe.Uid}, {"id", pbe.Param.ID}}
-	singleResult := findOne(env, mongoDB, col, kvs)
+	singleResult := findOne(env, mongoDB, env.DB_COLLECTION.Favorites, kvs)
 
 	var findStatus QueryStatus
 	err := singleResult.Decode(&rakutan.Favorite{})
@@ -172,9 +186,13 @@ func InsertFavorite(env *Environments, col Collection, pbe PostbackEntry) QueryS
 		// documentがなければお気に入り登録できる
 		findStatus.Success = true
 	case err != nil:
-		findStatus = QueryStatus{false, "DB接続でエラーが起きました。"}
+		findStatus = QueryStatus{false, "[f]DB接続でエラーが起きました。"}
 	default:
-		findStatus = QueryStatus{false, fmt.Sprintf("「%s」はすでにお気に入り登録されています。", pbe.Param.LectureName)}
+		deleteStatus := deleteOne(env, mongoDB, env.DB_COLLECTION.Favorites, kvs)
+		findStatus = QueryStatus{false, deleteStatus.Message}
+		if deleteStatus.Success {
+			findStatus.Message = fmt.Sprintf("「%s」をお気に入りから削除しました！", pbe.Param.LectureName)
+		}
 	}
 
 	switch {
@@ -182,7 +200,7 @@ func InsertFavorite(env *Environments, col Collection, pbe PostbackEntry) QueryS
 		return QueryStatus{false, findStatus.Message}
 	default:
 		kvs = append(kvs, KV{"lecture_name", pbe.Param.LectureName})
-		queryStatus := insertOne(env, mongoDB, col, kvs)
+		queryStatus := insertOne(env, mongoDB, env.DB_COLLECTION.Favorites, kvs)
 		if queryStatus.Success {
 			queryStatus.Message = fmt.Sprintf("「%s」をお気に入り登録しました！", pbe.Param.LectureName)
 		}

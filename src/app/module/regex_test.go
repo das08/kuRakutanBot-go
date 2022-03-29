@@ -36,3 +36,36 @@ func TestIsLectureID(t *testing.T) {
 		assert.Equal(t, p.expect.id, id)
 	}
 }
+
+func TestParsePBParam(t *testing.T) {
+	type expectOutputs struct {
+		success bool
+		params  PostbackParam
+	}
+	patterns := []struct {
+		expect expectOutputs // expectation
+		given  string        // given input
+	}{
+		{expectOutputs{false, PostbackParam{}}, "type=fav&id=12345"},
+		{expectOutputs{false, PostbackParam{}}, "type=fav&lecname=sample&id=12345"},
+		{expectOutputs{false, PostbackParam{}}, "id=12345&type=fav&lecname=sample"},
+		{expectOutputs{false, PostbackParam{}}, "types=fav&id=12345&lecname=sample"},
+		{expectOutputs{false, PostbackParam{}}, "type=fav&ids=12345&lecname=sample"},
+		{expectOutputs{false, PostbackParam{}}, "type=fav&id=12345&lecnames=sample"},
+		{expectOutputs{false, PostbackParam{}}, "TYPE=fav&id=12345&lecname=sample"},
+		{expectOutputs{false, PostbackParam{}}, "type=fav&ID=12345&lecname=sample"},
+		{expectOutputs{false, PostbackParam{}}, "type=fav&id=12345&LECNAME=sample"},
+		{expectOutputs{false, PostbackParam{}}, ""},
+		{expectOutputs{false, PostbackParam{}}, "=&=&="},
+		{expectOutputs{true, PostbackParam{"fav", 12345, "sample"}}, "type=fav&id=12345&lecname=sample"},
+		{expectOutputs{true, PostbackParam{"fav", 99999, "日本語"}}, "type=fav&id=99999&lecname=日本語"},
+	}
+
+	for _, p := range patterns {
+		success, params := ParsePBParam(p.given)
+		assert.Equal(t, p.expect.success, success)
+		assert.Equal(t, p.expect.params.Type, params.Type)
+		assert.Equal(t, p.expect.params.ID, params.ID)
+		assert.Equal(t, p.expect.params.LectureName, params.LectureName)
+	}
+}

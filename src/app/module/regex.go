@@ -22,10 +22,16 @@ func IsLectureID(messageText string) (bool, int) {
 }
 
 func ParsePBParam(messageText string) (bool, PostbackParam) {
+	expectedKey := [3]string{"type", "id", "lecname"}
 	assigned := regexp.MustCompile("([^=&]+)=([^&]*)")
 	matches := assigned.FindAllStringSubmatch(messageText, -1)
 	params := PostbackParam{}
 	if len(matches) == 3 {
+		for i, p := range matches {
+			if p[1] != expectedKey[i] {
+				return false, params
+			}
+		}
 		id, _ := strconv.Atoi(matches[1][2])
 		params = PostbackParam{Type: matches[0][2], ID: id, LectureName: matches[2][2]}
 		return true, params

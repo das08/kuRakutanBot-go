@@ -1,0 +1,60 @@
+{
+  "type": "bubble",
+  "hero": {
+    "type": "image",
+    "url": "https://das82.com/images/help_header.png",
+    "size": "full",
+    "aspectRatio": "3:1",
+    "aspectMode": "cover",
+    "action": {
+      "type": "uri",
+      "uri": "https://forms.gle/89BMfCYuDUqCXsfo7"
+    }
+  },
+  "body": {
+    "type": "box",
+    "layout": "vertical",
+    "contents": [
+      {
+        "type": "box",
+        "layout": "vertical",
+        "margin": "lg",
+        "spacing": "sm",
+        "contents": [
+          {
+            "type": "text",
+            "text": "京大楽単botに関する要望・お問い合わせは以下のボタンからお願いします。",
+            "wrap": true
+          }
+        ]
+      }
+    ]
+  },
+  "footer": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "sm",
+    "contents": [
+      {
+        "type": "button",
+        "style": "link",
+        "height": "sm",
+        "action": {
+          "type": "uri",
+          "label": "お問い合わせフォーム",
+          "uri": "https://forms.gle/89BMfCYuDUqCXsfo7"
+        }
+      }
+    ],
+    "flex": 0
+  },
+  "styles": {
+    "body": {
+      "backgroundColor": "#F4F3F9"
+    },
+    "footer": {
+      "separator": true,
+      "backgroundColor": "#F4F3F9"
+    }
+  }
+}

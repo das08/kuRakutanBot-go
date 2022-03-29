@@ -2,7 +2,9 @@ package module
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"math/rand"
 	"time"
 
 	rakutan "github.com/das08/kuRakutanBot-go/models/rakutan"
@@ -52,6 +54,7 @@ func FindByLectureID(e *Environments, m *MongoDB, lectureID int) (status.QuerySt
 	return findOne(e, m, "id", lectureID)
 }
 
+// TODO: Add error message to query status
 func FindByLectureName(e *Environments, m *MongoDB, lectureName string) (status.QueryStatus, []rakutan.RakutanInfo) {
 	var result []rakutan.RakutanInfo
 	collection := m.Client.Database(e.DB_NAME).Collection(e.DB_COLLECTION)
@@ -61,10 +64,63 @@ func FindByLectureName(e *Environments, m *MongoDB, lectureName string) (status.
 	queryStatus.Success = true
 
 	if err != nil {
+		fmt.Println(err)
 		queryStatus.Success = false
 	}
 	if err = filterCursor.All(m.Ctx, &result); err != nil {
 		queryStatus.Success = false
 	}
 	return queryStatus, result
+}
+
+func FindByOmikuji(e *Environments, m *MongoDB, omikujiType string) (status.QueryStatus, []rakutan.RakutanInfo) {
+	var result []rakutan.RakutanInfo
+	collection := m.Client.Database(e.DB_NAME).Collection(e.DB_COLLECTION)
+	var queryStatus status.QueryStatus
+
+	filter := bson.D{{"omikuji", omikujiType}}
+	filterCursor, err := collection.Find(m.Ctx, filter)
+	queryStatus.Success = true
+
+	if err != nil {
+		queryStatus.Success = false
+	}
+	if err = filterCursor.All(m.Ctx, &result); err != nil {
+		queryStatus.Success = false
+	}
+
+	randomIdx := randomIndex(len(result))
+	return queryStatus, []rakutan.RakutanInfo{result[randomIdx]}
+}
+
+type FindByMethod int
+
+const (
+	Name FindByMethod = iota
+	ID
+	Omikuji
+)
+
+func GetRakutanInfo(env *Environments, method FindByMethod, value interface{}) (status.QueryStatus, []rakutan.RakutanInfo) {
+	mongoDB := CreateDBClient(env)
+	defer mongoDB.Cancel()
+	defer mongoDB.Client.Disconnect(mongoDB.Ctx)
+	var queryStatus status.QueryStatus
+	var result []rakutan.RakutanInfo
+
+	switch method {
+	case ID:
+		queryStatus, result = FindByLectureID(env, mongoDB, value.(int))
+	case Name:
+		queryStatus, result = FindByLectureName(env, mongoDB, value.(string))
+	case Omikuji:
+		queryStatus, result = FindByOmikuji(env, mongoDB, value.(string))
+	}
+
+	return queryStatus, result
+}
+
+func randomIndex(max int) int {
+	rand.Seed(time.Now().UnixNano())
+	return rand.Intn(max)
 }

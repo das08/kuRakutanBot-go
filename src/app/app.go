@@ -14,17 +14,6 @@ import (
 func main() {
 	env := module.LoadEnv(true)
 	lb := module.CreateLINEBotClient(&env)
-	//r := module.LoadRakutanDetail()
-	//rr, _ := r.Marshal()
-	// s, _ := r.Marshal()
-	// fmt.Println(fmt.Sprintf("%s", s))
-	// module.CreateDBClient(&env)
-
-	//_, result := module.FindByLectureID(&env, mongo, 12156)
-	//fmt.Printf("status: %v, result: %#v", status, result)
-
-	//status, result := module.FindByLectureName(&env, mongo, "中国語")
-	//fmt.Printf("status: %v, result: %#v", status, result)
 
 	router := gin.Default()
 	router.GET("/hello", func(c *gin.Context) {
@@ -47,6 +36,12 @@ func main() {
 				switch message := event.Message.(type) {
 				case *linebot.TextMessage:
 					messageText := strings.TrimSpace(message.Text)
+
+					isCommand, function := module.IsCommand(messageText)
+					if isCommand {
+						function(&env, lb)
+						break
+					}
 
 					success, flexMessages := searchRakutan(&env, messageText)
 					if success {
@@ -71,37 +66,28 @@ func main() {
 func searchRakutan(env *module.Environments, searchText string) (bool, []module.FlexMessage) {
 	success := false
 	var flexMessages []module.FlexMessage
-	mongoDB := module.CreateDBClient(env)
-	defer mongoDB.Cancel()
-	defer mongoDB.Client.Disconnect(mongoDB.Ctx)
-
-	isLectureNumber, lectureID := module.IsLectureID(searchText)
-
 	var queryStatus status.QueryStatus
 	var result []models.RakutanInfo
 
+	isLectureNumber, lectureID := module.IsLectureID(searchText)
 	if isLectureNumber {
-
-		queryStatus, result = module.FindByLectureID(env, mongoDB, lectureID)
-		fmt.Println("is lecture id", lectureID, queryStatus)
+		queryStatus, result = module.GetRakutanInfo(env, module.ID, lectureID)
 	} else {
-		queryStatus, result = module.FindByLectureName(env, mongoDB, searchText)
+		queryStatus, result = module.GetRakutanInfo(env, module.Name, searchText)
 	}
 
 	if queryStatus.Success {
 		recordCount := len(result)
-		fmt.Println(recordCount)
 		switch recordCount {
 		case 0:
 			break
 		case 1:
-			flexMessages = module.CreateRakutanDetail(result[0])
+			flexMessages = module.CreateRakutanDetail(result[0], module.Normal)
 			success = true
 		default:
 			flexMessages = module.CreateSearchResult(searchText, result)
 			success = true
 		}
 	}
-
 	return success, flexMessages
 }

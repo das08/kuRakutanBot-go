@@ -21,6 +21,19 @@ type RakutanJudge struct {
 	color        string
 }
 
+type OmikujiType int
+
+const (
+	Normal OmikujiType = iota
+	Rakutan
+	Onitan
+)
+
+type OmikujiText struct {
+	Text  string
+	Color string
+}
+
 var MaxResultsPerPage = 25
 var judgeList = [9]RakutanJudge{
 	{percentBound: 90, rank: "SSS", color: "#c3c45b"},
@@ -39,13 +52,23 @@ var facultyAbbr = map[string]string{
 	"薬学部": "薬", "工学部": "工", "農学部": "農", "総合人間学部": "総人", "国際高等教育院": "般教",
 }
 
-func CreateRakutanDetail(info models.RakutanInfo) []FlexMessage {
+var omikujiType = map[OmikujiType]OmikujiText{
+	Rakutan: {Text: "楽単おみくじ結果", Color: "#ff7e41"},
+	Onitan:  {Text: "鬼単おみくじ結果", Color: "#6d7bff"},
+}
+
+func CreateRakutanDetail(info models.RakutanInfo, o OmikujiType) []FlexMessage {
 	rakutanDetail := LoadRakutanDetail()
 	rakutanDetail.Header.Contents[0].Contents[1].Text = toPtr("Search ID:#" + toStr(info.ID))
 	rakutanDetail.Header.Contents[1].Text = &info.LectureName             // Lecture name
 	rakutanDetail.Header.Contents[3].Contents[1].Text = &info.FacultyName // Faculty name
 	rakutanDetail.Header.Contents[4].Contents[1].Text = toPtr("---")      // Group
 	rakutanDetail.Header.Contents[4].Contents[3].Text = toPtr("---")      // Credits
+
+	if o != Normal {
+		rakutanDetail.Header.Contents[0].Contents[1].Text = toPtr(omikujiType[o].Text)
+		rakutanDetail.Header.Contents[0].Contents[1].Color = toPtr(omikujiType[o].Color)
+	}
 
 	// 単位取得率
 	for i, v := range info.Detail {
@@ -97,6 +120,11 @@ func CreateSearchResult(searchText string, infos []models.RakutanInfo) []FlexMes
 		}
 	}
 	return messages
+}
+
+func CreateFlexMessage(flex []byte, altText string) []FlexMessage {
+	flexContainer, _ := linebot.UnmarshalFlexMessageJSON(flex)
+	return []FlexMessage{{FlexContainer: flexContainer, AltText: altText}}
 }
 
 func getLectureList(infos []models.RakutanInfo, pageCount int) []richmenu.PurpleContent {

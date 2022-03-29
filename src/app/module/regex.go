@@ -11,6 +11,11 @@ type PostbackParam struct {
 	LectureName string
 }
 
+type PostbackEntry struct {
+	Uid   string
+	Param PostbackParam
+}
+
 func IsLectureID(messageText string) (bool, int) {
 	assigned := regexp.MustCompile("^#([1-9][0-9]{4})$")
 	group := assigned.FindSubmatch([]byte(messageText))

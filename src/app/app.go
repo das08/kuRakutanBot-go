@@ -52,10 +52,13 @@ func main() {
 				}
 			case linebot.EventTypePostback:
 				lb.SetReplyToken(event.ReplyToken)
+				uid := event.Source.UserID
 				data := event.Postback.Data
 				success, params := module.ParsePBParam(data)
 				if success {
 					fmt.Println("Params: ", params)
+					insertStatus := module.InsertFavorite(&env, env.DB_COLLECTION.Favorites, module.PostbackEntry{Uid: uid, Param: params})
+					fmt.Println("insert: ", insertStatus)
 				}
 			}
 		}

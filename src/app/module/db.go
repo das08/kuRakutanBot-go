@@ -41,18 +41,21 @@ func CreateDBClient(e *Environments) *MongoDB {
 	if err != nil {
 		log.Fatal(err)
 	}
+	fmt.Println("connection created")
 
 	return &MongoDB{Client: client, Ctx: ctx, Cancel: cancel}
 }
 
-func findOne(e *Environments, m *MongoDB, col Collection, kv KV) (QueryStatus, []rakutan.RakutanInfo) {
+func findOne(e *Environments, m *MongoDB, col Collection, kvs []KV) (QueryStatus, []rakutan.RakutanInfo) {
 	result := rakutan.RakutanInfo{}
 	collection := m.Client.Database(e.DB_NAME).Collection(col)
 	var queryStatus QueryStatus
 
-	err := collection.FindOne(m.Ctx, bson.D{{kv.Key, kv.Value}}).Decode(&result)
+	entry := generateBsonD(kvs)
+	err := collection.FindOne(m.Ctx, entry).Decode(&result)
 	if err != nil {
-		queryStatus.Success = false
+		queryStatus = QueryStatus{false, "DB接続でエラーが起きました。"}
+		fmt.Println(err)
 	} else {
 		queryStatus.Success = true
 	}
@@ -62,21 +65,19 @@ func findOne(e *Environments, m *MongoDB, col Collection, kv KV) (QueryStatus, [
 func insertOne(e *Environments, m *MongoDB, col Collection, kvs []KV) QueryStatus {
 	var queryStatus QueryStatus
 	collection := m.Client.Database(e.DB_NAME).Collection(col)
-	entry := bson.D{}
-	for _, kv := range kvs {
-		entry = append(entry, bson.E{Key: kv.Key, Value: kv.Value})
-	}
+	entry := generateBsonD(kvs)
 	_, err := collection.InsertOne(m.Ctx, entry)
 	queryStatus.Success = true
 
 	if err != nil {
-		queryStatus.Success = false
+		queryStatus = QueryStatus{false, "DB接続でエラーが起きました。"}
+		fmt.Println(err)
 	}
 	return queryStatus
 }
 
 func FindByLectureID(e *Environments, m *MongoDB, lectureID int) (QueryStatus, []rakutan.RakutanInfo) {
-	return findOne(e, m, e.DB_COLLECTION.Rakutan, KV{Key: "id", Value: lectureID})
+	return findOne(e, m, e.DB_COLLECTION.Rakutan, []KV{{Key: "id", Value: lectureID}})
 }
 
 // TODO: Add error message to query status
@@ -148,6 +149,38 @@ func GetRakutanInfo(env *Environments, method FindByMethod, value interface{}) (
 	}
 
 	return queryStatus, result
+}
+
+func InsertFavorite(env *Environments, col Collection, pbe PostbackEntry) QueryStatus {
+	mongoDB := CreateDBClient(env)
+	defer mongoDB.Cancel()
+	defer func() {
+		fmt.Println("connection closed")
+		if err := mongoDB.Client.Disconnect(mongoDB.Ctx); err != nil {
+			panic(err)
+		}
+	}()
+	kvs := []KV{{"uid", pbe.Uid}, {"id", pbe.Param.ID}}
+	findStatus, result := findOne(env, mongoDB, col, kvs)
+
+	switch {
+	case !findStatus.Success:
+		return QueryStatus{false, findStatus.Message}
+	case len(result) != 0:
+		return QueryStatus{false, "すでにお気に入り登録されています。"}
+	default:
+		kvs = append(kvs, KV{"lecture_name", pbe.Param.LectureName})
+		queryStatus := insertOne(env, mongoDB, col, kvs)
+		return queryStatus
+	}
+}
+
+func generateBsonD(kvs []KV) bson.D {
+	entry := bson.D{}
+	for _, kv := range kvs {
+		entry = append(entry, bson.E{Key: kv.Key, Value: kv.Value})
+	}
+	return entry
 }
 
 func randomIndex(max int) int {

@@ -46,20 +46,19 @@ func CreateDBClient(e *Environments) *MongoDB {
 	return &MongoDB{Client: client, Ctx: ctx, Cancel: cancel}
 }
 
-func findOne(e *Environments, m *MongoDB, col Collection, kvs []KV) (QueryStatus, []rakutan.RakutanInfo) {
-	result := rakutan.RakutanInfo{}
+func findOne(e *Environments, m *MongoDB, col Collection, kvs []KV) *mongo.SingleResult {
+	//result := rakutan.RakutanInfo{}
 	collection := m.Client.Database(e.DB_NAME).Collection(col)
-	var queryStatus QueryStatus
 
 	entry := generateBsonD(kvs)
-	err := collection.FindOne(m.Ctx, entry).Decode(&result)
-	if err != nil {
-		queryStatus = QueryStatus{false, "DB接続でエラーが起きました。"}
-		fmt.Println(err)
-	} else {
-		queryStatus.Success = true
-	}
-	return queryStatus, []rakutan.RakutanInfo{result}
+	singleResult := collection.FindOne(m.Ctx, entry) //.Decode(&result)
+	//if err != nil {
+	//	queryStatus = QueryStatus{false, "DB接続でエラーが起きました。"}
+	//	fmt.Println(err)
+	//} else {
+	//	queryStatus.Success = true
+	//}
+	return singleResult
 }
 
 func insertOne(e *Environments, m *MongoDB, col Collection, kvs []KV) QueryStatus {
@@ -77,7 +76,18 @@ func insertOne(e *Environments, m *MongoDB, col Collection, kvs []KV) QueryStatu
 }
 
 func FindByLectureID(e *Environments, m *MongoDB, lectureID int) (QueryStatus, []rakutan.RakutanInfo) {
-	return findOne(e, m, e.DB_COLLECTION.Rakutan, []KV{{Key: "id", Value: lectureID}})
+	var queryStatus QueryStatus
+	result := rakutan.RakutanInfo{}
+	singleResult := findOne(e, m, e.DB_COLLECTION.Rakutan, []KV{{Key: "id", Value: lectureID}})
+
+	err := singleResult.Decode(&result)
+	if err != nil {
+		queryStatus = QueryStatus{false, "DB接続でエラーが起きました。"}
+		fmt.Println(err)
+	} else {
+		queryStatus.Success = true
+	}
+	return queryStatus, []rakutan.RakutanInfo{result}
 }
 
 // TODO: Add error message to query status
@@ -161,13 +171,23 @@ func InsertFavorite(env *Environments, col Collection, pbe PostbackEntry) QueryS
 		}
 	}()
 	kvs := []KV{{"uid", pbe.Uid}, {"id", pbe.Param.ID}}
-	findStatus, result := findOne(env, mongoDB, col, kvs)
+	singleResult := findOne(env, mongoDB, col, kvs)
+
+	var findStatus QueryStatus
+	err := singleResult.Decode(&rakutan.Favorite{})
+	switch {
+	case err != nil && err == mongo.ErrNoDocuments:
+		// documentがなければお気に入り登録できる
+		findStatus.Success = true
+	case err != nil:
+		findStatus = QueryStatus{false, "DB接続でエラーが起きました。"}
+	default:
+		findStatus = QueryStatus{false, "すでにお気に入り登録されています。"}
+	}
 
 	switch {
 	case !findStatus.Success:
 		return QueryStatus{false, findStatus.Message}
-	case len(result) != 0:
-		return QueryStatus{false, "すでにお気に入り登録されています。"}
 	default:
 		kvs = append(kvs, KV{"lecture_name", pbe.Param.LectureName})
 		queryStatus := insertOne(env, mongoDB, col, kvs)

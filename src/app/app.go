@@ -57,7 +57,7 @@ func main() {
 				success, params := module.ParsePBParam(data)
 				if success {
 					fmt.Println("Params: ", params)
-					insertStatus := module.InsertFavorite(&env, env.DB_COLLECTION.Favorites, module.PostbackEntry{Uid: uid, Param: params})
+					insertStatus := module.InsertFavorite(&env, module.PostbackEntry{Uid: uid, Param: params})
 					lb.SendTextMessage(insertStatus.Message)
 				}
 			}

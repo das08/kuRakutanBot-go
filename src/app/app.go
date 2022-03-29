@@ -2,8 +2,7 @@ package main
 
 import (
 	"fmt"
-	models "github.com/das08/kuRakutanBot-go/models/rakutan"
-	status "github.com/das08/kuRakutanBot-go/models/status"
+	rakutan "github.com/das08/kuRakutanBot-go/models/rakutan"
 	"github.com/das08/kuRakutanBot-go/module"
 	"github.com/gin-gonic/gin"
 	"github.com/line/line-bot-sdk-go/v7/linebot"
@@ -66,8 +65,8 @@ func main() {
 func searchRakutan(env *module.Environments, searchText string) (bool, []module.FlexMessage) {
 	success := false
 	var flexMessages []module.FlexMessage
-	var queryStatus status.QueryStatus
-	var result []models.RakutanInfo
+	var queryStatus module.QueryStatus
+	var result []rakutan.RakutanInfo
 
 	isLectureNumber, lectureID := module.IsLectureID(searchText)
 	if isLectureNumber {

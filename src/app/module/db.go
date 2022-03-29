@@ -8,7 +8,6 @@ import (
 	"time"
 
 	rakutan "github.com/das08/kuRakutanBot-go/models/rakutan"
-	status "github.com/das08/kuRakutanBot-go/models/status"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -19,6 +18,11 @@ type MongoDB struct {
 	Client *mongo.Client
 	Ctx    context.Context
 	Cancel context.CancelFunc
+}
+
+type QueryStatus struct {
+	Success bool
+	Message string
 }
 
 func CreateDBClient(e *Environments) *MongoDB {
@@ -36,10 +40,10 @@ func CreateDBClient(e *Environments) *MongoDB {
 	return &MongoDB{Client: client, Ctx: ctx, Cancel: cancel}
 }
 
-func findOne(e *Environments, m *MongoDB, fieldName string, value interface{}) (status.QueryStatus, []rakutan.RakutanInfo) {
+func findOne(e *Environments, m *MongoDB, fieldName string, value interface{}) (QueryStatus, []rakutan.RakutanInfo) {
 	result := rakutan.RakutanInfo{}
 	collection := m.Client.Database(e.DB_NAME).Collection(e.DB_COLLECTION)
-	var queryStatus status.QueryStatus
+	var queryStatus QueryStatus
 
 	err := collection.FindOne(m.Ctx, bson.D{{fieldName, value}}).Decode(&result)
 	if err != nil {
@@ -50,15 +54,15 @@ func findOne(e *Environments, m *MongoDB, fieldName string, value interface{}) (
 	return queryStatus, []rakutan.RakutanInfo{result}
 }
 
-func FindByLectureID(e *Environments, m *MongoDB, lectureID int) (status.QueryStatus, []rakutan.RakutanInfo) {
+func FindByLectureID(e *Environments, m *MongoDB, lectureID int) (QueryStatus, []rakutan.RakutanInfo) {
 	return findOne(e, m, "id", lectureID)
 }
 
 // TODO: Add error message to query status
-func FindByLectureName(e *Environments, m *MongoDB, lectureName string) (status.QueryStatus, []rakutan.RakutanInfo) {
+func FindByLectureName(e *Environments, m *MongoDB, lectureName string) (QueryStatus, []rakutan.RakutanInfo) {
 	var result []rakutan.RakutanInfo
 	collection := m.Client.Database(e.DB_NAME).Collection(e.DB_COLLECTION)
-	var queryStatus status.QueryStatus
+	var queryStatus QueryStatus
 
 	filterCursor, err := collection.Find(m.Ctx, bson.D{{"lecture_name", primitive.Regex{Pattern: "^" + lectureName, Options: "i"}}})
 	queryStatus.Success = true
@@ -73,10 +77,10 @@ func FindByLectureName(e *Environments, m *MongoDB, lectureName string) (status.
 	return queryStatus, result
 }
 
-func FindByOmikuji(e *Environments, m *MongoDB, omikujiType string) (status.QueryStatus, []rakutan.RakutanInfo) {
+func FindByOmikuji(e *Environments, m *MongoDB, omikujiType string) (QueryStatus, []rakutan.RakutanInfo) {
 	var result []rakutan.RakutanInfo
 	collection := m.Client.Database(e.DB_NAME).Collection(e.DB_COLLECTION)
-	var queryStatus status.QueryStatus
+	var queryStatus QueryStatus
 
 	filter := bson.D{{"omikuji", omikujiType}}
 	filterCursor, err := collection.Find(m.Ctx, filter)
@@ -101,11 +105,11 @@ const (
 	Omikuji
 )
 
-func GetRakutanInfo(env *Environments, method FindByMethod, value interface{}) (status.QueryStatus, []rakutan.RakutanInfo) {
+func GetRakutanInfo(env *Environments, method FindByMethod, value interface{}) (QueryStatus, []rakutan.RakutanInfo) {
 	mongoDB := CreateDBClient(env)
 	defer mongoDB.Cancel()
 	defer mongoDB.Client.Disconnect(mongoDB.Ctx)
-	var queryStatus status.QueryStatus
+	var queryStatus QueryStatus
 	var result []rakutan.RakutanInfo
 
 	switch method {

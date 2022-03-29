@@ -30,7 +30,8 @@ func main() {
 			return
 		}
 		for _, event := range events {
-			if event.Type == linebot.EventTypeMessage {
+			switch event.Type {
+			case linebot.EventTypeMessage:
 				lb.SetReplyToken(event.ReplyToken)
 				switch message := event.Message.(type) {
 				case *linebot.TextMessage:
@@ -48,9 +49,14 @@ func main() {
 					} else {
 						lb.SendTextMessage(message.Text)
 					}
-
 				}
-
+			case linebot.EventTypePostback:
+				lb.SetReplyToken(event.ReplyToken)
+				data := event.Postback.Data
+				success, params := module.ParsePBParam(data)
+				if success {
+					fmt.Println("Params: ", params)
+				}
 			}
 		}
 	})

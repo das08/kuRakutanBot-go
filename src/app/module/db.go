@@ -81,6 +81,20 @@ func deleteOne(e *Environments, m *MongoDB, col Collection, kvs []KV) QueryStatu
 	return queryStatus
 }
 
+func count(e *Environments, m *MongoDB, col Collection, kvs []KV) (QueryStatus, int) {
+	var queryStatus QueryStatus
+	collection := m.Client.Database(e.DB_NAME).Collection(col)
+	filter := generateBsonD(kvs)
+	cnt, err := collection.CountDocuments(m.Ctx, filter)
+	queryStatus.Success = true
+
+	if err != nil {
+		queryStatus = QueryStatus{false, "[c]DB接続でエラーが起きました。"}
+		fmt.Println(err)
+	}
+	return queryStatus, int(cnt)
+}
+
 func FindByLectureID(e *Environments, m *MongoDB, lectureID int) (QueryStatus, []rakutan.RakutanInfo) {
 	var queryStatus QueryStatus
 	result := rakutan.RakutanInfo{}
@@ -179,6 +193,7 @@ func InsertFavorite(env *Environments, pbe PostbackEntry) QueryStatus {
 	kvs := []KV{{"uid", pbe.Uid}, {"id", pbe.Param.ID}}
 	singleResult := findOne(env, mongoDB, env.DB_COLLECTION.Favorites, kvs)
 
+	// すでにお気に入り登録されているか調べる
 	var findStatus QueryStatus
 	err := singleResult.Decode(&rakutan.Favorite{})
 	switch {
@@ -196,15 +211,26 @@ func InsertFavorite(env *Environments, pbe PostbackEntry) QueryStatus {
 	}
 
 	switch {
+	// お気に入り登録されていた場合
 	case !findStatus.Success:
 		return QueryStatus{false, findStatus.Message}
+	// まだお気に入り登録されていなかった場合
 	default:
-		kvs = append(kvs, KV{"lecture_name", pbe.Param.LectureName})
-		queryStatus := insertOne(env, mongoDB, env.DB_COLLECTION.Favorites, kvs)
-		if queryStatus.Success {
-			queryStatus.Message = fmt.Sprintf("「%s」をお気に入り登録しました！", pbe.Param.LectureName)
+		countStatus, favCount := count(env, mongoDB, env.DB_COLLECTION.Favorites, []KV{{"uid", pbe.Uid}})
+		fmt.Println("favCnt", favCount)
+		switch {
+		case countStatus.Success && favCount < 50:
+			kvs = append(kvs, KV{"lecture_name", pbe.Param.LectureName})
+			insertStatus := insertOne(env, mongoDB, env.DB_COLLECTION.Favorites, kvs)
+			if insertStatus.Success {
+				insertStatus.Message = fmt.Sprintf("「%s」をお気に入り登録しました！", pbe.Param.LectureName)
+			}
+			return insertStatus
+		case countStatus.Success && favCount >= 50:
+			return QueryStatus{Success: false, Message: "お気に入り数が上限(50件)に達しています。"}
+		default:
+			return countStatus
 		}
-		return queryStatus
 	}
 }
 

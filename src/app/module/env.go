@@ -17,9 +17,16 @@ type Environments struct {
 	DB_USER                   string
 	DB_PASS                   string
 	DB_NAME                   string
-	DB_COLLECTION             string
+	DB_COLLECTION             Collections
 	KUWIKI_ENDPOINT           string
 	KUWIKI_ACCESS_TOKEN       string
+}
+
+type Collection = string
+
+type Collections struct {
+	Rakutan   Collection
+	Favorites Collection
 }
 
 func LoadEnv(debug bool) Environments {
@@ -47,7 +54,8 @@ func LoadEnv(debug bool) Environments {
 	env.DB_USER = os.Getenv("DB_USER")
 	env.DB_PASS = os.Getenv("DB_PASS")
 	env.DB_NAME = os.Getenv("DB_NAME")
-	env.DB_COLLECTION = os.Getenv("DB_COLLECTION")
+	env.DB_COLLECTION.Rakutan = os.Getenv("DB_COL_RAKUTAN")
+	env.DB_COLLECTION.Favorites = os.Getenv("DB_COL_FAV")
 	env.KUWIKI_ENDPOINT = os.Getenv("KUWIKI_ENDPOINT")
 	env.KUWIKI_ACCESS_TOKEN = os.Getenv("KUWIKI_ACCESS_TOKEN")
 

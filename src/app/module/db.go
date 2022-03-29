@@ -20,6 +20,11 @@ type MongoDB struct {
 	Cancel context.CancelFunc
 }
 
+type KV struct {
+	Key   string
+	Value interface{}
+}
+
 type QueryStatus struct {
 	Success bool
 	Message string
@@ -40,12 +45,12 @@ func CreateDBClient(e *Environments) *MongoDB {
 	return &MongoDB{Client: client, Ctx: ctx, Cancel: cancel}
 }
 
-func findOne(e *Environments, m *MongoDB, fieldName string, value interface{}) (QueryStatus, []rakutan.RakutanInfo) {
+func findOne(e *Environments, m *MongoDB, col Collection, kv KV) (QueryStatus, []rakutan.RakutanInfo) {
 	result := rakutan.RakutanInfo{}
-	collection := m.Client.Database(e.DB_NAME).Collection(e.DB_COLLECTION)
+	collection := m.Client.Database(e.DB_NAME).Collection(col)
 	var queryStatus QueryStatus
 
-	err := collection.FindOne(m.Ctx, bson.D{{fieldName, value}}).Decode(&result)
+	err := collection.FindOne(m.Ctx, bson.D{{kv.Key, kv.Value}}).Decode(&result)
 	if err != nil {
 		queryStatus.Success = false
 	} else {
@@ -55,13 +60,13 @@ func findOne(e *Environments, m *MongoDB, fieldName string, value interface{}) (
 }
 
 func FindByLectureID(e *Environments, m *MongoDB, lectureID int) (QueryStatus, []rakutan.RakutanInfo) {
-	return findOne(e, m, "id", lectureID)
+	return findOne(e, m, e.DB_COLLECTION.Rakutan, KV{Key: "id", Value: lectureID})
 }
 
 // TODO: Add error message to query status
 func FindByLectureName(e *Environments, m *MongoDB, lectureName string) (QueryStatus, []rakutan.RakutanInfo) {
 	var result []rakutan.RakutanInfo
-	collection := m.Client.Database(e.DB_NAME).Collection(e.DB_COLLECTION)
+	collection := m.Client.Database(e.DB_NAME).Collection(e.DB_COLLECTION.Rakutan)
 	var queryStatus QueryStatus
 
 	filterCursor, err := collection.Find(m.Ctx, bson.D{{"lecture_name", primitive.Regex{Pattern: "^" + lectureName, Options: "i"}}})
@@ -79,7 +84,7 @@ func FindByLectureName(e *Environments, m *MongoDB, lectureName string) (QuerySt
 
 func FindByOmikuji(e *Environments, m *MongoDB, omikujiType string) (QueryStatus, []rakutan.RakutanInfo) {
 	var result []rakutan.RakutanInfo
-	collection := m.Client.Database(e.DB_NAME).Collection(e.DB_COLLECTION)
+	collection := m.Client.Database(e.DB_NAME).Collection(e.DB_COLLECTION.Rakutan)
 	var queryStatus QueryStatus
 
 	filter := bson.D{{"omikuji", omikujiType}}
@@ -108,7 +113,12 @@ const (
 func GetRakutanInfo(env *Environments, method FindByMethod, value interface{}) (QueryStatus, []rakutan.RakutanInfo) {
 	mongoDB := CreateDBClient(env)
 	defer mongoDB.Cancel()
-	defer mongoDB.Client.Disconnect(mongoDB.Ctx)
+	defer func() {
+		fmt.Println("connection closed")
+		if err := mongoDB.Client.Disconnect(mongoDB.Ctx); err != nil {
+			panic(err)
+		}
+	}()
 	var queryStatus QueryStatus
 	var result []rakutan.RakutanInfo
 

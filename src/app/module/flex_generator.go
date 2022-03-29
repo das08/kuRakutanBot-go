@@ -70,6 +70,8 @@ func CreateRakutanDetail(info models.RakutanInfo, o OmikujiType) []FlexMessage {
 		rakutanDetail.Header.Contents[0].Contents[1].Color = toPtr(omikujiType[o].Color)
 	}
 
+	rakutanDetail.Header.Contents[0].Contents[0].Action.Data = fmt.Sprintf("type=fav&id=%d&lecname=%s", info.ID, info.LectureName)
+
 	// 単位取得率
 	for i, v := range info.Detail {
 		rakutanDetail.Body.Contents[0].Contents[i+1].Contents[0].Text = fmt.Sprintf("%d年度", v.Year)

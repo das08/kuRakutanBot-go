@@ -132,7 +132,7 @@ func CreateFavorites(favs []models.Favorite) []FlexMessage {
 	maxPageCount := len(favs)/MaxResultsPerPage + 1
 
 	for pageCount = 1; pageCount <= maxPageCount; pageCount++ {
-		altText := fmt.Sprintf("「%s」の検索結果(%d/%d)", "searchText", pageCount, maxPageCount)
+		altText := fmt.Sprintf("お気に入りリスト(%d/%d)", pageCount, maxPageCount)
 		// Set body text
 		favorites.Body.Contents[0].Contents = getFavoriteList(favs, pageCount)
 		flexContainer := toFlexContainer(&favorites)

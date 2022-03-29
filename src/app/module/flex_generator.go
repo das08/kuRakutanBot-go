@@ -135,18 +135,11 @@ func CreateFavorites(favs []models.Favorite) []FlexMessage {
 		altText := fmt.Sprintf("「%s」の検索結果(%d/%d)", "searchText", pageCount, maxPageCount)
 		switch {
 		case pageCount == 1:
-			// Set header text
-			//favorites.Header.Contents[0].Text = toPtr(altText)
-			//favorites.Header.Contents[1].Text = toPtr(fmt.Sprintf("%d 件の候補が見つかりました。目的の講義を選択してください。", len(infos)))
-
 			// Set body text
 			//searchResult.Body.Contents[1].Contents = getLectureList(infos, pageCount)
 			flexContainer := toFlexContainer(&favorites)
 			messages = append(messages, FlexMessage{FlexContainer: flexContainer, AltText: altText})
 		case pageCount >= 2:
-			// Set header text
-			//searchResultMore.Header.Contents[0].Text = toPtr(altText)
-
 			// Set body text
 			//searchResultMore.Body.Contents[1].Contents = getLectureList(infos, pageCount)
 			flexContainer := toFlexContainer(&favorites)
@@ -171,9 +164,6 @@ func getLectureList(infos []models.RakutanInfo, pageCount int) []richmenu.Purple
 		tmp := lecture.DeepCopy()
 		tmp.Contents[1].Text = infos[i].LectureName
 		tmp.Contents[2].Action.Text = fmt.Sprintf("#%d", infos[i].ID)
-		//tmp.Contents[2].Action.Text = toStr(infos[i].ID)
-		//fmt.Printf("%p, %#v", &tmp.Contents[2].Action.Text, tmp.Contents[2].Action.Text)
-		//fmt.Println(infos[i].ID, infos[i].LectureName)
 
 		abbr, ok := facultyAbbr[infos[i].FacultyName]
 		if ok {

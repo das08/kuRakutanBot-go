@@ -182,7 +182,7 @@ func InsertFavorite(env *Environments, col Collection, pbe PostbackEntry) QueryS
 	case err != nil:
 		findStatus = QueryStatus{false, "DB接続でエラーが起きました。"}
 	default:
-		findStatus = QueryStatus{false, "すでにお気に入り登録されています。"}
+		findStatus = QueryStatus{false, fmt.Sprintf("「%s」はすでにお気に入り登録されています。", pbe.Param.LectureName)}
 	}
 
 	switch {
@@ -191,6 +191,9 @@ func InsertFavorite(env *Environments, col Collection, pbe PostbackEntry) QueryS
 	default:
 		kvs = append(kvs, KV{"lecture_name", pbe.Param.LectureName})
 		queryStatus := insertOne(env, mongoDB, col, kvs)
+		if queryStatus.Success {
+			queryStatus.Message = fmt.Sprintf("「%s」をお気に入り登録しました！", pbe.Param.LectureName)
+		}
 		return queryStatus
 	}
 }

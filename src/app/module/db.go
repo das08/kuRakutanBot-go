@@ -59,6 +59,22 @@ func findOne(e *Environments, m *MongoDB, col Collection, kv KV) (QueryStatus, [
 	return queryStatus, []rakutan.RakutanInfo{result}
 }
 
+func insertOne(e *Environments, m *MongoDB, col Collection, kvs []KV) QueryStatus {
+	var queryStatus QueryStatus
+	collection := m.Client.Database(e.DB_NAME).Collection(col)
+	entry := bson.D{}
+	for _, kv := range kvs {
+		entry = append(entry, bson.E{Key: kv.Key, Value: kv.Value})
+	}
+	_, err := collection.InsertOne(m.Ctx, entry)
+	queryStatus.Success = true
+
+	if err != nil {
+		queryStatus.Success = false
+	}
+	return queryStatus
+}
+
 func FindByLectureID(e *Environments, m *MongoDB, lectureID int) (QueryStatus, []rakutan.RakutanInfo) {
 	return findOne(e, m, e.DB_COLLECTION.Rakutan, KV{Key: "id", Value: lectureID})
 }

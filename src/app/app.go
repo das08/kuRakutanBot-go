@@ -58,6 +58,7 @@ func main() {
 				lb.SetSenderUid(uid)
 
 				data := event.Postback.Data
+				fmt.Println("pbdata: ", data)
 				success, params := module.ParsePBParam(data)
 				if success {
 					fmt.Println("Params: ", params)

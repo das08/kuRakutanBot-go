@@ -70,6 +70,7 @@ func CreateRakutanDetail(info models.RakutanInfo, o OmikujiType) []FlexMessage {
 		rakutanDetail.Header.Contents[0].Contents[1].Color = toPtr(omikujiType[o].Color)
 	}
 
+	// Postbackパラメータ
 	rakutanDetail.Header.Contents[0].Contents[0].Action.Data = fmt.Sprintf("type=fav&id=%d&lecname=%s", info.ID, info.LectureName)
 
 	// 単位取得率
@@ -178,6 +179,7 @@ func getFavoriteList(favs []models.Favorite, pageCount int) []richmenu.Favorites
 		tmp := favorite.DeepCopy()
 		tmp.Contents[0].Text = favs[i].LectureName
 		tmp.Contents[1].Action.Text = toPtr(fmt.Sprintf("#%d", favs[i].ID))
+		tmp.Contents[2].Action.Data = toPtr(fmt.Sprintf("type=del&id=%d&lecname=%s", favs[i].ID, favs[i].LectureName))
 
 		favoriteList = append(favoriteList, tmp)
 	}

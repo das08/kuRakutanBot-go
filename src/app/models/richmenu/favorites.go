@@ -2,7 +2,9 @@
 
 package richmenu
 
-import "encoding/json"
+import (
+	"encoding/json"
+)
 
 func UnmarshalFavorites(data []byte) (Favorites, error) {
 	var r Favorites
@@ -84,8 +86,15 @@ func (fbc FavoritesBodyContents) DeepCopy() FavoritesBodyContents {
 	for i, v := range fbc.Contents {
 		if v.Action != nil {
 			s := "#12345"
-			tmpAction := TextandPBAction{Text: &s, Type: "message", Label: "action"}
-			tmp.Contents[i].Action = &tmpAction
+			switch {
+			case v.Action.Text != nil:
+				tmpAction := TextandPBAction{Text: &s, Type: "message", Label: "action"}
+				tmp.Contents[i].Action = &tmpAction
+			case v.Action.Data != nil:
+				tmpAction := TextandPBAction{Data: &s, Type: "postback", Label: "action"}
+				tmp.Contents[i].Action = &tmpAction
+			}
+
 		}
 	}
 	return tmp

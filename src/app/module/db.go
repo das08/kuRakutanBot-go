@@ -47,17 +47,9 @@ func CreateDBClient(e *Environments) *MongoDB {
 }
 
 func findOne(e *Environments, m *MongoDB, col Collection, kvs []KV) *mongo.SingleResult {
-	//result := rakutan.RakutanInfo{}
 	collection := m.Client.Database(e.DB_NAME).Collection(col)
-
 	entry := generateBsonD(kvs)
 	singleResult := collection.FindOne(m.Ctx, entry) //.Decode(&result)
-	//if err != nil {
-	//	queryStatus = QueryStatus{false, "DB接続でエラーが起きました。"}
-	//	fmt.Println(err)
-	//} else {
-	//	queryStatus.Success = true
-	//}
 	return singleResult
 }
 

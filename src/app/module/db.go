@@ -149,6 +149,25 @@ func FindByOmikuji(e *Environments, m *MongoDB, omikujiType string) (QueryStatus
 	return queryStatus, []rakutan.RakutanInfo{result[randomIdx]}
 }
 
+func FindByFav(e *Environments, m *MongoDB, uid string) (QueryStatus, []rakutan.Favorite) {
+	var result []rakutan.Favorite
+	collection := m.Client.Database(e.DB_NAME).Collection(e.DB_COLLECTION.Favorites)
+	var queryStatus QueryStatus
+
+	filter := bson.D{{"uid", uid}}
+	filterCursor, err := collection.Find(m.Ctx, filter)
+	queryStatus.Success = true
+
+	if err != nil {
+		queryStatus.Success = false
+	}
+	if err = filterCursor.All(m.Ctx, &result); err != nil {
+		queryStatus.Success = false
+	}
+
+	return queryStatus, result
+}
+
 type FindByMethod int
 
 const (
@@ -177,6 +196,22 @@ func GetRakutanInfo(env *Environments, method FindByMethod, value interface{}) (
 	case Omikuji:
 		queryStatus, result = FindByOmikuji(env, mongoDB, value.(string))
 	}
+
+	return queryStatus, result
+}
+
+func GetFavorites(env *Environments, uid string) (QueryStatus, []rakutan.Favorite) {
+	mongoDB := CreateDBClient(env)
+	defer mongoDB.Cancel()
+	defer func() {
+		fmt.Println("connection closed")
+		if err := mongoDB.Client.Disconnect(mongoDB.Ctx); err != nil {
+			panic(err)
+		}
+	}()
+	var queryStatus QueryStatus
+	var result []rakutan.Favorite
+	queryStatus, result = FindByFav(env, mongoDB, uid)
 
 	return queryStatus, result
 }

@@ -51,8 +51,10 @@ func main() {
 					}
 				}
 			case linebot.EventTypePostback:
-				lb.SetReplyToken(event.ReplyToken)
 				uid := event.Source.UserID
+				lb.SetReplyToken(event.ReplyToken)
+				lb.SetSenderUid(uid)
+
 				data := event.Postback.Data
 				success, params := module.ParsePBParam(data)
 				if success {

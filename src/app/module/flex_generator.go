@@ -124,6 +124,38 @@ func CreateSearchResult(searchText string, infos []models.RakutanInfo) []FlexMes
 	return messages
 }
 
+func CreateFavorites(favs []models.Favorite) []FlexMessage {
+	var messages []FlexMessage
+	favorites := LoadFavorites()
+
+	pageCount := 0
+	maxPageCount := len(favs)/MaxResultsPerPage + 1
+
+	for pageCount = 1; pageCount <= maxPageCount; pageCount++ {
+		altText := fmt.Sprintf("「%s」の検索結果(%d/%d)", "searchText", pageCount, maxPageCount)
+		switch {
+		case pageCount == 1:
+			// Set header text
+			//favorites.Header.Contents[0].Text = toPtr(altText)
+			//favorites.Header.Contents[1].Text = toPtr(fmt.Sprintf("%d 件の候補が見つかりました。目的の講義を選択してください。", len(infos)))
+
+			// Set body text
+			//searchResult.Body.Contents[1].Contents = getLectureList(infos, pageCount)
+			flexContainer := toFlexContainer(&favorites)
+			messages = append(messages, FlexMessage{FlexContainer: flexContainer, AltText: altText})
+		case pageCount >= 2:
+			// Set header text
+			//searchResultMore.Header.Contents[0].Text = toPtr(altText)
+
+			// Set body text
+			//searchResultMore.Body.Contents[1].Contents = getLectureList(infos, pageCount)
+			flexContainer := toFlexContainer(&favorites)
+			messages = append(messages, FlexMessage{FlexContainer: flexContainer, AltText: altText})
+		}
+	}
+	return messages
+}
+
 func CreateFlexMessage(flex []byte, altText string) []FlexMessage {
 	flexContainer, _ := linebot.UnmarshalFlexMessageJSON(flex)
 	return []FlexMessage{{FlexContainer: flexContainer, AltText: altText}}

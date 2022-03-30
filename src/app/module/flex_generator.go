@@ -70,6 +70,9 @@ func CreateRakutanDetail(info models.RakutanInfo, o OmikujiType) []FlexMessage {
 		rakutanDetail.Header.Contents[0].Contents[1].Color = toPtr(omikujiType[o].Color)
 	}
 
+	// Postbackパラメータ
+	rakutanDetail.Header.Contents[0].Contents[0].Action.Data = fmt.Sprintf("type=fav&id=%d&lecname=%s", info.ID, info.LectureName)
+
 	// 単位取得率
 	for i, v := range info.Detail {
 		rakutanDetail.Body.Contents[0].Contents[i+1].Contents[0].Text = fmt.Sprintf("%d年度", v.Year)
@@ -122,6 +125,23 @@ func CreateSearchResult(searchText string, infos []models.RakutanInfo) []FlexMes
 	return messages
 }
 
+func CreateFavorites(favs []models.Favorite) []FlexMessage {
+	var messages []FlexMessage
+	favorites := LoadFavorites()
+
+	pageCount := 0
+	maxPageCount := len(favs)/MaxResultsPerPage + 1
+
+	for pageCount = 1; pageCount <= maxPageCount; pageCount++ {
+		altText := fmt.Sprintf("お気に入りリスト(%d/%d)", pageCount, maxPageCount)
+		// Set body text
+		favorites.Body.Contents[0].Contents = getFavoriteList(favs, pageCount)
+		flexContainer := toFlexContainer(&favorites)
+		messages = append(messages, FlexMessage{FlexContainer: flexContainer, AltText: altText})
+	}
+	return messages
+}
+
 func CreateFlexMessage(flex []byte, altText string) []FlexMessage {
 	flexContainer, _ := linebot.UnmarshalFlexMessageJSON(flex)
 	return []FlexMessage{{FlexContainer: flexContainer, AltText: altText}}
@@ -137,9 +157,6 @@ func getLectureList(infos []models.RakutanInfo, pageCount int) []richmenu.Purple
 		tmp := lecture.DeepCopy()
 		tmp.Contents[1].Text = infos[i].LectureName
 		tmp.Contents[2].Action.Text = fmt.Sprintf("#%d", infos[i].ID)
-		//tmp.Contents[2].Action.Text = toStr(infos[i].ID)
-		//fmt.Printf("%p, %#v", &tmp.Contents[2].Action.Text, tmp.Contents[2].Action.Text)
-		//fmt.Println(infos[i].ID, infos[i].LectureName)
 
 		abbr, ok := facultyAbbr[infos[i].FacultyName]
 		if ok {
@@ -150,6 +167,24 @@ func getLectureList(infos []models.RakutanInfo, pageCount int) []richmenu.Purple
 	}
 
 	return lectureList
+}
+
+func getFavoriteList(favs []models.Favorite, pageCount int) []richmenu.FavoritesBodyContents {
+	favorites := LoadFavorites()
+	var favoriteList []richmenu.FavoritesBodyContents
+	favorite := favorites.Body.Contents[0].Contents[0]
+
+	offset := (pageCount - 1) * MaxResultsPerPage
+	for i := offset; i < int(math.Min(float64(len(favs)), float64(MaxResultsPerPage+offset))); i++ {
+		tmp := favorite.DeepCopy()
+		tmp.Contents[0].Text = favs[i].LectureName
+		tmp.Contents[1].Action.Text = toPtr(fmt.Sprintf("#%d", favs[i].ID))
+		tmp.Contents[2].Action.Data = toPtr(fmt.Sprintf("type=del&id=%d&lecname=%s", favs[i].ID, favs[i].LectureName))
+
+		favoriteList = append(favoriteList, tmp)
+	}
+
+	return favoriteList
 }
 
 func toFlexContainer(json richmenu.Marshal) linebot.FlexContainer {

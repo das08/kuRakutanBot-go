@@ -8,6 +8,7 @@ import (
 type LINEBot struct {
 	Bot        *linebot.Client
 	replyToken string
+	senderUid  string
 }
 
 func CreateLINEBotClient(e *Environments) *LINEBot {
@@ -24,6 +25,10 @@ func CreateLINEBotClient(e *Environments) *LINEBot {
 
 func (lb *LINEBot) SetReplyToken(replyToken string) {
 	lb.replyToken = replyToken
+}
+
+func (lb *LINEBot) SetSenderUid(senderUid string) {
+	lb.senderUid = senderUid
 }
 
 func (lb *LINEBot) SendTextMessage(text string) {

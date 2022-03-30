@@ -2,8 +2,7 @@ package main
 
 import (
 	"fmt"
-	models "github.com/das08/kuRakutanBot-go/models/rakutan"
-	status "github.com/das08/kuRakutanBot-go/models/status"
+	rakutan "github.com/das08/kuRakutanBot-go/models/rakutan"
 	"github.com/das08/kuRakutanBot-go/module"
 	"github.com/gin-gonic/gin"
 	"github.com/line/line-bot-sdk-go/v7/linebot"
@@ -31,8 +30,11 @@ func main() {
 			return
 		}
 		for _, event := range events {
-			if event.Type == linebot.EventTypeMessage {
+			switch event.Type {
+			case linebot.EventTypeMessage:
+				uid := event.Source.UserID
 				lb.SetReplyToken(event.ReplyToken)
+				lb.SetSenderUid(uid)
 				switch message := event.Message.(type) {
 				case *linebot.TextMessage:
 					messageText := strings.TrimSpace(message.Text)
@@ -49,9 +51,26 @@ func main() {
 					} else {
 						lb.SendTextMessage(message.Text)
 					}
-
 				}
+			case linebot.EventTypePostback:
+				uid := event.Source.UserID
+				lb.SetReplyToken(event.ReplyToken)
+				lb.SetSenderUid(uid)
 
+				data := event.Postback.Data
+				fmt.Println("pbdata: ", data)
+				success, params := module.ParsePBParam(data)
+				if success {
+					fmt.Println("Params: ", params)
+					switch params.Type {
+					case module.Fav:
+						insertStatus := module.InsertFavorite(&env, module.PostbackEntry{Uid: uid, Param: params})
+						lb.SendTextMessage(insertStatus.Message)
+					case module.Del:
+						deleteStatus := module.DeleteFavorite(&env, module.PostbackEntry{Uid: uid, Param: params})
+						lb.SendTextMessage(deleteStatus.Message)
+					}
+				}
 			}
 		}
 	})
@@ -66,8 +85,8 @@ func main() {
 func searchRakutan(env *module.Environments, searchText string) (bool, []module.FlexMessage) {
 	success := false
 	var flexMessages []module.FlexMessage
-	var queryStatus status.QueryStatus
-	var result []models.RakutanInfo
+	var queryStatus module.QueryStatus
+	var result []rakutan.RakutanInfo
 
 	isLectureNumber, lectureID := module.IsLectureID(searchText)
 	if isLectureNumber {

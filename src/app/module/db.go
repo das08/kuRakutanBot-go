@@ -159,10 +159,15 @@ func FindByFav(e *Environments, m *MongoDB, uid string) (QueryStatus, []rakutan.
 	queryStatus.Success = true
 
 	if err != nil {
-		queryStatus.Success = false
+		return QueryStatus{false, "お気に入りの取得に失敗しました。"}, result
 	}
-	if err = filterCursor.All(m.Ctx, &result); err != nil {
-		queryStatus.Success = false
+
+	err = filterCursor.All(m.Ctx, &result)
+	switch {
+	case err != nil:
+		queryStatus = QueryStatus{false, "お気に入りの取得に失敗しました。"}
+	case len(result) == 0:
+		queryStatus = QueryStatus{false, "お気に入り登録している講義はありません。講義名の左上にある★マークを押すとお気に入り登録できます！"}
 	}
 
 	return queryStatus, result

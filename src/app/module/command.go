@@ -22,6 +22,9 @@ var Commands = [...]Command{
 	{Keyword: "鬼単", SendFunction: onitanCmd},
 	{Keyword: "鬼単おみくじ", SendFunction: onitanCmd},
 	{Keyword: "お気に入り", SendFunction: getFavoritesCmd},
+	{Keyword: "おきにいり", SendFunction: getFavoritesCmd},
+	{Keyword: "リスト", SendFunction: getFavoritesCmd},
+	{Keyword: "一覧", SendFunction: getFavoritesCmd},
 	{Keyword: "お問い合わせ", SendFunction: inquiryCmd},
 	{Keyword: "問い合わせ", SendFunction: inquiryCmd},
 	{Keyword: "京大楽単bot", SendFunction: infoCmd},
@@ -85,5 +88,7 @@ func getFavoritesCmd(env *Environments, lb *LINEBot) {
 	if queryStatus.Success {
 		flexMessages := CreateFavorites(result)
 		lb.SendFlexMessage(flexMessages)
+	} else {
+		lb.SendTextMessage(queryStatus.Message)
 	}
 }

@@ -269,6 +269,24 @@ func InsertFavorite(env *Environments, pbe PostbackEntry) QueryStatus {
 	}
 }
 
+func DeleteFavorite(env *Environments, pbe PostbackEntry) QueryStatus {
+	mongoDB := CreateDBClient(env)
+	defer mongoDB.Cancel()
+	defer func() {
+		fmt.Println("connection closed")
+		if err := mongoDB.Client.Disconnect(mongoDB.Ctx); err != nil {
+			panic(err)
+		}
+	}()
+	kvs := []KV{{"uid", pbe.Uid}, {"id", pbe.Param.ID}}
+	deleteStatus := deleteOne(env, mongoDB, env.DB_COLLECTION.Favorites, kvs)
+	if deleteStatus.Success {
+		return QueryStatus{Success: true, Message: fmt.Sprintf("「%s」をお気に入りから削除しました！", pbe.Param.LectureName)}
+	} else {
+		return QueryStatus{Success: false, Message: "お気に入りの削除に失敗しました。"}
+	}
+}
+
 func generateBsonD(kvs []KV) bson.D {
 	entry := bson.D{}
 	for _, kv := range kvs {

@@ -62,8 +62,14 @@ func main() {
 				success, params := module.ParsePBParam(data)
 				if success {
 					fmt.Println("Params: ", params)
-					insertStatus := module.InsertFavorite(&env, module.PostbackEntry{Uid: uid, Param: params})
-					lb.SendTextMessage(insertStatus.Message)
+					switch params.Type {
+					case module.Fav:
+						insertStatus := module.InsertFavorite(&env, module.PostbackEntry{Uid: uid, Param: params})
+						lb.SendTextMessage(insertStatus.Message)
+					case module.Del:
+						deleteStatus := module.DeleteFavorite(&env, module.PostbackEntry{Uid: uid, Param: params})
+						lb.SendTextMessage(deleteStatus.Message)
+					}
 				}
 			}
 		}

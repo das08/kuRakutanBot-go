@@ -46,17 +46,15 @@ func CreateDBClient(e *Environments) *MongoDB {
 	return &MongoDB{Client: client, Ctx: ctx, Cancel: cancel}
 }
 
-func findOne(e *Environments, m *MongoDB, col Collection, kvs []KV) *mongo.SingleResult {
+func findOne(e *Environments, m *MongoDB, col Collection, filter bson.D) *mongo.SingleResult {
 	collection := m.Client.Database(e.DB_NAME).Collection(col)
-	entry := generateBsonD(kvs)
-	singleResult := collection.FindOne(m.Ctx, entry) //.Decode(&result)
+	singleResult := collection.FindOne(m.Ctx, filter) //.Decode(&result)
 	return singleResult
 }
 
-func insertOne(e *Environments, m *MongoDB, col Collection, kvs []KV) QueryStatus {
+func insertOne(e *Environments, m *MongoDB, col Collection, filter bson.D) QueryStatus {
 	var queryStatus QueryStatus
 	collection := m.Client.Database(e.DB_NAME).Collection(col)
-	filter := generateBsonD(kvs)
 	_, err := collection.InsertOne(m.Ctx, filter)
 	queryStatus.Success = true
 
@@ -67,10 +65,9 @@ func insertOne(e *Environments, m *MongoDB, col Collection, kvs []KV) QueryStatu
 	return queryStatus
 }
 
-func deleteOne(e *Environments, m *MongoDB, col Collection, kvs []KV) QueryStatus {
+func deleteOne(e *Environments, m *MongoDB, col Collection, filter bson.D) QueryStatus {
 	var queryStatus QueryStatus
 	collection := m.Client.Database(e.DB_NAME).Collection(col)
-	filter := generateBsonD(kvs)
 	_, err := collection.DeleteOne(m.Ctx, filter)
 	queryStatus.Success = true
 
@@ -98,7 +95,7 @@ func count(e *Environments, m *MongoDB, col Collection, kvs []KV) (QueryStatus, 
 func FindByLectureID(e *Environments, m *MongoDB, lectureID int) (QueryStatus, []rakutan.RakutanInfo) {
 	var queryStatus QueryStatus
 	result := rakutan.RakutanInfo{}
-	singleResult := findOne(e, m, e.DB_COLLECTION.Rakutan, []KV{{Key: "id", Value: lectureID}})
+	singleResult := findOne(e, m, e.DB_COLLECTION.Rakutan, generateBsonD([]KV{{Key: "id", Value: lectureID}}))
 
 	err := singleResult.Decode(&result)
 	if err != nil {
@@ -108,6 +105,25 @@ func FindByLectureID(e *Environments, m *MongoDB, lectureID int) (QueryStatus, [
 		queryStatus.Success = true
 	}
 	return queryStatus, []rakutan.RakutanInfo{result}
+}
+
+func FindByUID(e *Environments, m *MongoDB, uid string) (QueryStatus, []rakutan.UserData) {
+	var result []rakutan.UserData
+	collection := m.Client.Database(e.DB_NAME).Collection(e.DB_COLLECTION.User)
+	var queryStatus QueryStatus
+
+	filter := bson.D{{"uid", uid}}
+	filterCursor, err := collection.Find(m.Ctx, filter)
+	queryStatus.Success = true
+
+	if err != nil {
+		return QueryStatus{false, "[f]DB接続でエラーが起きました。"}, result
+	}
+
+	if err := filterCursor.All(m.Ctx, &result); err != nil {
+		queryStatus = QueryStatus{false, "[f]DB接続でエラーが起きました。"}
+	}
+	return queryStatus, result
 }
 
 // TODO: Add error message to query status
@@ -231,7 +247,7 @@ func InsertFavorite(env *Environments, pbe PostbackEntry) QueryStatus {
 		}
 	}()
 	kvs := []KV{{"uid", pbe.Uid}, {"id", pbe.Param.ID}}
-	singleResult := findOne(env, mongoDB, env.DB_COLLECTION.Favorites, kvs)
+	singleResult := findOne(env, mongoDB, env.DB_COLLECTION.Favorites, generateBsonD(kvs))
 
 	// すでにお気に入り登録されているか調べる
 	var findStatus QueryStatus
@@ -243,7 +259,7 @@ func InsertFavorite(env *Environments, pbe PostbackEntry) QueryStatus {
 	case err != nil:
 		findStatus = QueryStatus{false, "[f]DB接続でエラーが起きました。"}
 	default:
-		deleteStatus := deleteOne(env, mongoDB, env.DB_COLLECTION.Favorites, kvs)
+		deleteStatus := deleteOne(env, mongoDB, env.DB_COLLECTION.Favorites, generateBsonD(kvs))
 		findStatus = QueryStatus{false, deleteStatus.Message}
 		if deleteStatus.Success {
 			findStatus.Message = fmt.Sprintf("「%s」をお気に入りから削除しました！", pbe.Param.LectureName)
@@ -261,7 +277,7 @@ func InsertFavorite(env *Environments, pbe PostbackEntry) QueryStatus {
 		switch {
 		case countStatus.Success && favCount < 50:
 			kvs = append(kvs, KV{"lecture_name", pbe.Param.LectureName})
-			insertStatus := insertOne(env, mongoDB, env.DB_COLLECTION.Favorites, kvs)
+			insertStatus := insertOne(env, mongoDB, env.DB_COLLECTION.Favorites, generateBsonD(kvs))
 			if insertStatus.Success {
 				insertStatus.Message = fmt.Sprintf("「%s」をお気に入り登録しました！", pbe.Param.LectureName)
 			}
@@ -284,11 +300,46 @@ func DeleteFavorite(env *Environments, pbe PostbackEntry) QueryStatus {
 		}
 	}()
 	kvs := []KV{{"uid", pbe.Uid}, {"id", pbe.Param.ID}}
-	deleteStatus := deleteOne(env, mongoDB, env.DB_COLLECTION.Favorites, kvs)
+	deleteStatus := deleteOne(env, mongoDB, env.DB_COLLECTION.Favorites, generateBsonD(kvs))
 	if deleteStatus.Success {
 		return QueryStatus{Success: true, Message: fmt.Sprintf("「%s」をお気に入りから削除しました！", pbe.Param.LectureName)}
 	} else {
 		return QueryStatus{Success: false, Message: "お気に入りの削除に失敗しました。"}
+	}
+}
+
+func registerUser(env *Environments, m *MongoDB, uid string) {
+	bsonD := bson.D{
+		{"uid", uid},
+		{"count", bson.D{{"message", 1}, {"rakutan_omikuji", 0}, {"onitan_omikuji", 0}}},
+		{"register_time", int(time.Now().Unix())},
+		{"verified", false},
+	}
+	insertStatus := insertOne(env, m, env.DB_COLLECTION.User, bsonD)
+	if insertStatus.Success {
+		fmt.Println("Register Success.")
+	} else {
+		fmt.Println("Register Failed.")
+	}
+}
+
+func CountMessage(env *Environments, uid string) {
+	mongoDB := CreateDBClient(env)
+	defer mongoDB.Cancel()
+	defer func() {
+		fmt.Println("connection closed")
+		if err := mongoDB.Client.Disconnect(mongoDB.Ctx); err != nil {
+			panic(err)
+		}
+	}()
+	queryStatus, result := FindByUID(env, mongoDB, uid)
+	fmt.Printf("count status %#v", queryStatus)
+	if queryStatus.Success {
+		if len(result) == 0 {
+			registerUser(env, mongoDB, uid)
+		} else {
+
+		}
 	}
 }
 

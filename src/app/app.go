@@ -38,6 +38,7 @@ func main() {
 				switch message := event.Message.(type) {
 				case *linebot.TextMessage:
 					messageText := strings.TrimSpace(message.Text)
+					module.CountMessage(&env, uid)
 
 					isCommand, function := module.IsCommand(messageText)
 					if isCommand {

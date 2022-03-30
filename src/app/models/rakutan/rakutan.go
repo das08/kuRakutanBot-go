@@ -28,3 +28,16 @@ func (rds RakutanDetails) GetLatestDetail() (int, int) {
 	}
 	return accept, total
 }
+
+type UserData struct {
+	Uid          string    `bson:"uid"`
+	Count        UserCount `bson:"count"`
+	RegisterTime int       `bson:"register_time"`
+	Verified     bool      `bson:"verified"`
+}
+
+type UserCount struct {
+	Message        int `bson:"message,omitempty"`
+	RakutanOmikuji int `bson:"rakutan_omikuji,omitempty"`
+	OnitanOmikuji  int `bson:"onitan_omikuji,omitempty"`
+}

@@ -1,12 +1,13 @@
 package module
 
 import (
+	"fmt"
 	"regexp"
 	"strconv"
 )
 
 type PostbackParam struct {
-	Type        string
+	Type        PostbackType
 	ID          int
 	LectureName string
 }
@@ -14,6 +15,22 @@ type PostbackParam struct {
 type PostbackEntry struct {
 	Uid   string
 	Param PostbackParam
+}
+
+type PostbackType string
+
+const (
+	Fav = "fav"
+	Del = "del"
+)
+
+func (pt PostbackType) Valid() error {
+	switch pt {
+	case Fav, Del:
+		return nil
+	default:
+		return fmt.Errorf("PostbackType: invalid type %s", pt)
+	}
 }
 
 func IsLectureID(messageText string) (bool, int) {
@@ -37,9 +54,12 @@ func ParsePBParam(messageText string) (bool, PostbackParam) {
 				return false, params
 			}
 		}
-		id, _ := strconv.Atoi(matches[1][2])
-		params = PostbackParam{Type: matches[0][2], ID: id, LectureName: matches[2][2]}
-		return true, params
+		err := PostbackType(matches[0][2]).Valid()
+		if err == nil {
+			id, _ := strconv.Atoi(matches[1][2])
+			params = PostbackParam{Type: PostbackType(matches[0][2]), ID: id, LectureName: matches[2][2]}
+			return true, params
+		}
 	}
 	return false, params
 }

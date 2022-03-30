@@ -57,8 +57,9 @@ func TestParsePBParam(t *testing.T) {
 		{expectOutputs{false, PostbackParam{}}, "type=fav&id=12345&LECNAME=sample"},
 		{expectOutputs{false, PostbackParam{}}, ""},
 		{expectOutputs{false, PostbackParam{}}, "=&=&="},
-		{expectOutputs{true, PostbackParam{"fav", 12345, "sample"}}, "type=fav&id=12345&lecname=sample"},
-		{expectOutputs{true, PostbackParam{"fav", 99999, "日本語"}}, "type=fav&id=99999&lecname=日本語"},
+		{expectOutputs{false, PostbackParam{}}, "type=fav2&id=12345&lecname=sample"},
+		{expectOutputs{true, PostbackParam{Fav, 12345, "sample"}}, "type=fav&id=12345&lecname=sample"},
+		{expectOutputs{true, PostbackParam{Fav, 99999, "日本語"}}, "type=fav&id=99999&lecname=日本語"},
 	}
 
 	for _, p := range patterns {

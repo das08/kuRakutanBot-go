@@ -3,6 +3,7 @@ package module
 import (
 	"context"
 	"fmt"
+	"github.com/go-redis/redis/v8"
 	"log"
 	"math/rand"
 	"time"
@@ -18,6 +19,11 @@ type MongoDB struct {
 	Client *mongo.Client
 	Ctx    context.Context
 	Cancel context.CancelFunc
+}
+
+type Redis struct {
+	Client *redis.Client
+	Ctx    context.Context
 }
 
 type KV struct {
@@ -44,6 +50,17 @@ func CreateDBClient(e *Environments) *MongoDB {
 	fmt.Println("connection created")
 
 	return &MongoDB{Client: client, Ctx: ctx, Cancel: cancel}
+}
+
+func CreateRedisClient() *Redis {
+	rdb := redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: "",
+		DB:       0,
+	})
+	ctx := context.Background()
+
+	return &Redis{Client: rdb, Ctx: ctx}
 }
 
 func findOne(e *Environments, m *MongoDB, col Collection, filter bson.D) *mongo.SingleResult {
@@ -174,9 +191,9 @@ func FindByOmikuji(e *Environments, m *MongoDB, omikujiType string) (QueryStatus
 
 	randomIdx := randomIndex(len(result))
 
-	//mmmm, _ := json.Marshal(result)
+	//resultJson, _ := json.Marshal(result)
 	//
-	//err = rdb.Client.Set(rdb.Ctx, "rakutan", mmmm, time.Minute*1).Err()
+	//err = rdb.Client.Set(rdb.Ctx, "rakutan", resultJson, time.Minute*1).Err()
 	//if err != nil {
 	//	log.Fatalln(err)
 	//}

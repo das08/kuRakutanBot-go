@@ -10,6 +10,11 @@ import (
 	"strings"
 )
 
+type Clients struct {
+	Mongo *module.MongoDB
+	Redis *module.Redis
+}
+
 func main() {
 	env := module.LoadEnv(true)
 	router := gin.Default()
@@ -38,6 +43,7 @@ func main() {
 			}
 		}()
 		redis := module.CreateRedisClient()
+		clients := Clients{Mongo: mongoDB, Redis: redis}
 
 		for _, event := range events {
 			switch event.Type {
@@ -48,7 +54,7 @@ func main() {
 				switch message := event.Message.(type) {
 				case *linebot.TextMessage:
 					messageText := strings.TrimSpace(message.Text)
-					module.CountMessage(mongoDB, &env, uid)
+					module.CountMessage(clients.Mongo, &env, uid)
 
 					isCommand, function := module.IsCommand(messageText)
 					if isCommand {

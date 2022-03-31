@@ -2,6 +2,7 @@ package module
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/go-redis/redis/v8"
 	"log"
@@ -126,10 +127,10 @@ func count(e *Environments, m *MongoDB, col Collection, kvs []KV) (QueryStatus, 
 	return queryStatus, int(cnt)
 }
 
-func FindByLectureID(e *Environments, m *MongoDB, lectureID int) (QueryStatus, []rakutan.RakutanInfo) {
+func FindByLectureID(c Clients, e *Environments, lectureID int) (QueryStatus, []rakutan.RakutanInfo) {
 	var queryStatus QueryStatus
 	result := rakutan.RakutanInfo{}
-	singleResult := findOne(e, m, e.DB_COLLECTION.Rakutan, generateBsonD([]KV{{Key: "id", Value: lectureID}}))
+	singleResult := findOne(e, c.Mongo, e.DB_COLLECTION.Rakutan, generateBsonD([]KV{{Key: "id", Value: lectureID}}))
 
 	err := singleResult.Decode(&result)
 	if err != nil {
@@ -141,84 +142,84 @@ func FindByLectureID(e *Environments, m *MongoDB, lectureID int) (QueryStatus, [
 	return queryStatus, []rakutan.RakutanInfo{result}
 }
 
-func FindByUID(e *Environments, m *MongoDB, uid string) (QueryStatus, []rakutan.UserData) {
+func FindByUID(c Clients, e *Environments, uid string) (QueryStatus, []rakutan.UserData) {
 	var result []rakutan.UserData
-	collection := m.Client.Database(e.DB_NAME).Collection(e.DB_COLLECTION.User)
+	collection := c.Mongo.Client.Database(e.DB_NAME).Collection(e.DB_COLLECTION.User)
 	var queryStatus QueryStatus
 
 	filter := bson.D{{"uid", uid}}
-	filterCursor, err := collection.Find(m.Ctx, filter)
+	filterCursor, err := collection.Find(c.Mongo.Ctx, filter)
 	queryStatus.Success = true
 
 	if err != nil {
 		return QueryStatus{false, "[f]DB接続でエラーが起きました。"}, result
 	}
 
-	if err := filterCursor.All(m.Ctx, &result); err != nil {
+	if err := filterCursor.All(c.Mongo.Ctx, &result); err != nil {
 		queryStatus = QueryStatus{false, "[f]DB接続でエラーが起きました。"}
 	}
 	return queryStatus, result
 }
 
 // TODO: Add error message to query status
-func FindByLectureName(e *Environments, m *MongoDB, lectureName string) (QueryStatus, []rakutan.RakutanInfo) {
+func FindByLectureName(c Clients, e *Environments, lectureName string) (QueryStatus, []rakutan.RakutanInfo) {
 	var result []rakutan.RakutanInfo
-	collection := m.Client.Database(e.DB_NAME).Collection(e.DB_COLLECTION.Rakutan)
+	collection := c.Mongo.Client.Database(e.DB_NAME).Collection(e.DB_COLLECTION.Rakutan)
 	var queryStatus QueryStatus
 
-	filterCursor, err := collection.Find(m.Ctx, bson.D{{"lecture_name", primitive.Regex{Pattern: "^" + lectureName, Options: "i"}}})
+	filterCursor, err := collection.Find(c.Mongo.Ctx, bson.D{{"lecture_name", primitive.Regex{Pattern: "^" + lectureName, Options: "i"}}})
 	queryStatus.Success = true
 
 	if err != nil {
 		return QueryStatus{false, ""}, nil
 	}
-	if err = filterCursor.All(m.Ctx, &result); err != nil {
+	if err = filterCursor.All(c.Mongo.Ctx, &result); err != nil {
 		return QueryStatus{false, ""}, nil
 	}
 	return queryStatus, result
 }
 
-func FindByOmikuji(e *Environments, m *MongoDB, omikujiType string) (QueryStatus, []rakutan.RakutanInfo) {
+func FindByOmikuji(c Clients, e *Environments, omikujiType string) (QueryStatus, []rakutan.RakutanInfo) {
 	var result []rakutan.RakutanInfo
-	collection := m.Client.Database(e.DB_NAME).Collection(e.DB_COLLECTION.Rakutan)
+	collection := c.Mongo.Client.Database(e.DB_NAME).Collection(e.DB_COLLECTION.Rakutan)
 	var queryStatus QueryStatus
 
 	filter := bson.D{{"omikuji", omikujiType}}
-	filterCursor, err := collection.Find(m.Ctx, filter)
+	filterCursor, err := collection.Find(c.Mongo.Ctx, filter)
 	queryStatus.Success = true
 
 	if err != nil {
 		return QueryStatus{false, ""}, nil
 	}
-	if err = filterCursor.All(m.Ctx, &result); err != nil || result == nil {
+	if err = filterCursor.All(c.Mongo.Ctx, &result); err != nil || result == nil {
 		return QueryStatus{false, ""}, nil
 	}
 
 	randomIdx := randomIndex(len(result))
 
-	//resultJson, _ := json.Marshal(result)
-	//
-	//err = rdb.Client.Set(rdb.Ctx, "rakutan", resultJson, time.Minute*1).Err()
-	//if err != nil {
-	//	log.Fatalln(err)
-	//}
+	resultJson, _ := json.Marshal(result)
+
+	err = c.Redis.Client.Set(c.Redis.Ctx, "rakutan", resultJson, time.Minute*1).Err()
+	if err != nil {
+		log.Fatalln(err)
+	}
 	return queryStatus, []rakutan.RakutanInfo{result[randomIdx]}
 }
 
-func FindByFav(e *Environments, m *MongoDB, uid string) (QueryStatus, []rakutan.Favorite) {
+func FindByFav(c Clients, e *Environments, uid string) (QueryStatus, []rakutan.Favorite) {
 	var result []rakutan.Favorite
-	collection := m.Client.Database(e.DB_NAME).Collection(e.DB_COLLECTION.Favorites)
+	collection := c.Mongo.Client.Database(e.DB_NAME).Collection(e.DB_COLLECTION.Favorites)
 	var queryStatus QueryStatus
 
 	filter := bson.D{{"uid", uid}}
-	filterCursor, err := collection.Find(m.Ctx, filter)
+	filterCursor, err := collection.Find(c.Mongo.Ctx, filter)
 	queryStatus.Success = true
 
 	if err != nil {
 		return QueryStatus{false, "お気に入りの取得に失敗しました。"}, result
 	}
 
-	err = filterCursor.All(m.Ctx, &result)
+	err = filterCursor.All(c.Mongo.Ctx, &result)
 	switch {
 	case err != nil:
 		queryStatus = QueryStatus{false, "お気に入りの取得に失敗しました。"}
@@ -237,26 +238,26 @@ const (
 	Omikuji
 )
 
-func GetRakutanInfo(m *MongoDB, env *Environments, method FindByMethod, value interface{}) (QueryStatus, []rakutan.RakutanInfo) {
+func GetRakutanInfo(c Clients, env *Environments, method FindByMethod, value interface{}) (QueryStatus, []rakutan.RakutanInfo) {
 	var queryStatus QueryStatus
 	var result []rakutan.RakutanInfo
 
 	switch method {
 	case ID:
-		queryStatus, result = FindByLectureID(env, m, value.(int))
+		queryStatus, result = FindByLectureID(c, env, value.(int))
 	case Name:
-		queryStatus, result = FindByLectureName(env, m, value.(string))
+		queryStatus, result = FindByLectureName(c, env, value.(string))
 	case Omikuji:
-		queryStatus, result = FindByOmikuji(env, m, value.(string))
+		queryStatus, result = FindByOmikuji(c, env, value.(string))
 	}
 
 	return queryStatus, result
 }
 
-func GetFavorites(m *MongoDB, env *Environments, uid string) (QueryStatus, []rakutan.Favorite) {
+func GetFavorites(c Clients, env *Environments, uid string) (QueryStatus, []rakutan.Favorite) {
 	var queryStatus QueryStatus
 	var result []rakutan.Favorite
-	queryStatus, result = FindByFav(env, m, uid)
+	queryStatus, result = FindByFav(c, env, uid)
 
 	return queryStatus, result
 }
@@ -341,13 +342,13 @@ func countUp(env *Environments, m *MongoDB, uid string, key string) {
 	}
 }
 
-func CountMessage(m *MongoDB, env *Environments, uid string) {
-	queryStatus, result := FindByUID(env, m, uid)
+func CountMessage(c Clients, env *Environments, uid string) {
+	queryStatus, result := FindByUID(c, env, uid)
 	if queryStatus.Success {
 		if len(result) == 0 {
-			registerUser(env, m, uid)
+			registerUser(env, c.Mongo, uid)
 		} else {
-			countUp(env, m, uid, "message")
+			countUp(env, c.Mongo, uid, "message")
 		}
 	}
 }

@@ -65,6 +65,18 @@ func insertOne(e *Environments, m *MongoDB, col Collection, filter bson.D) Query
 	return queryStatus
 }
 
+func findOneAndUpdate(e *Environments, m *MongoDB, col Collection, filter bson.D, update bson.D) QueryStatus {
+	var queryStatus QueryStatus
+	collection := m.Client.Database(e.DB_NAME).Collection(col)
+	_, err := collection.FindOneAndUpdate(m.Ctx, filter, update).DecodeBytes()
+	queryStatus.Success = true
+
+	if err != nil {
+		queryStatus = QueryStatus{false, "[fu]DB接続でエラーが起きました。"}
+	}
+	return queryStatus
+}
+
 func deleteOne(e *Environments, m *MongoDB, col Collection, filter bson.D) QueryStatus {
 	var queryStatus QueryStatus
 	collection := m.Client.Database(e.DB_NAME).Collection(col)
@@ -323,6 +335,16 @@ func registerUser(env *Environments, m *MongoDB, uid string) {
 	}
 }
 
+func countUp(env *Environments, m *MongoDB, uid string, key string) {
+	filter := generateBsonD([]KV{{"uid", uid}})
+	countUpStatus := findOneAndUpdate(env, m, env.DB_COLLECTION.User, filter, bson.D{{"$inc", bson.D{{fmt.Sprintf("count.%s", key), 1}}}})
+	if countUpStatus.Success {
+		fmt.Println("Countup Success.")
+	} else {
+		fmt.Println("Countup Failed.")
+	}
+}
+
 func CountMessage(env *Environments, uid string) {
 	mongoDB := CreateDBClient(env)
 	defer mongoDB.Cancel()
@@ -333,12 +355,11 @@ func CountMessage(env *Environments, uid string) {
 		}
 	}()
 	queryStatus, result := FindByUID(env, mongoDB, uid)
-	fmt.Printf("count status %#v", queryStatus)
 	if queryStatus.Success {
 		if len(result) == 0 {
 			registerUser(env, mongoDB, uid)
 		} else {
-
+			countUp(env, mongoDB, uid, "message")
 		}
 	}
 }

@@ -37,6 +37,7 @@ func main() {
 				panic(err)
 			}
 		}()
+		redis := module.CreateRedisClient()
 
 		for _, event := range events {
 			switch event.Type {
@@ -51,7 +52,7 @@ func main() {
 
 					isCommand, function := module.IsCommand(messageText)
 					if isCommand {
-						function(mongoDB, &env, lb)
+						function(mongoDB, redis, &env, lb)
 						break
 					}
 

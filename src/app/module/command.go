@@ -4,7 +4,7 @@ import "strings"
 
 type Command struct {
 	Keyword      string
-	SendFunction func(e *MongoDB, env *Environments, lb *LINEBot)
+	SendFunction func(e *MongoDB, r *Redis, env *Environments, lb *LINEBot)
 }
 
 var Commands = [...]Command{
@@ -30,9 +30,9 @@ var Commands = [...]Command{
 	{Keyword: "京大楽単bot", SendFunction: infoCmd},
 }
 
-func IsCommand(messageText string) (bool, func(e *MongoDB, env *Environments, lb *LINEBot)) {
+func IsCommand(messageText string) (bool, func(e *MongoDB, r *Redis, env *Environments, lb *LINEBot)) {
 	isCommand := false
-	var function func(e *MongoDB, env *Environments, lb *LINEBot)
+	var function func(e *MongoDB, r *Redis, env *Environments, lb *LINEBot)
 	for _, cmd := range Commands {
 		// Case-insensitive
 		if strings.EqualFold(cmd.Keyword, messageText) {
@@ -43,22 +43,22 @@ func IsCommand(messageText string) (bool, func(e *MongoDB, env *Environments, lb
 	return isCommand, function
 }
 
-func helpCmd(_ *MongoDB, _ *Environments, lb *LINEBot) {
+func helpCmd(_ *MongoDB, _ *Redis, _ *Environments, lb *LINEBot) {
 	flexMessages := loadFlexMessages("./assets/richmenu/help.json", "ヘルプ")
 	lb.SendFlexMessage(flexMessages)
 }
 
-func judgeDetailCmd(_ *MongoDB, _ *Environments, lb *LINEBot) {
+func judgeDetailCmd(_ *MongoDB, _ *Redis, _ *Environments, lb *LINEBot) {
 	flexMessages := loadFlexMessages("./assets/richmenu/judge_detail.json", "らくたん判定の詳細")
 	lb.SendFlexMessage(flexMessages)
 }
 
-func inquiryCmd(_ *MongoDB, _ *Environments, lb *LINEBot) {
+func inquiryCmd(_ *MongoDB, _ *Redis, _ *Environments, lb *LINEBot) {
 	flexMessages := loadFlexMessages("./assets/richmenu/inquiry.json", "お問い合わせ")
 	lb.SendFlexMessage(flexMessages)
 }
 
-func infoCmd(_ *MongoDB, _ *Environments, lb *LINEBot) {
+func infoCmd(_ *MongoDB, _ *Redis, _ *Environments, lb *LINEBot) {
 	flexMessages := loadFlexMessages("./assets/richmenu/info.json", "京大楽単bot")
 	lb.SendFlexMessage(flexMessages)
 }
@@ -68,7 +68,7 @@ func loadFlexMessages(filename string, altText string) []FlexMessage {
 	return CreateFlexMessage(json, altText)
 }
 
-func rakutanCmd(m *MongoDB, env *Environments, lb *LINEBot) {
+func rakutanCmd(m *MongoDB, _ *Redis, env *Environments, lb *LINEBot) {
 	queryStatus, result := GetRakutanInfo(m, env, Omikuji, "rakutan")
 	countUp(env, m, lb.senderUid, "rakutan")
 	if queryStatus.Success {
@@ -79,7 +79,7 @@ func rakutanCmd(m *MongoDB, env *Environments, lb *LINEBot) {
 	}
 }
 
-func onitanCmd(m *MongoDB, env *Environments, lb *LINEBot) {
+func onitanCmd(m *MongoDB, _ *Redis, env *Environments, lb *LINEBot) {
 	queryStatus, result := GetRakutanInfo(m, env, Omikuji, "onitan")
 	countUp(env, m, lb.senderUid, "onitan")
 	if queryStatus.Success {
@@ -89,7 +89,7 @@ func onitanCmd(m *MongoDB, env *Environments, lb *LINEBot) {
 		lb.SendTextMessage("鬼単おみくじに失敗しました。")
 	}
 }
-func getFavoritesCmd(m *MongoDB, env *Environments, lb *LINEBot) {
+func getFavoritesCmd(m *MongoDB, _ *Redis, env *Environments, lb *LINEBot) {
 	queryStatus, result := GetFavorites(m, env, lb.senderUid)
 	if queryStatus.Success {
 		flexMessages := CreateFavorites(result)

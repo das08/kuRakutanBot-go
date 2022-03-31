@@ -173,6 +173,13 @@ func FindByOmikuji(e *Environments, m *MongoDB, omikujiType string) (QueryStatus
 	}
 
 	randomIdx := randomIndex(len(result))
+
+	//mmmm, _ := json.Marshal(result)
+	//
+	//err = rdb.Client.Set(rdb.Ctx, "rakutan", mmmm, time.Minute*1).Err()
+	//if err != nil {
+	//	log.Fatalln(err)
+	//}
 	return queryStatus, []rakutan.RakutanInfo{result[randomIdx]}
 }
 

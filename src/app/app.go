@@ -10,11 +10,6 @@ import (
 	"strings"
 )
 
-type Clients struct {
-	Mongo *module.MongoDB
-	Redis *module.Redis
-}
-
 func main() {
 	env := module.LoadEnv(true)
 	router := gin.Default()
@@ -43,7 +38,7 @@ func main() {
 			}
 		}()
 		redis := module.CreateRedisClient()
-		clients := Clients{Mongo: mongoDB, Redis: redis}
+		clients := module.Clients{Mongo: mongoDB, Redis: redis}
 
 		for _, event := range events {
 			switch event.Type {
@@ -58,7 +53,7 @@ func main() {
 
 					isCommand, function := module.IsCommand(messageText)
 					if isCommand {
-						function(mongoDB, redis, &env, lb)
+						function(clients, &env, lb)
 						break
 					}
 

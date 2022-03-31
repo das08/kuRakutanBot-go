@@ -26,6 +26,11 @@ type Redis struct {
 	Ctx    context.Context
 }
 
+type Clients struct {
+	Mongo *MongoDB
+	Redis *Redis
+}
+
 type KV struct {
 	Key   string
 	Value interface{}

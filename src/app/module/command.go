@@ -74,6 +74,8 @@ func rakutanCmd(m *MongoDB, env *Environments, lb *LINEBot) {
 	if queryStatus.Success {
 		flexMessages := CreateRakutanDetail(result[0], Rakutan)
 		lb.SendFlexMessage(flexMessages)
+	} else {
+		lb.SendTextMessage("楽単おみくじに失敗しました。")
 	}
 }
 
@@ -83,6 +85,8 @@ func onitanCmd(m *MongoDB, env *Environments, lb *LINEBot) {
 	if queryStatus.Success {
 		flexMessages := CreateRakutanDetail(result[0], Onitan)
 		lb.SendFlexMessage(flexMessages)
+	} else {
+		lb.SendTextMessage("鬼単おみくじに失敗しました。")
 	}
 }
 func getFavoritesCmd(m *MongoDB, env *Environments, lb *LINEBot) {

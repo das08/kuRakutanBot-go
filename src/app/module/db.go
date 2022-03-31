@@ -31,7 +31,7 @@ type QueryStatus struct {
 }
 
 func CreateDBClient(e *Environments) *MongoDB {
-	mongoURI := "mongodb://" + e.DB_USER + ":" + e.DB_PASS + "@" + e.DB_HOST + ":" + e.DB_PORT + "/?authSource=" + e.DB_NAME
+	mongoURI := "mongodb://" + e.DB_USER + ":" + e.DB_PASS + "@" + e.DB_HOST + ":" + e.DB_PORT + "/?authSource=admin"
 	client, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))
 	if err != nil {
 		log.Fatal(err)
@@ -148,11 +148,10 @@ func FindByLectureName(e *Environments, m *MongoDB, lectureName string) (QuerySt
 	queryStatus.Success = true
 
 	if err != nil {
-		fmt.Println(err)
-		queryStatus.Success = false
+		return QueryStatus{false, ""}, nil
 	}
 	if err = filterCursor.All(m.Ctx, &result); err != nil {
-		queryStatus.Success = false
+		return QueryStatus{false, ""}, nil
 	}
 	return queryStatus, result
 }
@@ -167,10 +166,10 @@ func FindByOmikuji(e *Environments, m *MongoDB, omikujiType string) (QueryStatus
 	queryStatus.Success = true
 
 	if err != nil {
-		queryStatus.Success = false
+		return QueryStatus{false, ""}, nil
 	}
-	if err = filterCursor.All(m.Ctx, &result); err != nil {
-		queryStatus.Success = false
+	if err = filterCursor.All(m.Ctx, &result); err != nil || result == nil {
+		return QueryStatus{false, ""}, nil
 	}
 
 	randomIdx := randomIndex(len(result))

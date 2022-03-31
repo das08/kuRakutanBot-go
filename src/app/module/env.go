@@ -25,6 +25,7 @@ type Environments struct {
 type Collection = string
 
 type Collections struct {
+	User      Collection
 	Rakutan   Collection
 	Favorites Collection
 }
@@ -54,6 +55,7 @@ func LoadEnv(debug bool) Environments {
 	env.DB_USER = os.Getenv("DB_USER")
 	env.DB_PASS = os.Getenv("DB_PASS")
 	env.DB_NAME = os.Getenv("DB_NAME")
+	env.DB_COLLECTION.User = os.Getenv("DB_COL_USER")
 	env.DB_COLLECTION.Rakutan = os.Getenv("DB_COL_RAKUTAN")
 	env.DB_COLLECTION.Favorites = os.Getenv("DB_COL_FAV")
 	env.KUWIKI_ENDPOINT = os.Getenv("KUWIKI_ENDPOINT")

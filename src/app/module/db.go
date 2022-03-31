@@ -69,6 +69,29 @@ func CreateRedisClient() *Redis {
 	return &Redis{Client: rdb, Ctx: ctx}
 }
 
+func setRedis(c Clients, key string, value interface{}, cacheTime time.Duration) {
+	resultJson, _ := json.Marshal(value)
+	err := c.Redis.Client.Set(c.Redis.Ctx, key, resultJson, cacheTime).Err()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	log.Printf("Saved %s to redis", key)
+}
+
+func getRedisRakutanInfo(c Clients, key string) (QueryStatus, []rakutan.RakutanInfo) {
+	data, err := c.Redis.Client.Get(c.Redis.Ctx, key).Result()
+	if err != nil {
+		return QueryStatus{Success: false}, nil
+	}
+
+	rakutanInfo := new([]rakutan.RakutanInfo)
+	err = json.Unmarshal([]byte(data), rakutanInfo)
+	if err != nil {
+		return QueryStatus{Success: false}, nil
+	}
+	return QueryStatus{Success: true}, *rakutanInfo
+}
+
 func findOne(e *Environments, m *MongoDB, col Collection, filter bson.D) *mongo.SingleResult {
 	collection := m.Client.Database(e.DB_NAME).Collection(col)
 	singleResult := collection.FindOne(m.Ctx, filter) //.Decode(&result)
@@ -183,10 +206,15 @@ func FindByOmikuji(c Clients, e *Environments, omikujiType string) (QueryStatus,
 	var result []rakutan.RakutanInfo
 	collection := c.Mongo.Client.Database(e.DB_NAME).Collection(e.DB_COLLECTION.Rakutan)
 	var queryStatus QueryStatus
+	queryStatus.Success = true
+
+	redisStatus, d := getRedisRakutanInfo(c, omikujiType)
+	if redisStatus.Success {
+		return queryStatus, []rakutan.RakutanInfo{d[randomIndex(len(d))]}
+	}
 
 	filter := bson.D{{"omikuji", omikujiType}}
 	filterCursor, err := collection.Find(c.Mongo.Ctx, filter)
-	queryStatus.Success = true
 
 	if err != nil {
 		return QueryStatus{false, ""}, nil
@@ -194,15 +222,9 @@ func FindByOmikuji(c Clients, e *Environments, omikujiType string) (QueryStatus,
 	if err = filterCursor.All(c.Mongo.Ctx, &result); err != nil || result == nil {
 		return QueryStatus{false, ""}, nil
 	}
+	setRedis(c, omikujiType, result, time.Minute*1)
 
 	randomIdx := randomIndex(len(result))
-
-	resultJson, _ := json.Marshal(result)
-
-	err = c.Redis.Client.Set(c.Redis.Ctx, "rakutan", resultJson, time.Minute*1).Err()
-	if err != nil {
-		log.Fatalln(err)
-	}
 	return queryStatus, []rakutan.RakutanInfo{result[randomIdx]}
 }
 

@@ -12,14 +12,13 @@ import (
 
 func main() {
 	env := module.LoadEnv(true)
-	lb := module.CreateLINEBotClient(&env)
-
 	router := gin.Default()
 	router.GET("/hello", func(c *gin.Context) {
 		c.String(http.StatusOK, "Hello World!!")
 	})
 
 	router.POST("/callback", func(c *gin.Context) {
+		lb := module.CreateLINEBotClient(&env)
 		events, err := lb.Bot.ParseRequest(c.Request)
 		if err != nil {
 			if err == linebot.ErrInvalidSignature {
@@ -29,6 +28,16 @@ func main() {
 			}
 			return
 		}
+
+		mongoDB := module.CreateDBClient(&env)
+		defer mongoDB.Cancel()
+		defer func() {
+			fmt.Println("connection closed")
+			if err := mongoDB.Client.Disconnect(mongoDB.Ctx); err != nil {
+				panic(err)
+			}
+		}()
+
 		for _, event := range events {
 			switch event.Type {
 			case linebot.EventTypeMessage:
@@ -38,15 +47,15 @@ func main() {
 				switch message := event.Message.(type) {
 				case *linebot.TextMessage:
 					messageText := strings.TrimSpace(message.Text)
-					module.CountMessage(&env, uid)
+					module.CountMessage(mongoDB, &env, uid)
 
 					isCommand, function := module.IsCommand(messageText)
 					if isCommand {
-						function(&env, lb)
+						function(mongoDB, &env, lb)
 						break
 					}
 
-					success, flexMessages := searchRakutan(&env, messageText)
+					success, flexMessages := searchRakutan(mongoDB, &env, messageText)
 					if success {
 						lb.SendFlexMessage(flexMessages)
 					} else {
@@ -65,10 +74,10 @@ func main() {
 					fmt.Println("Params: ", params)
 					switch params.Type {
 					case module.Fav:
-						insertStatus := module.InsertFavorite(&env, module.PostbackEntry{Uid: uid, Param: params})
+						insertStatus := module.InsertFavorite(mongoDB, &env, module.PostbackEntry{Uid: uid, Param: params})
 						lb.SendTextMessage(insertStatus.Message)
 					case module.Del:
-						deleteStatus := module.DeleteFavorite(&env, module.PostbackEntry{Uid: uid, Param: params})
+						deleteStatus := module.DeleteFavorite(mongoDB, &env, module.PostbackEntry{Uid: uid, Param: params})
 						lb.SendTextMessage(deleteStatus.Message)
 					}
 				}
@@ -83,7 +92,7 @@ func main() {
 	}
 }
 
-func searchRakutan(env *module.Environments, searchText string) (bool, []module.FlexMessage) {
+func searchRakutan(m *module.MongoDB, env *module.Environments, searchText string) (bool, []module.FlexMessage) {
 	success := false
 	var flexMessages []module.FlexMessage
 	var queryStatus module.QueryStatus
@@ -91,9 +100,9 @@ func searchRakutan(env *module.Environments, searchText string) (bool, []module.
 
 	isLectureNumber, lectureID := module.IsLectureID(searchText)
 	if isLectureNumber {
-		queryStatus, result = module.GetRakutanInfo(env, module.ID, lectureID)
+		queryStatus, result = module.GetRakutanInfo(m, env, module.ID, lectureID)
 	} else {
-		queryStatus, result = module.GetRakutanInfo(env, module.Name, searchText)
+		queryStatus, result = module.GetRakutanInfo(m, env, module.Name, searchText)
 	}
 
 	if queryStatus.Success {

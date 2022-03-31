@@ -37,6 +37,8 @@ func main() {
 				panic(err)
 			}
 		}()
+		redis := module.CreateRedisClient()
+		clients := module.Clients{Mongo: mongoDB, Redis: redis}
 
 		for _, event := range events {
 			switch event.Type {
@@ -47,15 +49,15 @@ func main() {
 				switch message := event.Message.(type) {
 				case *linebot.TextMessage:
 					messageText := strings.TrimSpace(message.Text)
-					module.CountMessage(mongoDB, &env, uid)
+					module.CountMessage(clients, &env, uid)
 
 					isCommand, function := module.IsCommand(messageText)
 					if isCommand {
-						function(mongoDB, &env, lb)
+						function(clients, &env, lb)
 						break
 					}
 
-					success, flexMessages := searchRakutan(mongoDB, &env, messageText)
+					success, flexMessages := searchRakutan(clients, &env, messageText)
 					if success {
 						lb.SendFlexMessage(flexMessages)
 					} else {
@@ -92,7 +94,7 @@ func main() {
 	}
 }
 
-func searchRakutan(m *module.MongoDB, env *module.Environments, searchText string) (bool, []module.FlexMessage) {
+func searchRakutan(c module.Clients, env *module.Environments, searchText string) (bool, []module.FlexMessage) {
 	success := false
 	var flexMessages []module.FlexMessage
 	var queryStatus module.QueryStatus
@@ -100,9 +102,9 @@ func searchRakutan(m *module.MongoDB, env *module.Environments, searchText strin
 
 	isLectureNumber, lectureID := module.IsLectureID(searchText)
 	if isLectureNumber {
-		queryStatus, result = module.GetRakutanInfo(m, env, module.ID, lectureID)
+		queryStatus, result = module.GetRakutanInfo(c, env, module.ID, lectureID)
 	} else {
-		queryStatus, result = module.GetRakutanInfo(m, env, module.Name, searchText)
+		queryStatus, result = module.GetRakutanInfo(c, env, module.Name, searchText)
 	}
 
 	if queryStatus.Success {

@@ -1,6 +1,9 @@
 package module
 
-import "strings"
+import (
+	models "github.com/das08/kuRakutanBot-go/models/rakutan"
+	"strings"
+)
 
 type Command struct {
 	Keyword      string
@@ -102,7 +105,7 @@ func getFavoritesCmd(c Clients, env *Environments, lb *LINEBot) {
 }
 
 func verificationCmd(c Clients, env *Environments, lb *LINEBot) {
-	verification := Verification{
+	verification := models.Verification{
 		Uid:   lb.senderUid,
 		Code:  "test",
 		Email: "",

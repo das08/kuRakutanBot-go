@@ -17,6 +17,21 @@ func main() {
 		c.String(http.StatusOK, "Hello World!!")
 	})
 
+	router.GET("/verification", func(c *gin.Context) {
+		code := c.Query("code")
+		mongoDB := module.CreateDBClient(&env)
+		defer mongoDB.Cancel()
+		defer func() {
+			fmt.Println("connection closed")
+			if err := mongoDB.Client.Disconnect(mongoDB.Ctx); err != nil {
+				panic(err)
+			}
+		}()
+		clients := module.Clients{Mongo: mongoDB}
+		res := module.CheckVerification(clients, &env, code)
+		c.String(http.StatusOK, res.Message)
+	})
+
 	router.POST("/callback", func(c *gin.Context) {
 		lb := module.CreateLINEBotClient(&env)
 		events, err := lb.Bot.ParseRequest(c.Request)

@@ -125,6 +125,19 @@ func insertOne(e *Environments, m *MongoDB, col Collection, filter bson.D) Query
 	return queryStatus
 }
 
+func updateOne(e *Environments, m *MongoDB, col Collection, filter bson.D, update bson.D) QueryStatus {
+	var queryStatus QueryStatus
+	collection := m.Client.Database(e.DB_NAME).Collection(col)
+	_, err := collection.UpdateOne(m.Ctx, filter, update)
+	queryStatus.Success = true
+
+	if err != nil {
+		queryStatus = QueryStatus{false, "[u]DB接続でエラーが起きました。"}
+		fmt.Println(err)
+	}
+	return queryStatus
+}
+
 func findOneAndUpdate(e *Environments, m *MongoDB, col Collection, filter bson.D, update bson.D) QueryStatus {
 	var queryStatus QueryStatus
 	collection := m.Client.Database(e.DB_NAME).Collection(col)
@@ -416,13 +429,7 @@ func CountMessage(c Clients, env *Environments, uid string) {
 	}
 }
 
-type Verification struct {
-	Uid   string
-	Code  string
-	Email string
-}
-
-func InsertVerification(c Clients, env *Environments, v Verification) QueryStatus {
+func InsertVerification(c Clients, env *Environments, v rakutan.Verification) QueryStatus {
 	isVerified := exist(env, c.Mongo, env.DB_COLLECTION.User, []KV{{Key: "uid", Value: v.Uid}, {Key: "verified", Value: true}})
 	if isVerified {
 		return QueryStatus{false, "すでに認証済みです。"}
@@ -440,6 +447,22 @@ func InsertVerification(c Clients, env *Environments, v Verification) QueryStatu
 	} else {
 		return QueryStatus{false, "[d]認証コードの初期化に失敗しました。"}
 	}
+}
+
+func CheckVerification(c Clients, env *Environments, code string) QueryStatus {
+	var result rakutan.Verification
+	singleResult := findOne(env, c.Mongo, env.DB_COLLECTION.Verification, bson.D{{"code", code}})
+	err := singleResult.Decode(&result)
+	if err != nil {
+		return QueryStatus{false, "すでに認証済みか、認証コードが間違っています。"}
+	}
+	updateStatus := updateOne(env, c.Mongo, env.DB_COLLECTION.User, bson.D{{"uid", result.Uid}}, bson.D{{"$set", bson.D{{"verified", true}}}})
+
+	if updateStatus.Success {
+		deleteOne(env, c.Mongo, env.DB_COLLECTION.Verification, bson.D{{"code", code}})
+		return QueryStatus{true, "認証に成功しました。"}
+	}
+	return QueryStatus{false, "認証に失敗しました。再度お試しください。"}
 }
 
 func generateBsonD(kvs []KV) bson.D {

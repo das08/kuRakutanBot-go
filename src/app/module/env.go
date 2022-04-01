@@ -20,6 +20,8 @@ type Environments struct {
 	DB_COLLECTION             Collections
 	KUWIKI_ENDPOINT           string
 	KUWIKI_ACCESS_TOKEN       string
+	GMAIL_ID                  string
+	GMAIL_PASSWORD            string
 }
 
 type Collection = string
@@ -60,6 +62,8 @@ func LoadEnv(debug bool) Environments {
 	env.DB_COLLECTION.Favorites = os.Getenv("DB_COL_FAV")
 	env.KUWIKI_ENDPOINT = os.Getenv("KUWIKI_ENDPOINT")
 	env.KUWIKI_ACCESS_TOKEN = os.Getenv("KUWIKI_ACCESS_TOKEN")
+	env.GMAIL_ID = os.Getenv("GMAIL_ID")
+	env.GMAIL_PASSWORD = os.Getenv("GMAIL_PASSWORD")
 
 	return *env
 }

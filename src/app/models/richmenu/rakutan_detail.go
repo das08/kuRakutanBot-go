@@ -43,7 +43,7 @@ type RakutanDetailBodyContents struct {
 	Text     *string                `json:"text,omitempty"`
 	Size     *Spacing               `json:"size,omitempty"`
 	Color    *string                `json:"color,omitempty"`
-	Flex     *int64                 `json:"flex,omitempty"`
+	Flex     *int                   `json:"flex,omitempty"`
 	Wrap     *bool                  `json:"wrap,omitempty"`
 }
 
@@ -52,7 +52,7 @@ type RakutanDetailContent struct {
 	Text       string     `json:"text"`
 	Size       *Spacing   `json:"size,omitempty"`
 	Color      string     `json:"color"`
-	Flex       *int64     `json:"flex,omitempty"`
+	Flex       *int       `json:"flex,omitempty"`
 	Align      *string    `json:"align,omitempty"`
 	Style      *string    `json:"style,omitempty"`
 	Weight     *string    `json:"weight,omitempty"`
@@ -88,7 +88,7 @@ type RakutanDetailHeaderContents struct {
 	Type        string          `json:"type"`
 	URL         *string         `json:"url,omitempty"`
 	AspectRatio *string         `json:"aspectRatio,omitempty"`
-	Flex        *int64          `json:"flex,omitempty"`
+	Flex        *int            `json:"flex,omitempty"`
 	OffsetStart *string         `json:"offsetStart,omitempty"`
 	Action      *PostbackAction `json:"action,omitempty"`
 	Text        *string         `json:"text,omitempty"`

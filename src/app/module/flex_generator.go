@@ -7,6 +7,7 @@ import (
 	"github.com/line/line-bot-sdk-go/v7/linebot"
 	"log"
 	"math"
+	"net/url"
 	"strconv"
 )
 
@@ -85,6 +86,16 @@ func CreateRakutanDetail(info models.RakutanInfo, o OmikujiType) []FlexMessage {
 	rakutanJudge := getRakutanJudge(info.Detail)
 	rakutanDetail.Body.Contents[0].Contents[5].Contents[1].Text = rakutanJudge.rank
 	rakutanDetail.Body.Contents[0].Contents[5].Contents[1].Color = rakutanJudge.color
+
+	// 過去問リンク
+	if _, err := url.ParseRequestURI(info.URL); info.URL != "" && err == nil {
+		fmt.Println("Url, ", info.URL, info.LectureName)
+		rakutanDetail.Body.Contents[0].Contents[6].Contents[1].Text = "○"
+		rakutanDetail.Body.Contents[0].Contents[6].Contents[1].Color = "#0fd142"
+		rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Text = "リンク"
+		rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Color = "#4c7cf5"
+		rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Action.URI = info.URL
+	}
 
 	flex, err := rakutanDetail.Marshal()
 	if err != nil {

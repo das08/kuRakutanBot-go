@@ -283,9 +283,12 @@ func GetRakutanInfo(c Clients, env *Environments, uid string, method FindByMetho
 		queryStatus, result = FindByOmikuji(c, env, value.(string))
 	}
 
-	// Set isFavorite
+	// Set isFavorite and kakomonURL
 	if queryStatus.Success && len(result) == 1 {
 		result[0].IsFavorite = exist(env, c.Mongo, env.DB_COLLECTION.Favorites, []KV{{Key: "uid", Value: uid}})
+		if kakomonURL := GetKakomonURL(env, result[0].LectureName); kakomonURL != nil {
+			result[0].URL = *kakomonURL
+		}
 	}
 
 	return queryStatus, result

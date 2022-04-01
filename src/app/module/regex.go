@@ -43,6 +43,7 @@ func IsLectureID(messageText string) (bool, int) {
 	return false, 0
 }
 
+// TODO: test and strengthening regex
 func IsStudentAddress(address string) bool {
 	assigned := regexp.MustCompile(`[A-Za-z0-9._+]+@st\.kyoto-u\.ac\.jp$`)
 	return assigned.MatchString(address)

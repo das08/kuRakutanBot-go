@@ -9,6 +9,7 @@ import (
 
 type Environments struct {
 	APP_PORT                  string
+	APP_HOST                  string
 	LINE_CHANNEL_ACCESS_TOKEN string
 	LINE_CHANNEL_SECRET       string
 	LINE_ADMIN_UID            string
@@ -50,6 +51,7 @@ func LoadEnv(debug bool) Environments {
 
 	// Load environment values
 	env.APP_PORT = os.Getenv("APP_PORT")
+	env.APP_HOST = os.Getenv("APP_HOST")
 	env.LINE_CHANNEL_ACCESS_TOKEN = os.Getenv("LINE_CHANNEL_ACCESS_TOKEN")
 	env.LINE_CHANNEL_SECRET = os.Getenv("LINE_CHANNEL_SECRET")
 	env.LINE_ADMIN_UID = os.Getenv("LINE_ADMIN_UID")

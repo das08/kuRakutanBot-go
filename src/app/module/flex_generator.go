@@ -65,6 +65,10 @@ func CreateRakutanDetail(info models.RakutanInfo, o OmikujiType) []FlexMessage {
 	rakutanDetail.Header.Contents[4].Contents[1].Text = toPtr("---")      // Group
 	rakutanDetail.Header.Contents[4].Contents[3].Text = toPtr("---")      // Credits
 
+	if info.IsFavorite {
+		rakutanDetail.Header.Contents[0].Contents[0].URL = toPtr("https://scdn.line-apps.com/n/channel_devcenter/img/fx/review_gold_star_28.png")
+	}
+
 	if o != Normal {
 		rakutanDetail.Header.Contents[0].Contents[1].Text = toPtr(omikujiType[o].Text)
 		rakutanDetail.Header.Contents[0].Contents[1].Color = toPtr(omikujiType[o].Color)

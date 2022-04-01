@@ -1,0 +1,123 @@
+{
+  "type": "bubble",
+  "header": {
+    "type": "box",
+    "layout": "vertical",
+    "contents": [
+      {
+        "type": "text",
+        "text": "認証状況",
+        "weight": "bold",
+        "size": "lg",
+        "margin": "md",
+        "color": "#E6E7E2",
+        "wrap": true
+      },
+      {
+        "type": "separator"
+      },
+      {
+        "type": "spacer",
+        "size": "lg"
+      }
+    ],
+    "paddingAll": "20px",
+    "spacing": "md",
+    "paddingTop": "22px",
+    "paddingBottom": "0px"
+  },
+  "body": {
+    "type": "box",
+    "layout": "vertical",
+    "contents": [
+      {
+        "type": "box",
+        "layout": "horizontal",
+        "contents": [
+          {
+            "type": "text",
+            "text": "×",
+            "flex": 1,
+            "weight": "bold",
+            "color": "#ef1d2f"
+          },
+          {
+            "type": "text",
+            "text": "未認証",
+            "flex": 10
+          }
+        ]
+      },
+      {
+        "type": "box",
+        "layout": "vertical",
+        "spacing": "sm",
+        "contents": [
+          {
+            "type": "separator",
+            "color": "#000000"
+          },
+          {
+            "type": "text",
+            "text": "認証について",
+            "wrap": true,
+            "weight": "bold",
+            "size": "lg",
+            "margin": "lg",
+            "decoration": "underline"
+          },
+          {
+            "type": "text",
+            "text": "・本Botの過去問リンクは京大Wikiと連携しております。そのため過去問の閲覧には京都大学の学生メールアドレスによる認証が必要です。",
+            "wrap": true
+          },
+          {
+            "type": "text",
+            "text": "・本botでは認証リンクの送信時にのみ学生アドレスを使用し、サーバー上に保存することは一切ありません。",
+            "wrap": true
+          },
+          {
+            "type": "text",
+            "text": "・未認証でも過去問リンク閲覧以外の機能は引き続きご利用いただけます。",
+            "wrap": true,
+            "weight": "bold"
+          },
+          {
+            "type": "text",
+            "text": "認証方法",
+            "wrap": true,
+            "weight": "bold",
+            "size": "lg",
+            "margin": "lg",
+            "decoration": "underline"
+          },
+          {
+            "type": "text",
+            "text": "・お持ちの学生アドレス(@st.kyoto-u.ac.jp)をトーク画面にお送りください。",
+            "wrap": true,
+            "weight": "bold"
+          },
+          {
+            "type": "text",
+            "text": "・rakutanbot@gmail.comより送信された認証リンクをクリックすることで認証が完了します。",
+            "wrap": true
+          }
+        ],
+        "margin": "xxl"
+      }
+    ]
+  },
+  "styles": {
+    "header": {
+      "backgroundColor": "#3C3C3A"
+    },
+    "body": {
+      "backgroundColor": "#F4F3F9"
+    },
+    "footer": {
+      "separator": true,
+      "backgroundColor": "#E7E8E3",
+      "separatorColor": "#D6D6D4"
+    }
+  }
+}

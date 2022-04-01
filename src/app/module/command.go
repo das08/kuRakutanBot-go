@@ -25,6 +25,7 @@ var Commands = [...]Command{
 	{Keyword: "おきにいり", SendFunction: getFavoritesCmd},
 	{Keyword: "リスト", SendFunction: getFavoritesCmd},
 	{Keyword: "一覧", SendFunction: getFavoritesCmd},
+	{Keyword: "認証", SendFunction: verificationCmd},
 	{Keyword: "お問い合わせ", SendFunction: inquiryCmd},
 	{Keyword: "問い合わせ", SendFunction: inquiryCmd},
 	{Keyword: "京大楽単bot", SendFunction: infoCmd},
@@ -89,6 +90,7 @@ func onitanCmd(c Clients, env *Environments, lb *LINEBot) {
 		lb.SendTextMessage("鬼単おみくじに失敗しました。")
 	}
 }
+
 func getFavoritesCmd(c Clients, env *Environments, lb *LINEBot) {
 	queryStatus, result := GetFavorites(c, env, lb.senderUid)
 	if queryStatus.Success {
@@ -97,4 +99,14 @@ func getFavoritesCmd(c Clients, env *Environments, lb *LINEBot) {
 	} else {
 		lb.SendTextMessage(queryStatus.Message)
 	}
+}
+
+func verificationCmd(c Clients, env *Environments, lb *LINEBot) {
+	verification := Verification{
+		Uid:   lb.senderUid,
+		Code:  "test",
+		Email: "",
+	}
+	queryStatus := InsertVerification(c, env, verification)
+	lb.SendTextMessage(queryStatus.Message)
 }

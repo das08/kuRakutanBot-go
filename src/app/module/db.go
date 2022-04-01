@@ -416,6 +416,32 @@ func CountMessage(c Clients, env *Environments, uid string) {
 	}
 }
 
+type Verification struct {
+	Uid   string
+	Code  string
+	Email string
+}
+
+func InsertVerification(c Clients, env *Environments, v Verification) QueryStatus {
+	isVerified := exist(env, c.Mongo, env.DB_COLLECTION.User, []KV{{Key: "uid", Value: v.Uid}, {Key: "verified", Value: true}})
+	if isVerified {
+		return QueryStatus{false, "すでに認証済みです。"}
+	}
+
+	deleteStatus := deleteOne(env, c.Mongo, env.DB_COLLECTION.Verification, bson.D{{"uid", v.Uid}})
+	if deleteStatus.Success {
+		filter := generateBsonD([]KV{{"uid", v.Uid}, {"code", v.Code}})
+		insertStatus := insertOne(env, c.Mongo, env.DB_COLLECTION.Verification, filter)
+		if insertStatus.Success {
+			SendVerification(env, v.Email, v.Code)
+			return QueryStatus{true, "認証コードを送信しました。送られたメール内の認証リンクをクリックすると有効化されます。\n届いていない場合は、アドレスが間違っているか迷惑メールに入っている可能性があります。"}
+		}
+		return QueryStatus{false, "[i]認証コードの初期化に失敗しました。]"}
+	} else {
+		return QueryStatus{false, "[d]認証コードの初期化に失敗しました。"}
+	}
+}
+
 func generateBsonD(kvs []KV) bson.D {
 	entry := bson.D{}
 	for _, kv := range kvs {

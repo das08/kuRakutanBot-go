@@ -1,6 +1,10 @@
 package module
 
-import "strings"
+import (
+	models "github.com/das08/kuRakutanBot-go/models/rakutan"
+	"github.com/google/uuid"
+	"strings"
+)
 
 type Command struct {
 	Keyword      string
@@ -25,6 +29,9 @@ var Commands = [...]Command{
 	{Keyword: "おきにいり", SendFunction: getFavoritesCmd},
 	{Keyword: "リスト", SendFunction: getFavoritesCmd},
 	{Keyword: "一覧", SendFunction: getFavoritesCmd},
+	{Keyword: "認証", SendFunction: verificationCmd},
+	{Keyword: "認証する", SendFunction: verificationCmd},
+	{Keyword: "ユーザ認証", SendFunction: verificationCmd},
 	{Keyword: "お問い合わせ", SendFunction: inquiryCmd},
 	{Keyword: "問い合わせ", SendFunction: inquiryCmd},
 	{Keyword: "京大楽単bot", SendFunction: infoCmd},
@@ -89,6 +96,7 @@ func onitanCmd(c Clients, env *Environments, lb *LINEBot) {
 		lb.SendTextMessage("鬼単おみくじに失敗しました。")
 	}
 }
+
 func getFavoritesCmd(c Clients, env *Environments, lb *LINEBot) {
 	queryStatus, result := GetFavorites(c, env, lb.senderUid)
 	if queryStatus.Success {
@@ -97,4 +105,27 @@ func getFavoritesCmd(c Clients, env *Environments, lb *LINEBot) {
 	} else {
 		lb.SendTextMessage(queryStatus.Message)
 	}
+}
+
+func verificationCmd(c Clients, env *Environments, lb *LINEBot) {
+	if IsVerified(c, env, lb.senderUid) {
+		flexMessages := loadFlexMessages("./assets/richmenu/verified.json", "ユーザー認証完了")
+		lb.SendFlexMessage(flexMessages)
+	} else {
+		flexMessages := loadFlexMessages("./assets/richmenu/verification.json", "ユーザー認証をする")
+		lb.SendFlexMessage(flexMessages)
+	}
+}
+
+func SendVerificationCmd(c Clients, env *Environments, lb *LINEBot, email string) {
+	uuidObj, _ := uuid.NewUUID()
+	data := []byte(lb.senderUid)
+	code := uuid.NewSHA1(uuidObj, data)
+	verification := models.Verification{
+		Uid:   lb.senderUid,
+		Code:  code.String(),
+		Email: email,
+	}
+	queryStatus := InsertVerification(c, env, verification)
+	lb.SendTextMessage(queryStatus.Message)
 }

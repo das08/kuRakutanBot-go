@@ -5,6 +5,7 @@ go 1.16
 require (
 	github.com/gin-gonic/gin v1.7.7
 	github.com/go-redis/redis/v8 v8.11.5 // indirect
+	github.com/google/uuid v1.3.0 // indirect
 	github.com/joho/godotenv v1.4.0
 	github.com/line/line-bot-sdk-go/v7 v7.14.0
 	github.com/mattn/go-isatty v0.0.12 // indirect

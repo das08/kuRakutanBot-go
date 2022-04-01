@@ -125,6 +125,19 @@ func insertOne(e *Environments, m *MongoDB, col Collection, filter bson.D) Query
 	return queryStatus
 }
 
+func updateOne(e *Environments, m *MongoDB, col Collection, filter bson.D, update bson.D) QueryStatus {
+	var queryStatus QueryStatus
+	collection := m.Client.Database(e.DB_NAME).Collection(col)
+	_, err := collection.UpdateOne(m.Ctx, filter, update)
+	queryStatus.Success = true
+
+	if err != nil {
+		queryStatus = QueryStatus{false, "[u]DB接続でエラーが起きました。"}
+		fmt.Println(err)
+	}
+	return queryStatus
+}
+
 func findOneAndUpdate(e *Environments, m *MongoDB, col Collection, filter bson.D, update bson.D) QueryStatus {
 	var queryStatus QueryStatus
 	collection := m.Client.Database(e.DB_NAME).Collection(col)
@@ -297,9 +310,9 @@ func GetRakutanInfo(c Clients, env *Environments, uid string, method FindByMetho
 
 	// Set isVerified, isFavorite and kakomonURL
 	if queryStatus.Success && len(result) == 1 {
-		isVerified := exist(env, c.Mongo, env.DB_COLLECTION.User, []KV{{Key: "uid", Value: uid}, {Key: "verified", Value: true}})
+		isVerified := IsVerified(c, env, uid)
 		result[0].IsVerified = isVerified
-		result[0].IsFavorite = exist(env, c.Mongo, env.DB_COLLECTION.Favorites, []KV{{Key: "uid", Value: uid}})
+		result[0].IsFavorite = exist(env, c.Mongo, env.DB_COLLECTION.Favorites, []KV{{Key: "uid", Value: uid}, {Key: "id", Value: result[0].ID}})
 
 		if isVerified {
 			redisKey := fmt.Sprintf("#%d", result[0].ID)
@@ -386,6 +399,7 @@ func registerUser(env *Environments, m *MongoDB, uid string) {
 		{"count", bson.D{{"message", 1}, {"rakutan", 0}, {"onitan", 0}}},
 		{"register_time", int(time.Now().Unix())},
 		{"verified", false},
+		{"verified_time", 0},
 	}
 	insertStatus := insertOne(env, m, env.DB_COLLECTION.User, bsonD)
 	if insertStatus.Success {
@@ -414,6 +428,42 @@ func CountMessage(c Clients, env *Environments, uid string) {
 			countUp(env, c.Mongo, uid, "message")
 		}
 	}
+}
+
+func IsVerified(c Clients, env *Environments, uid string) bool {
+	return exist(env, c.Mongo, env.DB_COLLECTION.User, []KV{{Key: "uid", Value: uid}, {Key: "verified", Value: true}})
+}
+
+func InsertVerification(c Clients, env *Environments, v rakutan.Verification) QueryStatus {
+	deleteStatus := deleteOne(env, c.Mongo, env.DB_COLLECTION.Verification, bson.D{{"uid", v.Uid}})
+	if deleteStatus.Success {
+		filter := generateBsonD([]KV{{"uid", v.Uid}, {"code", v.Code}})
+		insertStatus := insertOne(env, c.Mongo, env.DB_COLLECTION.Verification, filter)
+		if insertStatus.Success {
+			SendVerification(env, v.Email, v.Code)
+			return QueryStatus{true, "認証コードを送信しました。送られたメール内の認証リンクをクリックすると有効化されます。\n届いていない場合は、アドレスが間違っているか迷惑メールに入っている可能性があります。"}
+		}
+		return QueryStatus{false, "[i]認証コードの初期化に失敗しました。]"}
+	} else {
+		return QueryStatus{false, "[d]認証コードの初期化に失敗しました。"}
+	}
+}
+
+func CheckVerification(c Clients, env *Environments, code string) QueryStatus {
+	var result rakutan.Verification
+	singleResult := findOne(env, c.Mongo, env.DB_COLLECTION.Verification, bson.D{{"code", code}})
+	err := singleResult.Decode(&result)
+	if err != nil {
+		return QueryStatus{false, "すでに認証済みか、認証コードが間違っています。"}
+	}
+	update := generateBsonD([]KV{{"verified", true}, {"verified_time", int(time.Now().Unix())}})
+	updateStatus := updateOne(env, c.Mongo, env.DB_COLLECTION.User, bson.D{{"uid", result.Uid}}, bson.D{{"$set", update}})
+
+	if updateStatus.Success {
+		deleteOne(env, c.Mongo, env.DB_COLLECTION.Verification, bson.D{{"code", code}})
+		return QueryStatus{true, "認証に成功しました。"}
+	}
+	return QueryStatus{false, "認証に失敗しました。再度お試しください。"}
 }
 
 func generateBsonD(kvs []KV) bson.D {

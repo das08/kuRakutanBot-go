@@ -1,0 +1,66 @@
+{
+  "type": "bubble",
+  "header": {
+    "type": "box",
+    "layout": "vertical",
+    "contents": [
+      {
+        "type": "text",
+        "text": "認証状況",
+        "weight": "bold",
+        "size": "lg",
+        "margin": "md",
+        "color": "#E6E7E2",
+        "wrap": true
+      },
+      {
+        "type": "separator"
+      },
+      {
+        "type": "spacer",
+        "size": "lg"
+      }
+    ],
+    "paddingAll": "20px",
+    "spacing": "md",
+    "paddingTop": "22px",
+    "paddingBottom": "0px"
+  },
+  "body": {
+    "type": "box",
+    "layout": "vertical",
+    "contents": [
+      {
+        "type": "box",
+        "layout": "horizontal",
+        "contents": [
+          {
+            "type": "text",
+            "text": "○",
+            "flex": 1,
+            "color": "#0fd142",
+            "weight": "bold"
+          },
+          {
+            "type": "text",
+            "text": "認証済み",
+            "flex": 10
+          }
+        ]
+      }
+    ]
+  },
+  "styles": {
+    "header": {
+      "backgroundColor": "#3C3C3A"
+    },
+    "body": {
+      "backgroundColor": "#F4F3F9"
+    },
+    "footer": {
+      "separator": true,
+      "backgroundColor": "#E7E8E3",
+      "separatorColor": "#D6D6D4"
+    }
+  }
+}

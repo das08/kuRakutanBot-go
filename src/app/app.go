@@ -88,7 +88,7 @@ func main() {
 					if success {
 						lb.SendFlexMessage(flexMessages)
 					} else {
-						lb.SendTextMessage(message.Text)
+						lb.SendTextMessage(fmt.Sprintf("「%s」は見つかりませんでした。\n【検索のヒント】%%を頭につけて検索すると部分一致検索ができます。ex.)「%%地理学」", message.Text))
 					}
 				}
 			case linebot.EventTypePostback:

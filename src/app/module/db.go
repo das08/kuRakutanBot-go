@@ -225,7 +225,15 @@ func FindByLectureName(c Clients, e *Environments, lectureName string) (QuerySta
 	collection := c.Mongo.Client.Database(e.DB_NAME).Collection(e.DB_COLLECTION.Rakutan)
 	var queryStatus QueryStatus
 
-	filterCursor, err := collection.Find(c.Mongo.Ctx, bson.D{{"lecture_name", primitive.Regex{Pattern: "^" + lectureName, Options: "i"}}})
+	var searchPattern string
+	rLectureName := []rune(lectureName)
+	if string(rLectureName[:1]) == "%" || string(rLectureName[:1]) == "％" {
+		searchPattern = string(rLectureName[1:])
+	} else {
+		searchPattern = "^" + lectureName
+	}
+
+	filterCursor, err := collection.Find(c.Mongo.Ctx, bson.D{{"lecture_name", primitive.Regex{Pattern: searchPattern, Options: "i"}}})
 	queryStatus.Success = true
 
 	if err != nil {

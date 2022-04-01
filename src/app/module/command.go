@@ -109,7 +109,7 @@ func getFavoritesCmd(c Clients, env *Environments, lb *LINEBot) {
 
 func verificationCmd(c Clients, env *Environments, lb *LINEBot) {
 	if IsVerified(c, env, lb.senderUid) {
-		flexMessages := loadFlexMessages("./assets/richmenu/verified.json", "ユーザー認証完了")
+		flexMessages := loadFlexMessages("./assets/richmenu/verified.json", "ユーザー認証済み")
 		lb.SendFlexMessage(flexMessages)
 	} else {
 		flexMessages := loadFlexMessages("./assets/richmenu/verification.json", "ユーザー認証をする")

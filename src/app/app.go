@@ -57,7 +57,7 @@ func main() {
 						break
 					}
 
-					success, flexMessages := searchRakutan(clients, &env, messageText)
+					success, flexMessages := searchRakutan(clients, &env, uid, messageText)
 					if success {
 						lb.SendFlexMessage(flexMessages)
 					} else {
@@ -94,7 +94,7 @@ func main() {
 	}
 }
 
-func searchRakutan(c module.Clients, env *module.Environments, searchText string) (bool, []module.FlexMessage) {
+func searchRakutan(c module.Clients, env *module.Environments, uid string, searchText string) (bool, []module.FlexMessage) {
 	success := false
 	var flexMessages []module.FlexMessage
 	var queryStatus module.QueryStatus
@@ -102,9 +102,9 @@ func searchRakutan(c module.Clients, env *module.Environments, searchText string
 
 	isLectureNumber, lectureID := module.IsLectureID(searchText)
 	if isLectureNumber {
-		queryStatus, result = module.GetRakutanInfo(c, env, module.ID, lectureID)
+		queryStatus, result = module.GetRakutanInfo(c, env, uid, module.ID, lectureID)
 	} else {
-		queryStatus, result = module.GetRakutanInfo(c, env, module.Name, searchText)
+		queryStatus, result = module.GetRakutanInfo(c, env, uid, module.Name, searchText)
 	}
 
 	if queryStatus.Success {

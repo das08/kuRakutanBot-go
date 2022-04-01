@@ -48,6 +48,6 @@ func GetKakomonURL(e *Environments, lectureName string) *string {
 			}
 		}
 	}
-
+	log.Println("[KUWiki]: Got kakomon URL")
 	return kakomonURL
 }

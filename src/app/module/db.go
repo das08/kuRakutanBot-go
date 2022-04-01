@@ -92,6 +92,20 @@ func getRedisRakutanInfo(c Clients, key string) (QueryStatus, []rakutan.RakutanI
 	return QueryStatus{Success: true}, *rakutanInfo
 }
 
+func getRedisKakomonURL(c Clients, key string) (QueryStatus, string) {
+	data, err := c.Redis.Client.Get(c.Redis.Ctx, key).Result()
+	if err != nil {
+		return QueryStatus{Success: false}, ""
+	}
+
+	kakomonURL := new(string)
+	err = json.Unmarshal([]byte(data), kakomonURL)
+	if err != nil {
+		return QueryStatus{Success: false}, ""
+	}
+	return QueryStatus{Success: true}, *kakomonURL
+}
+
 func findOne(e *Environments, m *MongoDB, col Collection, filter bson.D) *mongo.SingleResult {
 	collection := m.Client.Database(e.DB_NAME).Collection(col)
 	singleResult := collection.FindOne(m.Ctx, filter) //.Decode(&result)
@@ -288,8 +302,14 @@ func GetRakutanInfo(c Clients, env *Environments, uid string, method FindByMetho
 		result[0].IsFavorite = exist(env, c.Mongo, env.DB_COLLECTION.Favorites, []KV{{Key: "uid", Value: uid}})
 
 		if isVerified {
-			if kakomonURL := GetKakomonURL(env, result[0].LectureName); kakomonURL != nil {
-				result[0].URL = *kakomonURL
+			redisKey := fmt.Sprintf("#%d", result[0].ID)
+			if redisStatus, cacheURL := getRedisKakomonURL(c, redisKey); redisStatus.Success {
+				result[0].URL = cacheURL
+			} else {
+				if kakomonURL := GetKakomonURL(env, result[0].LectureName); kakomonURL != nil {
+					setRedis(c, redisKey, *kakomonURL, time.Minute)
+					result[0].URL = *kakomonURL
+				}
 			}
 		}
 	}

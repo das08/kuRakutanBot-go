@@ -312,7 +312,7 @@ func GetRakutanInfo(c Clients, env *Environments, uid string, method FindByMetho
 	if queryStatus.Success && len(result) == 1 {
 		isVerified := IsVerified(c, env, uid)
 		result[0].IsVerified = isVerified
-		result[0].IsFavorite = exist(env, c.Mongo, env.DB_COLLECTION.Favorites, []KV{{Key: "uid", Value: uid}})
+		result[0].IsFavorite = exist(env, c.Mongo, env.DB_COLLECTION.Favorites, []KV{{Key: "uid", Value: uid}, {Key: "id", Value: result[0].ID}})
 
 		if isVerified {
 			redisKey := fmt.Sprintf("#%d", result[0].ID)

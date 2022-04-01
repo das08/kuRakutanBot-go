@@ -150,6 +150,19 @@ func count(e *Environments, m *MongoDB, col Collection, kvs []KV) (QueryStatus, 
 	return queryStatus, int(cnt)
 }
 
+func count2(e *Environments, m *MongoDB, col Collection, kvs []KV) (QueryStatus, int) {
+	var queryStatus QueryStatus
+	collection := m.Client.Database(e.DB_NAME).Collection(col)
+	cnt, err := collection.CountDocuments(m.Ctx, bson.D{{"verified", true}})
+	queryStatus.Success = true
+
+	if err != nil {
+		queryStatus = QueryStatus{false, "[c]DB接続でエラーが起きました。"}
+		fmt.Println(err)
+	}
+	return queryStatus, int(cnt)
+}
+
 func exist(e *Environments, m *MongoDB, col Collection, kvs []KV) bool {
 	queryStatus, cnt := count(e, m, col, kvs)
 	if queryStatus.Success && cnt > 0 {
@@ -283,11 +296,16 @@ func GetRakutanInfo(c Clients, env *Environments, uid string, method FindByMetho
 		queryStatus, result = FindByOmikuji(c, env, value.(string))
 	}
 
-	// Set isFavorite and kakomonURL
+	// Set isVerified, isFavorite and kakomonURL
 	if queryStatus.Success && len(result) == 1 {
+		isVerified := exist(env, c.Mongo, env.DB_COLLECTION.User, []KV{{Key: "uid", Value: uid}, {Key: "verified", Value: true}})
+		result[0].IsVerified = isVerified
 		result[0].IsFavorite = exist(env, c.Mongo, env.DB_COLLECTION.Favorites, []KV{{Key: "uid", Value: uid}})
-		if kakomonURL := GetKakomonURL(env, result[0].LectureName); kakomonURL != nil {
-			result[0].URL = *kakomonURL
+
+		if isVerified {
+			if kakomonURL := GetKakomonURL(env, result[0].LectureName); kakomonURL != nil {
+				result[0].URL = *kakomonURL
+			}
 		}
 	}
 

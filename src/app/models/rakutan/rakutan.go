@@ -7,6 +7,7 @@ type RakutanInfo struct {
 	Detail      RakutanDetails `bson:"detail"`
 	OmikujiType string         `bson:"omikuji,omitempty"`
 	URL         string         `bson:"url,omitempty"`
+	IsVerified  bool
 	IsFavorite  bool
 }
 

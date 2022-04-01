@@ -150,19 +150,6 @@ func count(e *Environments, m *MongoDB, col Collection, kvs []KV) (QueryStatus, 
 	return queryStatus, int(cnt)
 }
 
-func count2(e *Environments, m *MongoDB, col Collection, kvs []KV) (QueryStatus, int) {
-	var queryStatus QueryStatus
-	collection := m.Client.Database(e.DB_NAME).Collection(col)
-	cnt, err := collection.CountDocuments(m.Ctx, bson.D{{"verified", true}})
-	queryStatus.Success = true
-
-	if err != nil {
-		queryStatus = QueryStatus{false, "[c]DB接続でエラーが起きました。"}
-		fmt.Println(err)
-	}
-	return queryStatus, int(cnt)
-}
-
 func exist(e *Environments, m *MongoDB, col Collection, kvs []KV) bool {
 	queryStatus, cnt := count(e, m, col, kvs)
 	if queryStatus.Success && cnt > 0 {
@@ -171,7 +158,7 @@ func exist(e *Environments, m *MongoDB, col Collection, kvs []KV) bool {
 	return false
 }
 
-func FindByLectureID(c Clients, e *Environments, uid string, lectureID int) (QueryStatus, []rakutan.RakutanInfo) {
+func FindByLectureID(c Clients, e *Environments, lectureID int) (QueryStatus, []rakutan.RakutanInfo) {
 	var queryStatus QueryStatus
 	result := rakutan.RakutanInfo{}
 	singleResult := findOne(e, c.Mongo, e.DB_COLLECTION.Rakutan, generateBsonD([]KV{{Key: "id", Value: lectureID}}))
@@ -182,8 +169,6 @@ func FindByLectureID(c Clients, e *Environments, uid string, lectureID int) (Que
 		fmt.Println(err)
 	} else {
 		queryStatus.Success = true
-		result.IsFavorite = exist(e, c.Mongo, e.DB_COLLECTION.Favorites, []KV{{Key: "uid", Value: uid}})
-		log.Println("favorite: ", result.IsFavorite)
 	}
 	return queryStatus, []rakutan.RakutanInfo{result}
 }
@@ -208,7 +193,7 @@ func FindByUID(c Clients, e *Environments, uid string) (QueryStatus, []rakutan.U
 }
 
 // TODO: Add error message to query status
-func FindByLectureName(c Clients, e *Environments, uid string, lectureName string) (QueryStatus, []rakutan.RakutanInfo) {
+func FindByLectureName(c Clients, e *Environments, lectureName string) (QueryStatus, []rakutan.RakutanInfo) {
 	var result []rakutan.RakutanInfo
 	collection := c.Mongo.Client.Database(e.DB_NAME).Collection(e.DB_COLLECTION.Rakutan)
 	var queryStatus QueryStatus
@@ -289,9 +274,9 @@ func GetRakutanInfo(c Clients, env *Environments, uid string, method FindByMetho
 
 	switch method {
 	case ID:
-		queryStatus, result = FindByLectureID(c, env, uid, value.(int))
+		queryStatus, result = FindByLectureID(c, env, value.(int))
 	case Name:
-		queryStatus, result = FindByLectureName(c, env, uid, value.(string))
+		queryStatus, result = FindByLectureName(c, env, value.(string))
 	case Omikuji:
 		queryStatus, result = FindByOmikuji(c, env, value.(string))
 	}

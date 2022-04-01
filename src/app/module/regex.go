@@ -43,6 +43,11 @@ func IsLectureID(messageText string) (bool, int) {
 	return false, 0
 }
 
+func IsStudentAddress(address string) bool {
+	assigned := regexp.MustCompile(`[A-Za-z0-9._+]+@st\.kyoto-u\.ac\.jp$`)
+	return assigned.MatchString(address)
+}
+
 func ParsePBParam(messageText string) (bool, PostbackParam) {
 	expectedKey := [3]string{"type", "id", "lecname"}
 	assigned := regexp.MustCompile("([^=&]+)=([^&]*)")

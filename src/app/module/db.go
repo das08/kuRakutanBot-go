@@ -310,7 +310,7 @@ func GetRakutanInfo(c Clients, env *Environments, uid string, method FindByMetho
 
 	// Set isVerified, isFavorite and kakomonURL
 	if queryStatus.Success && len(result) == 1 {
-		isVerified := exist(env, c.Mongo, env.DB_COLLECTION.User, []KV{{Key: "uid", Value: uid}, {Key: "verified", Value: true}})
+		isVerified := IsVerified(c, env, uid)
 		result[0].IsVerified = isVerified
 		result[0].IsFavorite = exist(env, c.Mongo, env.DB_COLLECTION.Favorites, []KV{{Key: "uid", Value: uid}})
 
@@ -430,12 +430,11 @@ func CountMessage(c Clients, env *Environments, uid string) {
 	}
 }
 
-func InsertVerification(c Clients, env *Environments, v rakutan.Verification) QueryStatus {
-	isVerified := exist(env, c.Mongo, env.DB_COLLECTION.User, []KV{{Key: "uid", Value: v.Uid}, {Key: "verified", Value: true}})
-	if isVerified {
-		return QueryStatus{false, "すでに認証済みです。"}
-	}
+func IsVerified(c Clients, env *Environments, uid string) bool {
+	return exist(env, c.Mongo, env.DB_COLLECTION.User, []KV{{Key: "uid", Value: uid}, {Key: "verified", Value: true}})
+}
 
+func InsertVerification(c Clients, env *Environments, v rakutan.Verification) QueryStatus {
 	deleteStatus := deleteOne(env, c.Mongo, env.DB_COLLECTION.Verification, bson.D{{"uid", v.Uid}})
 	if deleteStatus.Success {
 		filter := generateBsonD([]KV{{"uid", v.Uid}, {"code", v.Code}})

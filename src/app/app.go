@@ -72,6 +72,15 @@ func main() {
 						break
 					}
 
+					if module.IsStudentAddress(messageText) {
+						if module.IsVerified(clients, &env, uid) {
+							lb.SendTextMessage("すでに認証済みです。")
+						} else {
+							module.SendVerificationCmd(clients, &env, lb, messageText)
+						}
+						break
+					}
+
 					success, flexMessages := searchRakutan(clients, &env, uid, messageText)
 					if success {
 						lb.SendFlexMessage(flexMessages)

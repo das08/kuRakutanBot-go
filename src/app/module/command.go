@@ -2,6 +2,7 @@ package module
 
 import (
 	models "github.com/das08/kuRakutanBot-go/models/rakutan"
+	"github.com/google/uuid"
 	"strings"
 )
 
@@ -29,6 +30,7 @@ var Commands = [...]Command{
 	{Keyword: "リスト", SendFunction: getFavoritesCmd},
 	{Keyword: "一覧", SendFunction: getFavoritesCmd},
 	{Keyword: "認証", SendFunction: verificationCmd},
+	{Keyword: "認証する", SendFunction: verificationCmd},
 	{Keyword: "お問い合わせ", SendFunction: inquiryCmd},
 	{Keyword: "問い合わせ", SendFunction: inquiryCmd},
 	{Keyword: "京大楽単bot", SendFunction: infoCmd},
@@ -105,10 +107,23 @@ func getFavoritesCmd(c Clients, env *Environments, lb *LINEBot) {
 }
 
 func verificationCmd(c Clients, env *Environments, lb *LINEBot) {
+	if IsVerified(c, env, lb.senderUid) {
+		flexMessages := loadFlexMessages("./assets/richmenu/verified.json", "ユーザー認証完了")
+		lb.SendFlexMessage(flexMessages)
+	} else {
+		flexMessages := loadFlexMessages("./assets/richmenu/verification.json", "ユーザー認証をする")
+		lb.SendFlexMessage(flexMessages)
+	}
+}
+
+func SendVerificationCmd(c Clients, env *Environments, lb *LINEBot, email string) {
+	uuidObj, _ := uuid.NewUUID()
+	data := []byte(lb.senderUid)
+	code := uuid.NewSHA1(uuidObj, data)
 	verification := models.Verification{
 		Uid:   lb.senderUid,
-		Code:  "test",
-		Email: "",
+		Code:  code.String(),
+		Email: email,
 	}
 	queryStatus := InsertVerification(c, env, verification)
 	lb.SendTextMessage(queryStatus.Message)

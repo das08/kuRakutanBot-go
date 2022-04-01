@@ -73,6 +73,6 @@ func TestToStr(t *testing.T) {
 func TestToPtr(t *testing.T) {
 	sampleText := "Hello World"
 	expect := &sampleText
-	actual := toPtr(sampleText)
+	actual := strToPtr(sampleText)
 	assert.Equal(t, expect, actual)
 }

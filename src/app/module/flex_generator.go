@@ -7,6 +7,7 @@ import (
 	"github.com/line/line-bot-sdk-go/v7/linebot"
 	"log"
 	"math"
+	"net/url"
 	"strconv"
 )
 
@@ -59,15 +60,19 @@ var omikujiType = map[OmikujiType]OmikujiText{
 
 func CreateRakutanDetail(info models.RakutanInfo, o OmikujiType) []FlexMessage {
 	rakutanDetail := LoadRakutanDetail()
-	rakutanDetail.Header.Contents[0].Contents[1].Text = toPtr("Search ID:#" + toStr(info.ID))
+	rakutanDetail.Header.Contents[0].Contents[1].Text = strToPtr("Search ID:#" + toStr(info.ID))
 	rakutanDetail.Header.Contents[1].Text = &info.LectureName             // Lecture name
 	rakutanDetail.Header.Contents[3].Contents[1].Text = &info.FacultyName // Faculty name
-	rakutanDetail.Header.Contents[4].Contents[1].Text = toPtr("---")      // Group
-	rakutanDetail.Header.Contents[4].Contents[3].Text = toPtr("---")      // Credits
+	rakutanDetail.Header.Contents[4].Contents[1].Text = strToPtr("---")   // Group
+	rakutanDetail.Header.Contents[4].Contents[3].Text = strToPtr("---")   // Credits
+
+	if info.IsFavorite {
+		rakutanDetail.Header.Contents[0].Contents[0].URL = strToPtr("https://scdn.line-apps.com/n/channel_devcenter/img/fx/review_gold_star_28.png")
+	}
 
 	if o != Normal {
-		rakutanDetail.Header.Contents[0].Contents[1].Text = toPtr(omikujiType[o].Text)
-		rakutanDetail.Header.Contents[0].Contents[1].Color = toPtr(omikujiType[o].Color)
+		rakutanDetail.Header.Contents[0].Contents[1].Text = strToPtr(omikujiType[o].Text)
+		rakutanDetail.Header.Contents[0].Contents[1].Color = strToPtr(omikujiType[o].Color)
 	}
 
 	// Postbackパラメータ
@@ -81,6 +86,29 @@ func CreateRakutanDetail(info models.RakutanInfo, o OmikujiType) []FlexMessage {
 	rakutanJudge := getRakutanJudge(info.Detail)
 	rakutanDetail.Body.Contents[0].Contents[5].Contents[1].Text = rakutanJudge.rank
 	rakutanDetail.Body.Contents[0].Contents[5].Contents[1].Color = rakutanJudge.color
+
+	// 過去問リンク
+	if info.IsVerified {
+		if _, err := url.ParseRequestURI(info.URL); info.URL != "" && err == nil {
+			rakutanDetail.Body.Contents[0].Contents[6].Contents[1].Text = "○"
+			rakutanDetail.Body.Contents[0].Contents[6].Contents[1].Color = "#0fd142"
+			rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Text = "リンク"
+			rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Color = "#4c7cf5"
+			rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Action.URI = &info.URL
+		} else {
+			rakutanDetail.Body.Contents[0].Contents[6].Contents[1].Text = "×"
+			rakutanDetail.Body.Contents[0].Contents[6].Contents[1].Color = "#ef1d2f"
+			rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Text = "提供する"
+			rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Action = &richmenu.URIAction{Type: "uri", Label: "action", URI: strToPtr("https://www.kuwiki.net/upload-exams")}
+		}
+	} else {
+		rakutanDetail.Body.Contents[0].Contents[6].Contents[1].Flex = intToPtr(0)
+		rakutanDetail.Body.Contents[0].Contents[6].Contents[1].Text = "△"
+		rakutanDetail.Body.Contents[0].Contents[6].Contents[1].Color = "#ffb101"
+		rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Flex = intToPtr(7)
+		rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Text = "ユーザー認証が必要です"
+		rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Action = &richmenu.URIAction{Type: "message", Label: "action", Text: strToPtr("ユーザ認証")}
+	}
 
 	flex, err := rakutanDetail.Marshal()
 	if err != nil {
@@ -105,8 +133,8 @@ func CreateSearchResult(searchText string, infos []models.RakutanInfo) []FlexMes
 		switch {
 		case pageCount == 1:
 			// Set header text
-			searchResult.Header.Contents[0].Text = toPtr(altText)
-			searchResult.Header.Contents[1].Text = toPtr(fmt.Sprintf("%d 件の候補が見つかりました。目的の講義を選択してください。", len(infos)))
+			searchResult.Header.Contents[0].Text = strToPtr(altText)
+			searchResult.Header.Contents[1].Text = strToPtr(fmt.Sprintf("%d 件の候補が見つかりました。目的の講義を選択してください。", len(infos)))
 
 			// Set body text
 			searchResult.Body.Contents[1].Contents = getLectureList(infos, pageCount)
@@ -114,7 +142,7 @@ func CreateSearchResult(searchText string, infos []models.RakutanInfo) []FlexMes
 			messages = append(messages, FlexMessage{FlexContainer: flexContainer, AltText: altText})
 		case pageCount >= 2:
 			// Set header text
-			searchResultMore.Header.Contents[0].Text = toPtr(altText)
+			searchResultMore.Header.Contents[0].Text = strToPtr(altText)
 
 			// Set body text
 			searchResultMore.Body.Contents[1].Contents = getLectureList(infos, pageCount)
@@ -178,8 +206,8 @@ func getFavoriteList(favs []models.Favorite, pageCount int) []richmenu.Favorites
 	for i := offset; i < int(math.Min(float64(len(favs)), float64(MaxResultsPerPage+offset))); i++ {
 		tmp := favorite.DeepCopy()
 		tmp.Contents[0].Text = favs[i].LectureName
-		tmp.Contents[1].Action.Text = toPtr(fmt.Sprintf("#%d", favs[i].ID))
-		tmp.Contents[2].Action.Data = toPtr(fmt.Sprintf("type=del&id=%d&lecname=%s", favs[i].ID, favs[i].LectureName))
+		tmp.Contents[1].Action.Text = strToPtr(fmt.Sprintf("#%d", favs[i].ID))
+		tmp.Contents[2].Action.Data = strToPtr(fmt.Sprintf("type=del&id=%d&lecname=%s", favs[i].ID, favs[i].LectureName))
 
 		favoriteList = append(favoriteList, tmp)
 	}
@@ -229,6 +257,11 @@ func getPercentage(accept int, total int) float32 {
 func toStr(i int) string {
 	return strconv.Itoa(i)
 }
-func toPtr(s string) *string {
+
+func strToPtr(s string) *string {
 	return &s
+}
+
+func intToPtr(i int) *int {
+	return &i
 }

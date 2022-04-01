@@ -92,6 +92,20 @@ func getRedisRakutanInfo(c Clients, key string) (QueryStatus, []rakutan.RakutanI
 	return QueryStatus{Success: true}, *rakutanInfo
 }
 
+func getRedisKakomonURL(c Clients, key string) (QueryStatus, string) {
+	data, err := c.Redis.Client.Get(c.Redis.Ctx, key).Result()
+	if err != nil {
+		return QueryStatus{Success: false}, ""
+	}
+
+	kakomonURL := new(string)
+	err = json.Unmarshal([]byte(data), kakomonURL)
+	if err != nil {
+		return QueryStatus{Success: false}, ""
+	}
+	return QueryStatus{Success: true}, *kakomonURL
+}
+
 func findOne(e *Environments, m *MongoDB, col Collection, filter bson.D) *mongo.SingleResult {
 	collection := m.Client.Database(e.DB_NAME).Collection(col)
 	singleResult := collection.FindOne(m.Ctx, filter) //.Decode(&result)
@@ -148,6 +162,14 @@ func count(e *Environments, m *MongoDB, col Collection, kvs []KV) (QueryStatus, 
 		fmt.Println(err)
 	}
 	return queryStatus, int(cnt)
+}
+
+func exist(e *Environments, m *MongoDB, col Collection, kvs []KV) bool {
+	queryStatus, cnt := count(e, m, col, kvs)
+	if queryStatus.Success && cnt > 0 {
+		return true
+	}
+	return false
 }
 
 func FindByLectureID(c Clients, e *Environments, lectureID int) (QueryStatus, []rakutan.RakutanInfo) {
@@ -260,7 +282,7 @@ const (
 	Omikuji
 )
 
-func GetRakutanInfo(c Clients, env *Environments, method FindByMethod, value interface{}) (QueryStatus, []rakutan.RakutanInfo) {
+func GetRakutanInfo(c Clients, env *Environments, uid string, method FindByMethod, value interface{}) (QueryStatus, []rakutan.RakutanInfo) {
 	var queryStatus QueryStatus
 	var result []rakutan.RakutanInfo
 
@@ -271,6 +293,25 @@ func GetRakutanInfo(c Clients, env *Environments, method FindByMethod, value int
 		queryStatus, result = FindByLectureName(c, env, value.(string))
 	case Omikuji:
 		queryStatus, result = FindByOmikuji(c, env, value.(string))
+	}
+
+	// Set isVerified, isFavorite and kakomonURL
+	if queryStatus.Success && len(result) == 1 {
+		isVerified := exist(env, c.Mongo, env.DB_COLLECTION.User, []KV{{Key: "uid", Value: uid}, {Key: "verified", Value: true}})
+		result[0].IsVerified = isVerified
+		result[0].IsFavorite = exist(env, c.Mongo, env.DB_COLLECTION.Favorites, []KV{{Key: "uid", Value: uid}})
+
+		if isVerified {
+			redisKey := fmt.Sprintf("#%d", result[0].ID)
+			if redisStatus, cacheURL := getRedisKakomonURL(c, redisKey); redisStatus.Success {
+				result[0].URL = cacheURL
+			} else {
+				if kakomonURL := GetKakomonURL(env, result[0].LectureName); kakomonURL != nil {
+					setRedis(c, redisKey, *kakomonURL, time.Minute)
+					result[0].URL = *kakomonURL
+				}
+			}
+		}
 	}
 
 	return queryStatus, result

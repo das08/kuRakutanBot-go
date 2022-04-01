@@ -41,9 +41,10 @@ type TextAction struct {
 }
 
 type URIAction struct {
-	Type  string `json:"type"`
-	Label string `json:"label"`
-	URI   string `json:"uri"`
+	Type  string  `json:"type"`
+	Label string  `json:"label"`
+	URI   *string `json:"uri,omitempty"`
+	Text  *string `json:"text,omitempty"`
 }
 
 type PostbackAction struct {

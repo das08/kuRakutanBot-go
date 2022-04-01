@@ -9,8 +9,8 @@ import (
 	"net/http"
 )
 
-func GetKakomonURL(e *Environments, lectureName string) *string {
-	var kakomonURL *string = nil
+func GetKakomonURL(e *Environments, lectureName string) string {
+	kakomonURL := ""
 	method := "GET"
 	req, err := http.NewRequest(method, e.KUWIKI_ENDPOINT, nil)
 	if err != nil {
@@ -44,7 +44,7 @@ func GetKakomonURL(e *Environments, lectureName string) *string {
 	for _, result := range response.Results {
 		if result.Name == lectureName {
 			for _, exam := range result.ExamSet {
-				kakomonURL = &exam.DriveLink
+				kakomonURL = exam.DriveLink
 			}
 		}
 	}

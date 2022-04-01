@@ -31,6 +31,7 @@ var Commands = [...]Command{
 	{Keyword: "一覧", SendFunction: getFavoritesCmd},
 	{Keyword: "認証", SendFunction: verificationCmd},
 	{Keyword: "認証する", SendFunction: verificationCmd},
+	{Keyword: "ユーザ認証", SendFunction: verificationCmd},
 	{Keyword: "お問い合わせ", SendFunction: inquiryCmd},
 	{Keyword: "問い合わせ", SendFunction: inquiryCmd},
 	{Keyword: "京大楽単bot", SendFunction: infoCmd},

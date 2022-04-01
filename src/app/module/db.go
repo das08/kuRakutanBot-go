@@ -399,6 +399,7 @@ func registerUser(env *Environments, m *MongoDB, uid string) {
 		{"count", bson.D{{"message", 1}, {"rakutan", 0}, {"onitan", 0}}},
 		{"register_time", int(time.Now().Unix())},
 		{"verified", false},
+		{"verified_time", 0},
 	}
 	insertStatus := insertOne(env, m, env.DB_COLLECTION.User, bsonD)
 	if insertStatus.Success {
@@ -456,7 +457,8 @@ func CheckVerification(c Clients, env *Environments, code string) QueryStatus {
 	if err != nil {
 		return QueryStatus{false, "すでに認証済みか、認証コードが間違っています。"}
 	}
-	updateStatus := updateOne(env, c.Mongo, env.DB_COLLECTION.User, bson.D{{"uid", result.Uid}}, bson.D{{"$set", bson.D{{"verified", true}}}})
+	update := generateBsonD([]KV{{"verified", true}, {"verified_time", int(time.Now().Unix())}})
+	updateStatus := updateOne(env, c.Mongo, env.DB_COLLECTION.User, bson.D{{"uid", result.Uid}}, bson.D{{"$set", update}})
 
 	if updateStatus.Success {
 		deleteOne(env, c.Mongo, env.DB_COLLECTION.Verification, bson.D{{"code", code}})

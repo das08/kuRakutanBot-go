@@ -38,9 +38,9 @@ func LoadEnv(debug bool) Environments {
 	var err error
 	// LOADS .env file
 	if debug {
-		err = godotenv.Load("../../.env")
+		err = godotenv.Load(".env")
 	} else {
-		err = godotenv.Load("../../.env_prod")
+		err = godotenv.Load(".env_prod")
 	}
 
 	if err != nil {

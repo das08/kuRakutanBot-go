@@ -65,6 +65,8 @@ func main() {
 				case *linebot.TextMessage:
 					messageText := strings.TrimSpace(message.Text)
 					module.CountMessage(clients, &env, uid)
+					logger := module.New(true)
+					logger.Info().Msgf("Starting server")
 
 					// コマンドが送られてきた場合
 					isCommand, function := module.IsCommand(messageText)

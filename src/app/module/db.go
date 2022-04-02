@@ -265,7 +265,7 @@ func FindByOmikuji(c Clients, e *Environments, omikujiType string) (QueryStatus,
 	if err = filterCursor.All(c.Mongo.Ctx, &result); err != nil || result == nil {
 		return QueryStatus{false, ""}, nil
 	}
-	setRedis(c, omikujiType, result, time.Hour*24)
+	setRedis(c, omikujiType, result, time.Hour*60)
 
 	randomIdx := randomIndex(len(result))
 	return queryStatus, []rakutan.RakutanInfo{result[randomIdx]}
@@ -328,7 +328,7 @@ func GetRakutanInfo(c Clients, env *Environments, uid string, method FindByMetho
 				result[0].URL = cacheURL
 			} else {
 				kakomonURL := GetKakomonURL(env, result[0].LectureName)
-				setRedis(c, redisKey, kakomonURL, time.Hour*24)
+				setRedis(c, redisKey, kakomonURL, time.Hour*60)
 				result[0].URL = kakomonURL
 			}
 		}

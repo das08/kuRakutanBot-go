@@ -2,6 +2,7 @@ package module
 
 import (
 	"fmt"
+	"log"
 	"net/smtp"
 )
 
@@ -23,14 +24,12 @@ func SendVerification(env *Environments, toAddress string, code string) {
 		"\r\n")
 
 	// Authentication.
-	fmt.Println(env.GMAIL_PASSWORD, env.GMAIL_ID)
 	auth := smtp.PlainAuth("", env.GMAIL_ID, env.GMAIL_PASSWORD, smtpHost)
 
 	// Sending email.
 	err := smtp.SendMail(smtpHost+":"+smtpPort, auth, env.GMAIL_ID, to, msg)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return
 	}
-	fmt.Println("Email Sent Successfully!")
 }

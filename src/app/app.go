@@ -6,6 +6,7 @@ import (
 	"github.com/das08/kuRakutanBot-go/module"
 	"github.com/gin-gonic/gin"
 	"github.com/line/line-bot-sdk-go/v7/linebot"
+	"log"
 	"net/http"
 	"strings"
 )
@@ -22,7 +23,7 @@ func main() {
 		mongoDB := module.CreateDBClient(&env)
 		defer mongoDB.Cancel()
 		defer func() {
-			fmt.Println("connection closed")
+			log.Println("[DB] Closed")
 			if err := mongoDB.Client.Disconnect(mongoDB.Ctx); err != nil {
 				panic(err)
 			}
@@ -47,7 +48,7 @@ func main() {
 		mongoDB := module.CreateDBClient(&env)
 		defer mongoDB.Cancel()
 		defer func() {
-			fmt.Println("connection closed")
+			log.Println("[DB] Closed")
 			if err := mongoDB.Client.Disconnect(mongoDB.Ctx); err != nil {
 				panic(err)
 			}

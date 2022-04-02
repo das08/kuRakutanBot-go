@@ -53,7 +53,7 @@ func CreateDBClient(e *Environments) *MongoDB {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("connection created")
+	log.Println("[DB] Client Created")
 
 	return &MongoDB{Client: client, Ctx: ctx, Cancel: cancel}
 }
@@ -420,9 +420,9 @@ func countUp(env *Environments, m *MongoDB, uid string, key string) {
 	filter := generateBsonD([]KV{{"uid", uid}})
 	countUpStatus := findOneAndUpdate(env, m, env.DB_COLLECTION.User, filter, bson.D{{"$inc", bson.D{{fmt.Sprintf("count.%s", key), 1}}}})
 	if countUpStatus.Success {
-		fmt.Println("Countup Success.")
+		//fmt.Println("Countup Success.")
 	} else {
-		fmt.Println("Countup Failed.")
+		//fmt.Println("Countup Failed.")
 	}
 }
 

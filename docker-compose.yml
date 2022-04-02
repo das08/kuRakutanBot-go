@@ -1,29 +1,51 @@
-version: '3'
+version: '3.8'
 services:
   app:
+    container_name: kuRakutanBot-go
     build:
-      context: .
-      dockerfile: ./docker/app/Dockerfile
+      context: ./src/app
+      dockerfile: Dockerfile
+    restart: unless-stopped
     tty: true
-    volumes:
-       - ./cmd/app:/go/src/github.com/das08/kuRakutanBot-go
+    depends_on:
+      - mongo
+      - redis
+    ports:
+      - "8081:8081"
        
   mongo:
-    image: mongo:4.4.5
-    #restart: always
+    container_name: mongodb
+    image: mongo:5.0.6-focal
+    restart: unless-stopped
     environment:
-      MONGO_INITDB_ROOT_USERNAME: ${DB_USER}
-      MONGO_INITDB_ROOT_PASSWORD: ${DB_PASS}
+      MONGO_INITDB_ROOT_USERNAME: rakutanbot
+      MONGO_INITDB_ROOT_PASSWORD: QoS64f4wXSeoj67Or2u5
     ports:
-      - 27017:27017
+      - "27018:27017"
     volumes:
-      - ./db:/data/db
-      - ./configdb:/data/configdb
+      - type: bind
+        source: ./src/db/docker-entrypoint-initdb.d
+        target: /docker-entrypoint-initdb.d
+      - type: volume
+        source: mongo
+        target: /data/db
+        volume:
+          nocopy: true
+      - type: volume
+        source: mongo
+        target: /data/configdb
+        volume:
+          nocopy: true
 
-  mongo-express:
-    image: mongo-express:0.54
+  redis:
+    image: redis:6.2.6
+    container_name: redis
+    command: redis-server --appendonly yes
+    volumes:
+      - redis:/data
     ports:
-      - 8081:8081
-    environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: ${DB_USER}
-      ME_CONFIG_MONGODB_ADMINPASSWORD: ${DB_PASS}
+      - "6379:6379"
+
+volumes:
+  mongo:
+  redis:

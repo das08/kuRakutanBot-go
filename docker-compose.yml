@@ -5,7 +5,7 @@ services:
     build:
       context: ./src/app
       dockerfile: Dockerfile
-    restart: unless-stopped
+    restart: always
     tty: true
     depends_on:
       - mongo
@@ -16,7 +16,7 @@ services:
   mongo:
     container_name: mongodb
     image: mongo:5.0.6-focal
-    restart: unless-stopped
+    restart: always
     environment:
       MONGO_INITDB_ROOT_USERNAME: rakutanbot
       MONGO_INITDB_ROOT_PASSWORD: QoS64f4wXSeoj67Or2u5
@@ -40,6 +40,7 @@ services:
   redis:
     image: redis:6.2.6
     container_name: redis
+    restart: always
     command: redis-server --appendonly yes
     volumes:
       - redis:/data

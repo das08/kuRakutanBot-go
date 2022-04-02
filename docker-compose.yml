@@ -18,13 +18,13 @@ services:
     image: mongo:5.0.6-focal
     restart: unless-stopped
     environment:
-      MONGO_INITDB_ROOT_USERNAME: ${DB_USER}
-      MONGO_INITDB_ROOT_PASSWORD: ${DB_PASS}
+      MONGO_INITDB_ROOT_USERNAME: rakutanbot
+      MONGO_INITDB_ROOT_PASSWORD: QoS64f4wXSeoj67Or2u5
     ports:
       - "27018:27017"
     volumes:
       - type: bind
-        source: ./docker/db/docker-entrypoint-initdb.d
+        source: ./src/db/docker-entrypoint-initdb.d
         target: /docker-entrypoint-initdb.d
       - type: volume
         source: mongo

@@ -1,7 +1,7 @@
 FROM golang:1.18.0-alpine
 
 WORKDIR /usr/src/app
-COPY . .
+COPY go.mod go.sum ./
 RUN go mod download && go mod verify
 
 RUN go build -o /usr/local/bin/kuRakutanBot-go

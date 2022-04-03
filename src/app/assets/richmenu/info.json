@@ -1,6 +1,16 @@
 {
   "type": "bubble",
-  "size": "nano",
+  "hero": {
+    "type": "image",
+    "url": "https://das82.com/images/cpanda_header.png",
+    "size": "full",
+    "aspectRatio": "3:1",
+    "aspectMode": "cover",
+    "action": {
+      "type": "uri",
+      "uri": "https://cpanda.das82.com/"
+    }
+  },
   "body": {
     "type": "box",
     "layout": "vertical",
@@ -8,56 +18,49 @@
       {
         "type": "box",
         "layout": "vertical",
+        "margin": "lg",
+        "spacing": "sm",
         "contents": [
           {
+            "type": "text",
+            "text": "PandAをより便利にするブラウザ拡張機能、「Comfortable PandA」をリリースしました！",
+            "wrap": true
+          },
+          {
             "type": "image",
-            "url": "https://das82.com/images/rakutanbot_title.png",
-            "size": "full",
-            "aspectRatio": "4:1"
-          },
-          {
-            "type": "box",
-            "layout": "vertical",
-            "contents": [
-              {
-                "type": "image",
-                "url": "https://das82.com/images/rakutanbot_icon.png",
-                "size": "full"
-              }
-            ],
-            "cornerRadius": "100px"
-          },
-          {
-            "type": "box",
-            "layout": "vertical",
-            "contents": [
-              {
-                "type": "text",
-                "text": "2022.03.26",
-                "size": "xxs",
-                "color": "#868484",
-                "align": "center"
-              },
-              {
-                "type": "text",
-                "text": "Ver: 5.0.0",
-                "size": "xs",
-                "color": "#868484",
-                "weight": "bold",
-                "align": "center"
-              }
-            ]
+            "url": "https://das82.com/images/rakutanbot_ad_minipanda.png",
+            "position": "relative",
+            "size": "full"
           }
-        ],
-        "spacing": "xl",
-        "paddingAll": "20px"
+        ]
+      }
+    ]
+  },
+  "footer": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "sm",
+    "contents": [
+      {
+        "type": "button",
+        "style": "link",
+        "height": "sm",
+        "action": {
+          "type": "uri",
+          "label": "使い方を見る",
+          "uri": "https://cpanda.das82.com/"
+        }
       }
     ],
-    "paddingAll": "0px"
+    "flex": 0
   },
   "styles": {
     "body": {
-      "backgroundColor": "#f1f1e9"
+      "backgroundColor": "#F4F3F9"
+    },
+    "footer": {
+      "separator": true,
+      "backgroundColor": "#F4F3F9"
     }
   }
 }

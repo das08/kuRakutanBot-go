@@ -1,0 +1,63 @@
+{
+  "type": "bubble",
+  "size": "nano",
+  "body": {
+    "type": "box",
+    "layout": "vertical",
+    "contents": [
+      {
+        "type": "box",
+        "layout": "vertical",
+        "contents": [
+          {
+            "type": "image",
+            "url": "https://das82.com/images/rakutanbot_title.png",
+            "size": "full",
+            "aspectRatio": "4:1"
+          },
+          {
+            "type": "box",
+            "layout": "vertical",
+            "contents": [
+              {
+                "type": "image",
+                "url": "https://das82.com/images/rakutanbot_icon.png",
+                "size": "full"
+              }
+            ],
+            "cornerRadius": "100px"
+          },
+          {
+            "type": "box",
+            "layout": "vertical",
+            "contents": [
+              {
+                "type": "text",
+                "text": "2022.03.26",
+                "size": "xxs",
+                "color": "#868484",
+                "align": "center"
+              },
+              {
+                "type": "text",
+                "text": "Ver: 5.0.0",
+                "size": "xs",
+                "color": "#868484",
+                "weight": "bold",
+                "align": "center"
+              }
+            ]
+          }
+        ],
+        "spacing": "xl",
+        "paddingAll": "20px"
+      }
+    ],
+    "paddingAll": "0px"
+  },
+  "styles": {
+    "body": {
+      "backgroundColor": "#f1f1e9"
+    }
+  }
+}

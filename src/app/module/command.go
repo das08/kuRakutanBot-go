@@ -29,12 +29,14 @@ var Commands = [...]Command{
 	{Keyword: "おきにいり", SendFunction: getFavoritesCmd},
 	{Keyword: "リスト", SendFunction: getFavoritesCmd},
 	{Keyword: "一覧", SendFunction: getFavoritesCmd},
+	{Keyword: "＠info", SendFunction: infoCmd},
+	{Keyword: "@info", SendFunction: infoCmd},
 	{Keyword: "認証", SendFunction: verificationCmd},
 	{Keyword: "認証する", SendFunction: verificationCmd},
 	{Keyword: "ユーザ認証", SendFunction: verificationCmd},
 	{Keyword: "お問い合わせ", SendFunction: inquiryCmd},
 	{Keyword: "問い合わせ", SendFunction: inquiryCmd},
-	{Keyword: "京大楽単bot", SendFunction: infoCmd},
+	{Keyword: "京大楽単bot", SendFunction: iconCmd},
 }
 
 func IsCommand(messageText string) (bool, func(c Clients, env *Environments, lb *LINEBot)) {
@@ -65,8 +67,13 @@ func inquiryCmd(_ Clients, _ *Environments, lb *LINEBot) {
 	lb.SendFlexMessage(flexMessages)
 }
 
+func iconCmd(_ Clients, _ *Environments, lb *LINEBot) {
+	flexMessages := loadFlexMessages("./assets/richmenu/icon.json", "京大楽単bot")
+	lb.SendFlexMessage(flexMessages)
+}
+
 func infoCmd(_ Clients, _ *Environments, lb *LINEBot) {
-	flexMessages := loadFlexMessages("./assets/richmenu/info.json", "京大楽単bot")
+	flexMessages := loadFlexMessages("./assets/richmenu/info.json", "お知らせ")
 	lb.SendFlexMessage(flexMessages)
 }
 

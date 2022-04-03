@@ -4,5 +4,6 @@ WORKDIR /usr/src/app
 COPY go.mod go.sum ./
 RUN go mod download && go mod verify
 
-RUN go build -o /usr/local/bin/kuRakutanBot-go
-CMD ["/usr/local/bin/kuRakutanBot-go"]
+#RUN go build -o /usr/local/bin/kuRakutanBot-go
+#CMD ["/usr/local/bin/kuRakutanBot-go"]
+CMD ["go", "run", "app.go"]

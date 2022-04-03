@@ -33,14 +33,14 @@
             "contents": [
               {
                 "type": "text",
-                "text": "2022.03.26",
+                "text": "2022.04.03",
                 "size": "xxs",
                 "color": "#868484",
                 "align": "center"
               },
               {
                 "type": "text",
-                "text": "Ver: 5.0.0",
+                "text": "Ver: 6.0.0",
                 "size": "xs",
                 "color": "#868484",
                 "weight": "bold",

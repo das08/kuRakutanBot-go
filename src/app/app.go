@@ -87,12 +87,12 @@ func main() {
 					}
 
 					// その他講義名が送られてきた場合
-					success, flexMessages := searchRakutan(clients, &env, uid, messageText)
+					status, flexMessages := searchRakutan(clients, &env, uid, messageText)
 					log.Printf("[Bot] Search: %s", messageText)
-					if success {
+					if status.Success {
 						lb.SendFlexMessage(flexMessages)
 					} else {
-						lb.SendTextMessage(fmt.Sprintf("「%s」は見つかりませんでした。\n【検索のヒント】%%を頭につけて検索すると部分一致検索ができます。ex.)「%%地理学」", message.Text))
+						lb.SendTextMessage(status.Message)
 					}
 				}
 			case linebot.EventTypePostback:
@@ -125,8 +125,8 @@ func main() {
 	}
 }
 
-func searchRakutan(c module.Clients, env *module.Environments, uid string, searchText string) (bool, []module.FlexMessage) {
-	success := false
+func searchRakutan(c module.Clients, env *module.Environments, uid string, searchText string) (module.QueryStatus, []module.FlexMessage) {
+	var searchStatus module.QueryStatus
 	var flexMessages []module.FlexMessage
 	var queryStatus module.QueryStatus
 	var result []rakutan.RakutanInfo
@@ -140,16 +140,23 @@ func searchRakutan(c module.Clients, env *module.Environments, uid string, searc
 
 	if queryStatus.Success {
 		recordCount := len(result)
-		switch recordCount {
-		case 0:
-			break
-		case 1:
+		switch {
+		case recordCount == 0:
+			searchStatus.Success = false
+			searchStatus.Message = fmt.Sprintf("「%s」は見つかりませんでした。\n【検索のヒント】%%を頭につけて検索すると部分一致検索ができます。ex.)「%%地理学」", searchText)
+		case recordCount == 1:
 			flexMessages = module.CreateRakutanDetail(result[0], module.Normal)
-			success = true
-		default:
+			searchStatus.Success = true
+		case recordCount <= 5*module.MaxResultsPerPage:
 			flexMessages = module.CreateSearchResult(searchText, result)
-			success = true
+			searchStatus.Success = true
+		default:
+			searchStatus.Success = false
+			searchStatus.Message = fmt.Sprintf("「%s」は%d件あります。検索条件を絞ってください。", searchText, recordCount)
 		}
+	} else {
+		searchStatus.Success = false
+		searchStatus.Message = "エラーが発生しました。"
 	}
-	return success, flexMessages
+	return searchStatus, flexMessages
 }

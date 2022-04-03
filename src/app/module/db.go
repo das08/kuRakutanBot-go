@@ -75,7 +75,7 @@ func setRedis(c Clients, key string, value interface{}, cacheTime time.Duration)
 	if err != nil {
 		log.Fatalln(err)
 	}
-	log.Printf("[Redis]Saved %s to redis", key)
+	log.Printf("[Redis] Saved %s to redis", key)
 }
 
 func getRedisRakutanInfo(c Clients, key string) (QueryStatus, []rakutan.RakutanInfo) {
@@ -89,7 +89,7 @@ func getRedisRakutanInfo(c Clients, key string) (QueryStatus, []rakutan.RakutanI
 	if err != nil {
 		return QueryStatus{Success: false}, nil
 	}
-	log.Printf("[Redis]Fetched RakutanInfo from redis")
+	log.Printf("[Redis] Fetched RakutanInfo from redis")
 	return QueryStatus{Success: true}, *rakutanInfo
 }
 
@@ -104,7 +104,7 @@ func getRedisKakomonURL(c Clients, key string) (QueryStatus, string) {
 	if err != nil {
 		return QueryStatus{Success: false}, ""
 	}
-	log.Printf("[Redis]Fetched %s from redis", key)
+	log.Printf("[Redis] Fetched %s from redis", key)
 	return QueryStatus{Success: true}, *kakomonURL
 }
 
@@ -416,9 +416,9 @@ func registerUser(env *Environments, m *MongoDB, uid string) {
 	}
 	insertStatus := insertOne(env, m, env.DB_COLLECTION.User, bsonD)
 	if insertStatus.Success {
-		fmt.Println("Register Success.")
+		log.Println("[Bot] Register Success.")
 	} else {
-		fmt.Println("Register Failed.")
+		log.Println("[Bot] Register Failed.")
 	}
 }
 

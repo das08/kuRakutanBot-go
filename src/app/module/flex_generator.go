@@ -89,13 +89,20 @@ func CreateRakutanDetail(info models.RakutanInfo, o OmikujiType) []FlexMessage {
 
 	// 過去問リンク
 	if info.IsVerified {
-		if _, err := url.ParseRequestURI(info.URL); info.URL != "" && err == nil {
+		_, err := url.ParseRequestURI(info.URL)
+		switch {
+		case info.URL != "" && err == nil:
 			rakutanDetail.Body.Contents[0].Contents[6].Contents[1].Text = "○"
 			rakutanDetail.Body.Contents[0].Contents[6].Contents[1].Color = "#0fd142"
 			rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Text = "リンク"
 			rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Color = "#4c7cf5"
 			rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Action.URI = &info.URL
-		} else {
+		case info.KUWikiErr != "":
+			rakutanDetail.Body.Contents[0].Contents[6].Contents[1].Text = "×"
+			rakutanDetail.Body.Contents[0].Contents[6].Contents[1].Color = "#ef1d2f"
+			rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Text = info.KUWikiErr
+			rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Action = &richmenu.URIAction{Type: "uri", Label: "action", URI: strToPtr("https://www.kuwiki.net/upload-exams")}
+		default:
 			rakutanDetail.Body.Contents[0].Contents[6].Contents[1].Text = "×"
 			rakutanDetail.Body.Contents[0].Contents[6].Contents[1].Color = "#ef1d2f"
 			rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Text = "提供する"

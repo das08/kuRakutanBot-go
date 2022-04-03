@@ -9,6 +9,7 @@ type RakutanInfo struct {
 	URL         string         `bson:"url,omitempty"`
 	IsVerified  bool
 	IsFavorite  bool
+	KUWikiErr   string
 }
 
 type RakutanDetail struct {

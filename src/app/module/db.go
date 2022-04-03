@@ -329,9 +329,13 @@ func GetRakutanInfo(c Clients, env *Environments, uid string, method FindByMetho
 			if redisStatus, cacheURL := getRedisKakomonURL(c, redisKey); redisStatus.Success {
 				result[0].URL = cacheURL
 			} else {
-				kakomonURL := GetKakomonURL(env, result[0].LectureName)
-				setRedis(c, redisKey, kakomonURL, time.Hour*60)
-				result[0].URL = kakomonURL
+				kuWikiStatus := GetKakomonURL(env, result[0].LectureName)
+				if kuWikiStatus.Success {
+					result[0].URL = kuWikiStatus.Result
+					setRedis(c, redisKey, kuWikiStatus.Result, time.Hour*60)
+				} else {
+					result[0].KUWikiErr = kuWikiStatus.Result
+				}
 			}
 		}
 	}

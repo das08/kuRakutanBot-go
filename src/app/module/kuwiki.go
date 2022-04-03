@@ -57,6 +57,6 @@ func GetKakomonURL(e *Environments, lectureName string) KUWikiStatus {
 			}
 		}
 	}
-	log.Println("[KUWiki]: Got kakomon URL")
+	log.Println("[KUWiki] Got kakomon URL")
 	return KUWikiStatus{true, kakomonURL}
 }

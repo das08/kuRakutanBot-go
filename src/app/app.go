@@ -23,7 +23,7 @@ func main() {
 		mongoDB := module.CreateDBClient(&env)
 		defer mongoDB.Cancel()
 		defer func() {
-			log.Println("[DB] Closed")
+			//log.Println("[DB] Closed")
 			if err := mongoDB.Client.Disconnect(mongoDB.Ctx); err != nil {
 				panic(err)
 			}
@@ -48,7 +48,7 @@ func main() {
 		mongoDB := module.CreateDBClient(&env)
 		defer mongoDB.Cancel()
 		defer func() {
-			log.Println("[DB] Closed")
+			//log.Println("[DB] Closed")
 			if err := mongoDB.Client.Disconnect(mongoDB.Ctx); err != nil {
 				panic(err)
 			}
@@ -70,6 +70,7 @@ func main() {
 					// コマンドが送られてきた場合
 					isCommand, function := module.IsCommand(messageText)
 					if isCommand {
+						log.Printf("[Bot] Command: %s", messageText)
 						function(clients, &env, lb)
 						break
 					}
@@ -79,6 +80,7 @@ func main() {
 						if module.IsVerified(clients, &env, uid) {
 							lb.SendTextMessage("すでに認証済みです。")
 						} else {
+							log.Printf("[Bot] Sent verification")
 							module.SendVerificationCmd(clients, &env, lb, messageText)
 						}
 						break
@@ -86,6 +88,7 @@ func main() {
 
 					// その他講義名が送られてきた場合
 					success, flexMessages := searchRakutan(clients, &env, uid, messageText)
+					log.Printf("[Bot] Search: %s", messageText)
 					if success {
 						lb.SendFlexMessage(flexMessages)
 					} else {

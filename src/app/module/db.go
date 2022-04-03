@@ -53,7 +53,7 @@ func CreateDBClient(e *Environments) *MongoDB {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Println("[DB] Client Created")
+	//log.Println("[DB] Client Created")
 
 	return &MongoDB{Client: client, Ctx: ctx, Cancel: cancel}
 }
@@ -75,7 +75,7 @@ func setRedis(c Clients, key string, value interface{}, cacheTime time.Duration)
 	if err != nil {
 		log.Fatalln(err)
 	}
-	log.Printf("Saved %s to redis", key)
+	log.Printf("[Redis]Saved %s to redis", key)
 }
 
 func getRedisRakutanInfo(c Clients, key string) (QueryStatus, []rakutan.RakutanInfo) {
@@ -89,6 +89,7 @@ func getRedisRakutanInfo(c Clients, key string) (QueryStatus, []rakutan.RakutanI
 	if err != nil {
 		return QueryStatus{Success: false}, nil
 	}
+	log.Printf("[Redis]Fetched RakutanInfo from redis")
 	return QueryStatus{Success: true}, *rakutanInfo
 }
 
@@ -103,6 +104,7 @@ func getRedisKakomonURL(c Clients, key string) (QueryStatus, string) {
 	if err != nil {
 		return QueryStatus{Success: false}, ""
 	}
+	log.Printf("[Redis]Fetched %s from redis", key)
 	return QueryStatus{Success: true}, *kakomonURL
 }
 
@@ -322,7 +324,7 @@ func GetRakutanInfo(c Clients, env *Environments, uid string, method FindByMetho
 		result[0].IsVerified = isVerified
 		result[0].IsFavorite = exist(env, c.Mongo, env.DB_COLLECTION.Favorites, []KV{{Key: "uid", Value: uid}, {Key: "id", Value: result[0].ID}})
 
-		if isVerified {
+		if isVerified && result[0].URL == "" {
 			redisKey := fmt.Sprintf("#%d", result[0].ID)
 			if redisStatus, cacheURL := getRedisKakomonURL(c, redisKey); redisStatus.Success {
 				result[0].URL = cacheURL

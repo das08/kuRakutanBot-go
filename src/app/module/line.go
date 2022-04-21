@@ -1,17 +1,30 @@
 package module
 
 import (
+	"github.com/gin-gonic/gin"
 	"github.com/line/line-bot-sdk-go/v7/linebot"
 	"log"
 )
 
 type LINEBot struct {
-	Bot        *linebot.Client
-	replyToken string
-	senderUid  string
+	Bot         *linebot.Client
+	replyToken  string
+	senderUid   string
+	isMockUser  bool
+	mockContext *gin.Context
 }
 
-func CreateLINEBotClient(e *Environments) *LINEBot {
+type ReplyText struct {
+	Status KRBStatus
+	Text   string
+}
+
+type ReplyFlex struct {
+	Status KRBStatus
+	Flex   []FlexMessage
+}
+
+func CreateLINEBotClient(e *Environments, c *gin.Context) *LINEBot {
 	bot, err := linebot.New(
 		e.LINE_CHANNEL_SECRET,
 		e.LINE_CHANNEL_ACCESS_TOKEN,
@@ -19,7 +32,7 @@ func CreateLINEBotClient(e *Environments) *LINEBot {
 	if err != nil {
 		log.Fatal(err)
 	}
-	lb := LINEBot{Bot: bot}
+	lb := LINEBot{Bot: bot, mockContext: c}
 	return &lb
 }
 
@@ -27,18 +40,27 @@ func (lb *LINEBot) SetReplyToken(replyToken string) {
 	lb.replyToken = replyToken
 }
 
-func (lb *LINEBot) SetSenderUid(senderUid string) {
+func (lb *LINEBot) SetSenderUid(e *Environments, senderUid string) {
 	lb.senderUid = senderUid
+	if senderUid == e.LINE_MOCK_UID {
+		lb.isMockUser = true
+	}
 }
 
-func (lb *LINEBot) SendTextMessage(text string) {
-	_, err := lb.Bot.ReplyMessage(lb.replyToken, linebot.NewTextMessage(text)).Do()
+func (lb *LINEBot) SendTextMessage(rt ReplyText) {
+	if lb.isMockUser {
+		lb.mockContext.JSON(200, rt)
+	}
+	_, err := lb.Bot.ReplyMessage(lb.replyToken, linebot.NewTextMessage(rt.Text)).Do()
 	if err != nil {
 		log.Print(err)
 	}
 }
 
 func (lb *LINEBot) SendFlexMessage(flexMessages []FlexMessage) {
+	if lb.isMockUser {
+		lb.mockContext.JSON(200, ReplyFlex{Status: KRBSuccess, Flex: flexMessages})
+	}
 	var messages []linebot.SendingMessage
 	for _, fm := range flexMessages {
 		messages = append(messages, linebot.NewFlexMessage(fm.AltText, fm.FlexContainer))

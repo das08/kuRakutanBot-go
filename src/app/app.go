@@ -34,7 +34,7 @@ func main() {
 	})
 
 	router.POST("/callback", func(c *gin.Context) {
-		lb := module.CreateLINEBotClient(&env)
+		lb := module.CreateLINEBotClient(&env, c)
 		events, err := lb.Bot.ParseRequest(c.Request)
 		if err != nil {
 			if err == linebot.ErrInvalidSignature {
@@ -61,7 +61,7 @@ func main() {
 			case linebot.EventTypeMessage:
 				uid := event.Source.UserID
 				lb.SetReplyToken(event.ReplyToken)
-				lb.SetSenderUid(uid)
+				lb.SetSenderUid(&env, uid)
 				switch message := event.Message.(type) {
 				case *linebot.TextMessage:
 					messageText := strings.TrimSpace(message.Text)
@@ -78,7 +78,7 @@ func main() {
 					// 認証用のメールアドレスが送られてきた場合
 					if module.IsStudentAddress(messageText) {
 						if module.IsVerified(clients, &env, uid) {
-							lb.SendTextMessage("すでに認証済みです。")
+							lb.SendTextMessage(module.ReplyText{Status: module.KRBSuccess, Text: "すでに認証済みです。"})
 						} else {
 							log.Printf("[Bot] Sent verification")
 							module.SendVerificationCmd(clients, &env, lb, messageText)
@@ -92,13 +92,13 @@ func main() {
 					if status.Success {
 						lb.SendFlexMessage(flexMessages)
 					} else {
-						lb.SendTextMessage(status.Message)
+						lb.SendTextMessage(module.ReplyText{Status: status.Status, Text: status.Message})
 					}
 				}
 			case linebot.EventTypePostback:
 				uid := event.Source.UserID
 				lb.SetReplyToken(event.ReplyToken)
-				lb.SetSenderUid(uid)
+				lb.SetSenderUid(&env, uid)
 
 				data := event.Postback.Data
 				fmt.Println("pbdata: ", data)
@@ -108,10 +108,10 @@ func main() {
 					switch params.Type {
 					case module.Fav:
 						insertStatus := module.InsertFavorite(mongoDB, &env, module.PostbackEntry{Uid: uid, Param: params})
-						lb.SendTextMessage(insertStatus.Message)
+						lb.SendTextMessage(module.ReplyText{Status: insertStatus.Status, Text: insertStatus.Message})
 					case module.Del:
 						deleteStatus := module.DeleteFavorite(mongoDB, &env, module.PostbackEntry{Uid: uid, Param: params})
-						lb.SendTextMessage(deleteStatus.Message)
+						lb.SendTextMessage(module.ReplyText{Status: deleteStatus.Status, Text: deleteStatus.Message})
 					}
 				}
 			}
@@ -157,6 +157,7 @@ func searchRakutan(c module.Clients, env *module.Environments, uid string, searc
 	} else {
 		searchStatus.Success = false
 		searchStatus.Message = "エラーが発生しました。"
+		searchStatus.Status = queryStatus.Status
 	}
 	return searchStatus, flexMessages
 }

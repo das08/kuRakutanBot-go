@@ -90,7 +90,7 @@ func rakutanCmd(c Clients, env *Environments, lb *LINEBot) {
 		flexMessages := CreateRakutanDetail(result[0], Rakutan)
 		lb.SendFlexMessage(flexMessages)
 	} else {
-		lb.SendTextMessage("楽単おみくじに失敗しました。")
+		lb.SendTextMessage(ReplyText{Status: KRBOmikujiError, Text: "楽単おみくじに失敗しました。"})
 	}
 }
 
@@ -101,7 +101,7 @@ func onitanCmd(c Clients, env *Environments, lb *LINEBot) {
 		flexMessages := CreateRakutanDetail(result[0], Onitan)
 		lb.SendFlexMessage(flexMessages)
 	} else {
-		lb.SendTextMessage("鬼単おみくじに失敗しました。")
+		lb.SendTextMessage(ReplyText{Status: KRBOmikujiError, Text: "鬼単おみくじに失敗しました。"})
 	}
 }
 
@@ -111,7 +111,7 @@ func getFavoritesCmd(c Clients, env *Environments, lb *LINEBot) {
 		flexMessages := CreateFavorites(result)
 		lb.SendFlexMessage(flexMessages)
 	} else {
-		lb.SendTextMessage(queryStatus.Message)
+		lb.SendTextMessage(ReplyText{Status: queryStatus.Status, Text: queryStatus.Message})
 	}
 }
 
@@ -126,7 +126,7 @@ func verificationCmd(c Clients, env *Environments, lb *LINEBot) {
 }
 
 func myUIDCmd(_ Clients, _ *Environments, lb *LINEBot) {
-	lb.SendTextMessage(lb.senderUid)
+	lb.SendTextMessage(ReplyText{Status: KRBSuccess, Text: lb.senderUid})
 }
 
 func SendVerificationCmd(c Clients, env *Environments, lb *LINEBot, email string) {
@@ -139,5 +139,5 @@ func SendVerificationCmd(c Clients, env *Environments, lb *LINEBot, email string
 		Email: email,
 	}
 	queryStatus := InsertVerification(c, env, verification)
-	lb.SendTextMessage(queryStatus.Message)
+	lb.SendTextMessage(ReplyText{Status: queryStatus.Status, Text: queryStatus.Message})
 }

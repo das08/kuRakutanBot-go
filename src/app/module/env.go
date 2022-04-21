@@ -13,6 +13,7 @@ type Environments struct {
 	LINE_CHANNEL_ACCESS_TOKEN string
 	LINE_CHANNEL_SECRET       string
 	LINE_ADMIN_UID            string
+	LINE_MOCK_UID             string
 	DB_HOST                   string
 	DB_PORT                   string
 	DB_USER                   string
@@ -55,6 +56,7 @@ func LoadEnv(debug bool) Environments {
 	env.LINE_CHANNEL_ACCESS_TOKEN = os.Getenv("LINE_CHANNEL_ACCESS_TOKEN")
 	env.LINE_CHANNEL_SECRET = os.Getenv("LINE_CHANNEL_SECRET")
 	env.LINE_ADMIN_UID = os.Getenv("LINE_ADMIN_UID")
+	env.LINE_MOCK_UID = os.Getenv("LINE_MOCK_UID")
 	env.DB_HOST = os.Getenv("DB_HOST")
 	env.DB_PORT = os.Getenv("DB_PORT")
 	env.DB_USER = os.Getenv("DB_USER")

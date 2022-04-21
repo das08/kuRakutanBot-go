@@ -49,7 +49,7 @@ func CreateDBClient(e *Environments) *MongoDB {
 	if err != nil {
 		log.Fatal(err)
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	err = client.Connect(ctx)
 	if err != nil {
 		log.Fatal(err)
@@ -74,9 +74,10 @@ func setRedis(c Clients, key string, value interface{}, cacheTime time.Duration)
 	resultJson, _ := json.Marshal(value)
 	err := c.Redis.Client.Set(c.Redis.Ctx, key, resultJson, cacheTime).Err()
 	if err != nil {
-		log.Fatalln(err)
+		log.Println("[Redis] Error:", err)
+	} else {
+		log.Printf("[Redis] Saved %s to redis", key)
 	}
-	log.Printf("[Redis] Saved %s to redis", key)
 }
 
 func getRedisRakutanInfo(c Clients, key string) (QueryStatus, []rakutan.RakutanInfo) {

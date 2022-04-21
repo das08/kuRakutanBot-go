@@ -157,6 +157,7 @@ func searchRakutan(c module.Clients, env *module.Environments, uid string, searc
 	} else {
 		searchStatus.Success = false
 		searchStatus.Message = "エラーが発生しました。"
+		searchStatus.Status = queryStatus.Status
 	}
 	return searchStatus, flexMessages
 }

@@ -1,6 +1,7 @@
 package module
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/line/line-bot-sdk-go/v7/linebot"
 	"log"
@@ -28,11 +29,11 @@ const (
 	KRBGetFavError        KRBStatus = 4003
 	KRBInsertFavError     KRBStatus = 4004
 	KRBDeleteFavError     KRBStatus = 4005
-	KRBGetLecIDError      KRBStatus = 4005
-	KRBGetLecNameError    KRBStatus = 4005
-	KRBGetUidError        KRBStatus = 4005
-	KRBVerifyCodeGenError KRBStatus = 4005
-	KRBVerifyCodeDelError KRBStatus = 4005
+	KRBGetLecIDError      KRBStatus = 4006
+	KRBGetLecNameError    KRBStatus = 4007
+	KRBGetUidError        KRBStatus = 4008
+	KRBVerifyCodeGenError KRBStatus = 4009
+	KRBVerifyCodeDelError KRBStatus = 4010
 )
 
 func CreateLINEBotClient(e *Environments, c *gin.Context) *LINEBot {
@@ -62,6 +63,7 @@ func (lb *LINEBot) SendTextMessage(rt ReplyText) {
 	if lb.isMockUser {
 		return
 	}
+	fmt.Println("[Status]: ", rt.Status)
 	_, err := lb.Bot.ReplyMessage(lb.replyToken, linebot.NewTextMessage(rt.Text)).Do()
 	if err != nil {
 		log.Print(err)

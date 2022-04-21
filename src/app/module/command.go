@@ -111,7 +111,7 @@ func getFavoritesCmd(c Clients, env *Environments, lb *LINEBot) {
 		flexMessages := CreateFavorites(result)
 		lb.SendFlexMessage(flexMessages)
 	} else {
-		lb.SendTextMessage(ReplyText{Status: KRBGetFavError, Text: queryStatus.Message})
+		lb.SendTextMessage(ReplyText{Status: queryStatus.Status, Text: queryStatus.Message})
 	}
 }
 

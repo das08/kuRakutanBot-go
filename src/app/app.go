@@ -78,7 +78,7 @@ func main() {
 					// 認証用のメールアドレスが送られてきた場合
 					if module.IsStudentAddress(messageText) {
 						if module.IsVerified(clients, &env, uid) {
-							lb.SendTextMessage("すでに認証済みです。")
+							lb.SendTextMessage(module.ReplyText{Status: module.KRBSuccess, Text: "すでに認証済みです。"})
 						} else {
 							log.Printf("[Bot] Sent verification")
 							module.SendVerificationCmd(clients, &env, lb, messageText)
@@ -92,7 +92,7 @@ func main() {
 					if status.Success {
 						lb.SendFlexMessage(flexMessages)
 					} else {
-						lb.SendTextMessage(status.Message)
+						lb.SendTextMessage(module.ReplyText{Status: status.Status, Text: status.Message})
 					}
 				}
 			case linebot.EventTypePostback:
@@ -108,10 +108,10 @@ func main() {
 					switch params.Type {
 					case module.Fav:
 						insertStatus := module.InsertFavorite(mongoDB, &env, module.PostbackEntry{Uid: uid, Param: params})
-						lb.SendTextMessage(insertStatus.Message)
+						lb.SendTextMessage(module.ReplyText{Status: insertStatus.Status, Text: insertStatus.Message})
 					case module.Del:
 						deleteStatus := module.DeleteFavorite(mongoDB, &env, module.PostbackEntry{Uid: uid, Param: params})
-						lb.SendTextMessage(deleteStatus.Message)
+						lb.SendTextMessage(module.ReplyText{Status: deleteStatus.Status, Text: deleteStatus.Message})
 					}
 				}
 			}

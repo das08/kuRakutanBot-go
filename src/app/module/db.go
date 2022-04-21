@@ -40,6 +40,7 @@ type KV struct {
 type QueryStatus struct {
 	Success bool
 	Message string
+	Status  KRBStatus
 }
 
 func CreateDBClient(e *Environments) *MongoDB {
@@ -121,7 +122,7 @@ func insertOne(e *Environments, m *MongoDB, col Collection, filter bson.D) Query
 	queryStatus.Success = true
 
 	if err != nil {
-		queryStatus = QueryStatus{false, "[i]DB接続でエラーが起きました。"}
+		queryStatus = QueryStatus{false, "[i]DB接続でエラーが起きました。", KRBDatabaseError}
 		fmt.Println(err)
 	}
 	return queryStatus
@@ -134,7 +135,7 @@ func updateOne(e *Environments, m *MongoDB, col Collection, filter bson.D, updat
 	queryStatus.Success = true
 
 	if err != nil {
-		queryStatus = QueryStatus{false, "[u]DB接続でエラーが起きました。"}
+		queryStatus = QueryStatus{false, "[u]DB接続でエラーが起きました。", KRBDatabaseError}
 		fmt.Println(err)
 	}
 	return queryStatus
@@ -147,7 +148,7 @@ func findOneAndUpdate(e *Environments, m *MongoDB, col Collection, filter bson.D
 	queryStatus.Success = true
 
 	if err != nil {
-		queryStatus = QueryStatus{false, "[fu]DB接続でエラーが起きました。"}
+		queryStatus = QueryStatus{false, "[fu]DB接続でエラーが起きました。", KRBDatabaseError}
 	}
 	return queryStatus
 }
@@ -159,7 +160,7 @@ func deleteOne(e *Environments, m *MongoDB, col Collection, filter bson.D) Query
 	queryStatus.Success = true
 
 	if err != nil {
-		queryStatus = QueryStatus{false, "[d]DB接続でエラーが起きました。"}
+		queryStatus = QueryStatus{false, "[d]DB接続でエラーが起きました。", KRBDatabaseError}
 		fmt.Println(err)
 	}
 	return queryStatus
@@ -173,7 +174,7 @@ func count(e *Environments, m *MongoDB, col Collection, kvs []KV) (QueryStatus, 
 	queryStatus.Success = true
 
 	if err != nil {
-		queryStatus = QueryStatus{false, "[c]DB接続でエラーが起きました。"}
+		queryStatus = QueryStatus{false, "[c]DB接続でエラーが起きました。", KRBDatabaseError}
 		fmt.Println(err)
 	}
 	return queryStatus, int(cnt)
@@ -194,7 +195,7 @@ func FindByLectureID(c Clients, e *Environments, lectureID int) (QueryStatus, []
 
 	err := singleResult.Decode(&result)
 	if err != nil {
-		queryStatus = QueryStatus{false, "[f]DB接続でエラーが起きました。"}
+		queryStatus = QueryStatus{false, "[f]DB接続でエラーが起きました。", KRBGetLecIDError}
 		fmt.Println(err)
 	} else {
 		queryStatus.Success = true
@@ -212,11 +213,11 @@ func FindByUID(c Clients, e *Environments, uid string) (QueryStatus, []rakutan.U
 	queryStatus.Success = true
 
 	if err != nil {
-		return QueryStatus{false, "[f]DB接続でエラーが起きました。"}, result
+		return QueryStatus{false, "[f]DB接続でエラーが起きました。", KRBGetUidError}, result
 	}
 
 	if err := filterCursor.All(c.Mongo.Ctx, &result); err != nil {
-		queryStatus = QueryStatus{false, "[f]DB接続でエラーが起きました。"}
+		queryStatus = QueryStatus{false, "[f]DB接続でエラーが起きました。", KRBGetUidError}
 	}
 	return queryStatus, result
 }
@@ -239,10 +240,10 @@ func FindByLectureName(c Clients, e *Environments, lectureName string) (QuerySta
 	queryStatus.Success = true
 
 	if err != nil {
-		return QueryStatus{false, ""}, nil
+		return QueryStatus{false, "", KRBGetLecNameError}, nil
 	}
 	if err = filterCursor.All(c.Mongo.Ctx, &result); err != nil {
-		return QueryStatus{false, ""}, nil
+		return QueryStatus{false, "", KRBGetLecNameError}, nil
 	}
 	return queryStatus, result
 }
@@ -262,10 +263,10 @@ func FindByOmikuji(c Clients, e *Environments, omikujiType string) (QueryStatus,
 	filterCursor, err := collection.Find(c.Mongo.Ctx, filter)
 
 	if err != nil {
-		return QueryStatus{false, ""}, nil
+		return QueryStatus{false, "", KRBOmikujiError}, nil
 	}
 	if err = filterCursor.All(c.Mongo.Ctx, &result); err != nil || result == nil {
-		return QueryStatus{false, ""}, nil
+		return QueryStatus{false, "", KRBOmikujiError}, nil
 	}
 	setRedis(c, omikujiType, result, time.Hour*72)
 
@@ -283,15 +284,15 @@ func FindByFav(c Clients, e *Environments, uid string) (QueryStatus, []rakutan.F
 	queryStatus.Success = true
 
 	if err != nil {
-		return QueryStatus{false, "お気に入りの取得に失敗しました。"}, result
+		return QueryStatus{false, "お気に入りの取得に失敗しました。", KRBGetFavError}, result
 	}
 
 	err = filterCursor.All(c.Mongo.Ctx, &result)
 	switch {
 	case err != nil:
-		queryStatus = QueryStatus{false, "お気に入りの取得に失敗しました。"}
+		queryStatus = QueryStatus{false, "お気に入りの取得に失敗しました。", KRBGetFavError}
 	case len(result) == 0:
-		queryStatus = QueryStatus{false, "お気に入り登録している講義はありません。講義名の左上にある★マークを押すとお気に入り登録できます！"}
+		queryStatus = QueryStatus{false, "お気に入り登録している講義はありません。講義名の左上にある★マークを押すとお気に入り登録できます！", KRBSuccess}
 	}
 
 	return queryStatus, result
@@ -363,10 +364,10 @@ func InsertFavorite(m *MongoDB, env *Environments, pbe PostbackEntry) QueryStatu
 		// documentがなければお気に入り登録できる
 		findStatus.Success = true
 	case err != nil:
-		findStatus = QueryStatus{false, "[f]DB接続でエラーが起きました。"}
+		findStatus = QueryStatus{false, "[f]DB接続でエラーが起きました。", KRBInsertFavError}
 	default:
 		deleteStatus := deleteOne(env, m, env.DB_COLLECTION.Favorites, generateBsonD(kvs))
-		findStatus = QueryStatus{false, deleteStatus.Message}
+		findStatus = QueryStatus{false, deleteStatus.Message, deleteStatus.Status}
 		if deleteStatus.Success {
 			findStatus.Message = fmt.Sprintf("「%s」をお気に入りから削除しました！", pbe.Param.LectureName)
 		}
@@ -375,7 +376,7 @@ func InsertFavorite(m *MongoDB, env *Environments, pbe PostbackEntry) QueryStatu
 	switch {
 	// お気に入り登録されていた場合
 	case !findStatus.Success:
-		return QueryStatus{false, findStatus.Message}
+		return QueryStatus{false, findStatus.Message, KRBSuccess}
 	// まだお気に入り登録されていなかった場合
 	default:
 		countStatus, favCount := count(env, m, env.DB_COLLECTION.Favorites, []KV{{"uid", pbe.Uid}})
@@ -389,7 +390,7 @@ func InsertFavorite(m *MongoDB, env *Environments, pbe PostbackEntry) QueryStatu
 			}
 			return insertStatus
 		case countStatus.Success && favCount >= 50:
-			return QueryStatus{Success: false, Message: "お気に入り数が上限(50件)に達しています。"}
+			return QueryStatus{Success: false, Message: "お気に入り数が上限(50件)に達しています。", Status: KRBSuccess}
 		default:
 			return countStatus
 		}
@@ -400,9 +401,9 @@ func DeleteFavorite(m *MongoDB, env *Environments, pbe PostbackEntry) QueryStatu
 	kvs := []KV{{"uid", pbe.Uid}, {"id", pbe.Param.ID}}
 	deleteStatus := deleteOne(env, m, env.DB_COLLECTION.Favorites, generateBsonD(kvs))
 	if deleteStatus.Success {
-		return QueryStatus{Success: true, Message: fmt.Sprintf("「%s」をお気に入りから削除しました！", pbe.Param.LectureName)}
+		return QueryStatus{Success: true, Message: fmt.Sprintf("「%s」をお気に入りから削除しました！", pbe.Param.LectureName), Status: KRBSuccess}
 	} else {
-		return QueryStatus{Success: false, Message: "お気に入りの削除に失敗しました。"}
+		return QueryStatus{Success: false, Message: "お気に入りの削除に失敗しました。", Status: KRBDeleteFavError}
 	}
 }
 
@@ -454,11 +455,11 @@ func InsertVerification(c Clients, env *Environments, v rakutan.Verification) Qu
 		insertStatus := insertOne(env, c.Mongo, env.DB_COLLECTION.Verification, filter)
 		if insertStatus.Success {
 			SendVerification(env, v.Email, v.Code)
-			return QueryStatus{true, "認証コードを送信しました。送られたメール内の認証リンクをクリックすると有効化されます。\n届いていない場合は、アドレスが間違っているか迷惑メールに入っている可能性があります。"}
+			return QueryStatus{true, "認証コードを送信しました。送られたメール内の認証リンクをクリックすると有効化されます。\n届いていない場合は、アドレスが間違っているか迷惑メールに入っている可能性があります。", KRBSuccess}
 		}
-		return QueryStatus{false, "[i]認証コードの初期化に失敗しました。]"}
+		return QueryStatus{false, "[i]認証コードの初期化に失敗しました。]", KRBVerifyCodeGenError}
 	} else {
-		return QueryStatus{false, "[d]認証コードの初期化に失敗しました。"}
+		return QueryStatus{false, "[d]認証コードの初期化に失敗しました。", KRBVerifyCodeDelError}
 	}
 }
 
@@ -467,16 +468,16 @@ func CheckVerification(c Clients, env *Environments, code string) QueryStatus {
 	singleResult := findOne(env, c.Mongo, env.DB_COLLECTION.Verification, bson.D{{"code", code}})
 	err := singleResult.Decode(&result)
 	if err != nil {
-		return QueryStatus{false, "すでに認証済みか、認証コードが間違っています。"}
+		return QueryStatus{false, "すでに認証済みか、認証コードが間違っています。", KRBSuccess}
 	}
 	update := generateBsonD([]KV{{"verified", true}, {"verified_time", int(time.Now().Unix())}})
 	updateStatus := updateOne(env, c.Mongo, env.DB_COLLECTION.User, bson.D{{"uid", result.Uid}}, bson.D{{"$set", update}})
 
 	if updateStatus.Success {
 		deleteOne(env, c.Mongo, env.DB_COLLECTION.Verification, bson.D{{"code", code}})
-		return QueryStatus{true, "認証に成功しました。"}
+		return QueryStatus{true, "認証に成功しました。", KRBSuccess}
 	}
-	return QueryStatus{false, "認証に失敗しました。再度お試しください。"}
+	return QueryStatus{false, "認証に失敗しました。再度お試しください。", updateStatus.Status}
 }
 
 func generateBsonD(kvs []KV) bson.D {

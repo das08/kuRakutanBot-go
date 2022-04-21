@@ -14,6 +14,27 @@ type LINEBot struct {
 	mockContext *gin.Context
 }
 
+type ReplyText struct {
+	Status KRBStatus
+	Text   string
+}
+
+type KRBStatus int
+
+const (
+	KRBSuccess            KRBStatus = 2000
+	KRBDatabaseError      KRBStatus = 4000
+	KRBOmikujiError       KRBStatus = 4000
+	KRBGetFavError        KRBStatus = 4003
+	KRBInsertFavError     KRBStatus = 4004
+	KRBDeleteFavError     KRBStatus = 4005
+	KRBGetLecIDError      KRBStatus = 4005
+	KRBGetLecNameError    KRBStatus = 4005
+	KRBGetUidError        KRBStatus = 4005
+	KRBVerifyCodeGenError KRBStatus = 4005
+	KRBVerifyCodeDelError KRBStatus = 4005
+)
+
 func CreateLINEBotClient(e *Environments, c *gin.Context) *LINEBot {
 	bot, err := linebot.New(
 		e.LINE_CHANNEL_SECRET,
@@ -37,11 +58,11 @@ func (lb *LINEBot) SetSenderUid(e *Environments, senderUid string) {
 	}
 }
 
-func (lb *LINEBot) SendTextMessage(text string) {
+func (lb *LINEBot) SendTextMessage(rt ReplyText) {
 	if lb.isMockUser {
 		return
 	}
-	_, err := lb.Bot.ReplyMessage(lb.replyToken, linebot.NewTextMessage(text)).Do()
+	_, err := lb.Bot.ReplyMessage(lb.replyToken, linebot.NewTextMessage(rt.Text)).Do()
 	if err != nil {
 		log.Print(err)
 	}

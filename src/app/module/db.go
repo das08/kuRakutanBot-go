@@ -37,12 +37,6 @@ type KV struct {
 	Value interface{}
 }
 
-type QueryStatus struct {
-	Success bool
-	Message string
-	Status  KRBStatus
-}
-
 func CreateDBClient(e *Environments) *MongoDB {
 	mongoURI := "mongodb://" + e.DB_USER + ":" + e.DB_PASS + "@" + e.DB_HOST + ":" + e.DB_PORT + "/?authSource=admin"
 	client, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))

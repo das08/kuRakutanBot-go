@@ -50,6 +50,7 @@ func (lb *LINEBot) SetSenderUid(e *Environments, senderUid string) {
 func (lb *LINEBot) SendTextMessage(rt ReplyText) {
 	if lb.isMockUser {
 		lb.mockContext.JSON(200, rt)
+		return
 	}
 	_, err := lb.Bot.ReplyMessage(lb.replyToken, linebot.NewTextMessage(rt.Text)).Do()
 	if err != nil {
@@ -60,6 +61,7 @@ func (lb *LINEBot) SendTextMessage(rt ReplyText) {
 func (lb *LINEBot) SendFlexMessage(flexMessages []FlexMessage) {
 	if lb.isMockUser {
 		lb.mockContext.JSON(200, ReplyFlex{Status: KRBSuccess, Flex: flexMessages})
+		return
 	}
 	var messages []linebot.SendingMessage
 	for _, fm := range flexMessages {

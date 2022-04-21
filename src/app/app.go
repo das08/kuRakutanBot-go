@@ -34,7 +34,7 @@ func main() {
 	})
 
 	router.POST("/callback", func(c *gin.Context) {
-		lb := module.CreateLINEBotClient(&env)
+		lb := module.CreateLINEBotClient(&env, c)
 		events, err := lb.Bot.ParseRequest(c.Request)
 		if err != nil {
 			if err == linebot.ErrInvalidSignature {
@@ -61,7 +61,7 @@ func main() {
 			case linebot.EventTypeMessage:
 				uid := event.Source.UserID
 				lb.SetReplyToken(event.ReplyToken)
-				lb.SetSenderUid(uid)
+				lb.SetSenderUid(&env, uid)
 				switch message := event.Message.(type) {
 				case *linebot.TextMessage:
 					messageText := strings.TrimSpace(message.Text)
@@ -98,7 +98,7 @@ func main() {
 			case linebot.EventTypePostback:
 				uid := event.Source.UserID
 				lb.SetReplyToken(event.ReplyToken)
-				lb.SetSenderUid(uid)
+				lb.SetSenderUid(&env, uid)
 
 				data := event.Postback.Data
 				fmt.Println("pbdata: ", data)

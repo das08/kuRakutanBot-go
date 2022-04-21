@@ -1,7 +1,6 @@
 package module
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/line/line-bot-sdk-go/v7/linebot"
 	"log"
@@ -18,6 +17,11 @@ type LINEBot struct {
 type ReplyText struct {
 	Status KRBStatus
 	Text   string
+}
+
+type ReplyFlex struct {
+	Status KRBStatus
+	Flex   []FlexMessage
 }
 
 type KRBStatus int
@@ -61,9 +65,8 @@ func (lb *LINEBot) SetSenderUid(e *Environments, senderUid string) {
 
 func (lb *LINEBot) SendTextMessage(rt ReplyText) {
 	if lb.isMockUser {
-		return
+		lb.mockContext.JSON(200, rt)
 	}
-	fmt.Println("[Status]: ", rt.Status)
 	_, err := lb.Bot.ReplyMessage(lb.replyToken, linebot.NewTextMessage(rt.Text)).Do()
 	if err != nil {
 		log.Print(err)
@@ -72,7 +75,7 @@ func (lb *LINEBot) SendTextMessage(rt ReplyText) {
 
 func (lb *LINEBot) SendFlexMessage(flexMessages []FlexMessage) {
 	if lb.isMockUser {
-		return
+		lb.mockContext.JSON(200, ReplyFlex{Status: KRBSuccess, Flex: flexMessages})
 	}
 	var messages []linebot.SendingMessage
 	for _, fm := range flexMessages {

@@ -36,6 +36,7 @@ var Commands = [...]Command{
 	{Keyword: "ユーザ認証", SendFunction: verificationCmd},
 	{Keyword: "お問い合わせ", SendFunction: inquiryCmd},
 	{Keyword: "問い合わせ", SendFunction: inquiryCmd},
+	{Keyword: "myuid", SendFunction: myUIDCmd},
 	{Keyword: "京大楽単bot", SendFunction: iconCmd},
 }
 
@@ -122,6 +123,10 @@ func verificationCmd(c Clients, env *Environments, lb *LINEBot) {
 		flexMessages := loadFlexMessages("./assets/richmenu/verification.json", "ユーザー認証をする")
 		lb.SendFlexMessage(flexMessages)
 	}
+}
+
+func myUIDCmd(_ Clients, _ *Environments, lb *LINEBot) {
+	lb.SendTextMessage(lb.senderUid)
 }
 
 func SendVerificationCmd(c Clients, env *Environments, lb *LINEBot, email string) {

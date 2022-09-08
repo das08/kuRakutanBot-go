@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/jmoiron/sqlx"
-	"github.com/lib/pq"
 	"log"
 	"time"
 
@@ -30,18 +29,32 @@ const (
 )
 
 type RakutanInfo2 struct {
-	ID          int           `db:"id"`
-	FacultyName string        `db:"faculty_name"`
-	LectureName string        `db:"lecture_name"`
-	Register    pq.Int32Array `db:"register"`
-	Passed      pq.Int32Array `db:"passed"`
+	ID          int    `db:"id"`
+	FacultyName string `db:"faculty_name"`
+	LectureName string `db:"lecture_name"`
+	Register    []int  `db:"register"`
+	Passed      []int  `db:"passed"`
+	KakomonURL  string `db:"kakomon_url"`
+	IsFavorite  bool
 }
 
-type RakutanType interface {
-	[]RakutanInfo2
+func (r *RakutanInfo2) GetLatestDetail() (int, int) {
+	passed, register := 0, 0
+	for i := 0; i < len(r.Register); i++ {
+		if r.Register[i] != 0 {
+			passed = r.Passed[i]
+			register = r.Register[i]
+			break
+		}
+	}
+	return passed, register
 }
 
-type QueryStatus2[T RakutanType] struct {
+type ReturnType interface {
+	[]RakutanInfo2 | []FlexMessage
+}
+
+type QueryStatus2[T ReturnType] struct {
 	Result T
 	Err    string
 }
@@ -77,38 +90,51 @@ func (p *Postgres) InsertUserAction(userID string, action UserAction) error {
 	return nil
 }
 
-func (p *Postgres) GetRakutanInfoByID(id int) (QueryStatus2, error) {
-	var status QueryStatus2
+func (p *Postgres) GetRakutanInfoByID(id int) (QueryStatus2[[]RakutanInfo2], bool) {
+	var status QueryStatus2[[]RakutanInfo2]
 	var rakutanInfos []RakutanInfo2
 	// TODO: do not hard code table name
 	err := p.Client.Select(&rakutanInfos, "SELECT * FROM rakutan2021 WHERE id = $1", id)
 	if err != nil {
 		log.Println(err)
-		status.Err = err.Error()
-		return status, err
+		status.Err = ErrorMessageGetRakutanInfoByIDError
+		return status, false
 	}
 	status.Result = rakutanInfos
-	return status, nil
+	return status, true
 }
 
-func (p *Postgres) GetRakutanInfoByLectureName(lectureName string) (QueryStatus2, error) {
-	var status QueryStatus2
+func (p *Postgres) GetRakutanInfoByLectureName(lectureName string) (QueryStatus2[[]RakutanInfo2], bool) {
+	var status QueryStatus2[[]RakutanInfo2]
 	var rakutanInfos []RakutanInfo2
 	// TODO: consider LIKE search
 	err := p.Client.Select(&rakutanInfos, "SELECT * FROM rakutan2021 WHERE lecture_name = $1", lectureName)
 	if err != nil {
 		log.Println(err)
-		status.Err = err.Error()
-		return status, err
+		status.Err = ErrorMessageGetRakutanInfoByNameError
+		return status, false
 	}
 	status.Result = rakutanInfos
-	return status, nil
+	return status, true
 }
 
-func (p *Postgres) GetFavorites(uid string) (QueryStatus2, bool) {
-	var status QueryStatus2
+func (p *Postgres) GetFavorites(uid string) (QueryStatus2[[]RakutanInfo2], bool) {
+	var status QueryStatus2[[]RakutanInfo2]
 	var rakutanInfos []RakutanInfo2
 	err := p.Client.Select(&rakutanInfos, "SELECT r.* FROM favorites as f INNER JOIN rakutan2021 as r WHERE f.id = r.id AND f.uid = $1", uid)
+	if err != nil {
+		log.Println(err)
+		status.Err = ErrorMessageGetFavError
+		return status, false
+	}
+	status.Result = rakutanInfos
+	return status, true
+}
+
+func (p *Postgres) GetFavoriteByID(uid string, id int) (QueryStatus2[[]RakutanInfo2], bool) {
+	var status QueryStatus2[[]RakutanInfo2]
+	var rakutanInfos []RakutanInfo2
+	err := p.Client.Select(&rakutanInfos, "SELECT r.* FROM favorites as f INNER JOIN rakutan2021 as r WHERE f.id = r.id AND f.uid = $1 AND f.id = $2", uid, id)
 	if err != nil {
 		log.Println(err)
 		status.Err = ErrorMessageGetFavError

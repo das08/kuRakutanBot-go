@@ -84,24 +84,26 @@ func loadFlexMessages(filename string, altText string) []FlexMessage {
 }
 
 func rakutanCmd(c Clients, env *Environments, lb *LINEBot) {
-	queryStatus, result := GetRakutanInfo(c, env, lb.senderUid, Omikuji, "rakutan")
-	countUp(env, c.Mongo, lb.senderUid, "rakutan")
-	if queryStatus.Success {
-		flexMessages := CreateRakutanDetail(result[0], Rakutan)
+	// TODO: GetRakutanInfoにおみくじの場合分けを返す
+	status, ok := GetRakutanInfo(c, env, lb.senderUid, Omikuji, "rakutan")
+	//countUp(env, c.Mongo, lb.senderUid, "rakutan") // TODO
+	if ok {
+		flexMessages := CreateRakutanDetail(status.Result[0], env, Rakutan)
 		lb.SendFlexMessage(flexMessages)
 	} else {
-		lb.SendTextMessage(ReplyText{Status: KRBOmikujiError, Text: "楽単おみくじに失敗しました。"})
+		lb.SendTextMessage2(status.Err)
 	}
 }
 
 func onitanCmd(c Clients, env *Environments, lb *LINEBot) {
-	queryStatus, result := GetRakutanInfo(c, env, lb.senderUid, Omikuji, "onitan")
-	countUp(env, c.Mongo, lb.senderUid, "onitan")
-	if queryStatus.Success {
-		flexMessages := CreateRakutanDetail(result[0], Onitan)
+	// TODO: GetRakutanInfoにおみくじの場合分けを返す
+	status, ok := GetRakutanInfo(c, env, lb.senderUid, Omikuji, "onitan")
+	//countUp(env, c.Mongo, lb.senderUid, "onitan") // TODO
+	if ok {
+		flexMessages := CreateRakutanDetail(status.Result[0], env, Rakutan)
 		lb.SendFlexMessage(flexMessages)
 	} else {
-		lb.SendTextMessage(ReplyText{Status: KRBOmikujiError, Text: "鬼単おみくじに失敗しました。"})
+		lb.SendTextMessage2(status.Err)
 	}
 }
 

@@ -302,42 +302,40 @@ const (
 	Omikuji
 )
 
-func GetRakutanInfo(c Clients, env *Environments, uid string, method FindByMethod, value interface{}) (QueryStatus, []rakutan.RakutanInfo) {
-	var queryStatus QueryStatus
-	var result []rakutan.RakutanInfo
+func GetRakutanInfo(c Clients, env *Environments, uid string, method FindByMethod, value interface{}) (QueryStatus2[[]RakutanInfo2], bool) {
+	var ok bool
+	var status QueryStatus2[[]RakutanInfo2]
 
 	switch method {
 	case ID:
-		queryStatus, result = FindByLectureID(c, env, value.(int))
+		status, ok = c.Postgres.GetRakutanInfoByID(value.(int))
 	case Name:
-		queryStatus, result = FindByLectureName(c, env, value.(string))
-	case Omikuji:
-		queryStatus, result = FindByOmikuji(c, env, value.(string))
+		status, ok = c.Postgres.GetRakutanInfoByLectureName(value.(string))
 	}
 
 	// Set isVerified, isFavorite and kakomonURL
-	if queryStatus.Success && len(result) == 1 {
-		isVerified := IsVerified(c, env, uid)
-		result[0].IsVerified = isVerified
-		result[0].IsFavorite = exist(env, c.Mongo, env.DB_COLLECTION.Favorites, []KV{{Key: "uid", Value: uid}, {Key: "id", Value: result[0].ID}})
+	//if ok && len(result) == 1 {
+	//	isVerified := IsVerified(c, env, uid)
+	//	result[0].IsVerified = isVerified
+	//	result[0].IsFavorite = exist(env, c.Mongo, env.DB_COLLECTION.Favorites, []KV{{Key: "uid", Value: uid}, {Key: "id", Value: result[0].ID}})
+	//
+	//	if isVerified && result[0].URL == "" {
+	//		redisKey := fmt.Sprintf("#%d", result[0].ID)
+	//		if redisStatus, cacheURL := getRedisKakomonURL(c, redisKey); redisStatus.Success {
+	//			result[0].URL = cacheURL
+	//		} else {
+	//			kuWikiStatus := GetKakomonURL(env, result[0].LectureName)
+	//			if kuWikiStatus.Success {
+	//				result[0].URL = kuWikiStatus.Result
+	//				setRedis(c, redisKey, kuWikiStatus.Result, time.Hour*72)
+	//			} else {
+	//				result[0].KUWikiErr = kuWikiStatus.Result
+	//			}
+	//		}
+	//	}
+	//}
 
-		if isVerified && result[0].URL == "" {
-			redisKey := fmt.Sprintf("#%d", result[0].ID)
-			if redisStatus, cacheURL := getRedisKakomonURL(c, redisKey); redisStatus.Success {
-				result[0].URL = cacheURL
-			} else {
-				kuWikiStatus := GetKakomonURL(env, result[0].LectureName)
-				if kuWikiStatus.Success {
-					result[0].URL = kuWikiStatus.Result
-					setRedis(c, redisKey, kuWikiStatus.Result, time.Hour*72)
-				} else {
-					result[0].KUWikiErr = kuWikiStatus.Result
-				}
-			}
-		}
-	}
-
-	return queryStatus, result
+	return status, ok
 }
 
 func GetFavorites(c Clients, env *Environments, uid string) (QueryStatus, []rakutan.Favorite) {

@@ -2,13 +2,16 @@ package main
 
 import (
 	"fmt"
-	rakutan "github.com/das08/kuRakutanBot-go/models/rakutan"
 	"github.com/das08/kuRakutanBot-go/module"
 	"github.com/gin-gonic/gin"
 	"github.com/line/line-bot-sdk-go/v7/linebot"
 	"log"
 	"net/http"
 	"strings"
+)
+
+const (
+	YEAR = "year"
 )
 
 func main() {
@@ -91,12 +94,12 @@ func main() {
 					}
 
 					// その他講義名が送られてきた場合
-					status, flexMessages := searchRakutan(clients, &env, uid, messageText)
+					searchStatus, ok := searchRakutan(clients, &env, uid, messageText)
 					log.Printf("[Bot] Search: %s", messageText)
-					if status.Success {
-						lb.SendFlexMessage(flexMessages)
+					if !ok {
+						lb.SendTextMessage2(searchStatus.Err)
 					} else {
-						lb.SendTextMessage(module.ReplyText{Status: status.Status, Text: status.Message})
+						lb.SendFlexMessage(searchStatus.Result)
 					}
 				}
 			case linebot.EventTypePostback:
@@ -132,39 +135,50 @@ func main() {
 	}
 }
 
-func searchRakutan(c module.Clients, env *module.Environments, uid string, searchText string) (module.QueryStatus, []module.FlexMessage) {
-	var searchStatus module.QueryStatus
-	var flexMessages []module.FlexMessage
-	var queryStatus module.QueryStatus
-	var result []rakutan.RakutanInfo
+func searchRakutan(c module.Clients, env *module.Environments, uid string, searchText string) (module.QueryStatus2[[]module.FlexMessage], bool) {
+	var ok, searchSuccess bool
+	var status module.QueryStatus2[[]module.RakutanInfo2]
+	var searchStatus module.QueryStatus2[[]module.FlexMessage]
 
 	isLectureNumber, lectureID := module.IsLectureID(searchText)
 	if isLectureNumber {
-		queryStatus, result = module.GetRakutanInfo(c, env, uid, module.ID, lectureID)
+		status, ok = module.GetRakutanInfo(c, env, uid, module.ID, lectureID)
 	} else {
-		queryStatus, result = module.GetRakutanInfo(c, env, uid, module.Name, searchText)
+		status, ok = module.GetRakutanInfo(c, env, uid, module.Name, searchText)
 	}
 
-	if queryStatus.Success {
-		recordCount := len(result)
+	if ok {
+		rakutanInfos := status.Result
+		recordCount := len(rakutanInfos)
 		switch {
 		case recordCount == 0:
-			searchStatus.Success = false
-			searchStatus.Message = fmt.Sprintf("「%s」は見つかりませんでした。\n【検索のヒント】%%を頭につけて検索すると部分一致検索ができます。ex.)「%%地理学」", searchText)
+			searchStatus.Err = fmt.Sprintf("「%s」は見つかりませんでした。\n【検索のヒント】%%を頭につけて検索すると部分一致検索ができます。ex.)「%%地理学」", searchText)
+			//searchSuccess = false
+
 		case recordCount == 1:
-			flexMessages = module.CreateRakutanDetail(result[0], module.Normal)
-			searchStatus.Success = true
+			favEntry, ok := c.Postgres.GetFavoriteByID(uid, rakutanInfos[0].ID)
+			if ok && len(favEntry.Result) == 1 {
+				rakutanInfos[0].IsFavorite = true
+			}
+			if !ok {
+				searchStatus.Err = "お気に入りの取得に失敗しました。"
+				//searchSuccess = false
+			} else {
+				searchStatus.Result = module.CreateRakutanDetail(rakutanInfos[0], env, module.Normal)
+				searchSuccess = true
+			}
+
 		case recordCount <= 5*module.MaxResultsPerPage:
-			flexMessages = module.CreateSearchResult(searchText, result)
-			searchStatus.Success = true
+			searchStatus.Result = module.CreateSearchResult(searchText, rakutanInfos)
+			searchSuccess = true
+
 		default:
-			searchStatus.Success = false
-			searchStatus.Message = fmt.Sprintf("「%s」は%d件あります。検索条件を絞ってください。", searchText, recordCount)
+			searchStatus.Err = fmt.Sprintf("「%s」は%d件あります。検索条件を絞ってください。", searchText, recordCount)
+			//searchSuccess = false
 		}
 	} else {
-		searchStatus.Success = false
-		searchStatus.Message = "エラーが発生しました。"
-		searchStatus.Status = queryStatus.Status
+		searchStatus.Err = "エラーが発生しました。"
+		//searchSuccess = false
 	}
-	return searchStatus, flexMessages
+	return searchStatus, searchSuccess
 }

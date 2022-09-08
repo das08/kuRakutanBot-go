@@ -2,12 +2,10 @@ package module
 
 import (
 	"fmt"
-	models "github.com/das08/kuRakutanBot-go/models/rakutan"
 	"github.com/das08/kuRakutanBot-go/models/richmenu"
 	"github.com/line/line-bot-sdk-go/v7/linebot"
 	"log"
 	"math"
-	"net/url"
 	"strconv"
 )
 
@@ -58,7 +56,7 @@ var omikujiType = map[OmikujiType]OmikujiText{
 	Onitan:  {Text: "鬼単おみくじ結果", Color: "#6d7bff"},
 }
 
-func CreateRakutanDetail(info models.RakutanInfo, o OmikujiType) []FlexMessage {
+func CreateRakutanDetail(info RakutanInfo2, e *Environments, o OmikujiType) []FlexMessage {
 	rakutanDetail := LoadRakutanDetail()
 	rakutanDetail.Header.Contents[0].Contents[1].Text = strToPtr("Search ID:#" + toStr(info.ID))
 	rakutanDetail.Header.Contents[1].Text = &info.LectureName             // Lecture name
@@ -79,43 +77,45 @@ func CreateRakutanDetail(info models.RakutanInfo, o OmikujiType) []FlexMessage {
 	rakutanDetail.Header.Contents[0].Contents[0].Action.Data = fmt.Sprintf("type=fav&id=%d&lecname=%s", info.ID, info.LectureName)
 
 	// 単位取得率
-	for i, v := range info.Detail {
-		rakutanDetail.Body.Contents[0].Contents[i+1].Contents[0].Text = fmt.Sprintf("%d年度", v.Year)
-		rakutanDetail.Body.Contents[0].Contents[i+1].Contents[1].Text = getRakutanPercent(v.Accepted, v.Total)
+	rakutanPercents := getRakutanPercent(info.Passed, info.Register)
+	for i := range info.Register {
+		rakutanDetail.Body.Contents[0].Contents[i+1].Contents[0].Text = fmt.Sprintf("%d年度", e.YEAR-i)
+		rakutanDetail.Body.Contents[0].Contents[i+1].Contents[1].Text = rakutanPercents[i]
 	}
-	rakutanJudge := getRakutanJudge(info.Detail)
+	rakutanJudge := getRakutanJudge(info)
 	rakutanDetail.Body.Contents[0].Contents[5].Contents[1].Text = rakutanJudge.rank
 	rakutanDetail.Body.Contents[0].Contents[5].Contents[1].Color = rakutanJudge.color
 
 	// 過去問リンク
-	if info.IsVerified {
-		_, err := url.ParseRequestURI(info.URL)
-		switch {
-		case info.URL != "" && err == nil:
-			rakutanDetail.Body.Contents[0].Contents[6].Contents[1].Text = "○"
-			rakutanDetail.Body.Contents[0].Contents[6].Contents[1].Color = "#0fd142"
-			rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Text = "リンク"
-			rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Color = "#4c7cf5"
-			rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Action.URI = &info.URL
-		case info.KUWikiErr != "":
-			rakutanDetail.Body.Contents[0].Contents[6].Contents[1].Text = "×"
-			rakutanDetail.Body.Contents[0].Contents[6].Contents[1].Color = "#ef1d2f"
-			rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Text = info.KUWikiErr
-			rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Action = &richmenu.URIAction{Type: "uri", Label: "action", URI: strToPtr("https://www.kuwiki.net/upload-exams")}
-		default:
-			rakutanDetail.Body.Contents[0].Contents[6].Contents[1].Text = "×"
-			rakutanDetail.Body.Contents[0].Contents[6].Contents[1].Color = "#ef1d2f"
-			rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Text = "提供する"
-			rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Action = &richmenu.URIAction{Type: "uri", Label: "action", URI: strToPtr("https://www.kuwiki.net/upload-exams")}
-		}
-	} else {
-		rakutanDetail.Body.Contents[0].Contents[6].Contents[1].Flex = intToPtr(0)
-		rakutanDetail.Body.Contents[0].Contents[6].Contents[1].Text = "△"
-		rakutanDetail.Body.Contents[0].Contents[6].Contents[1].Color = "#ffb101"
-		rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Flex = intToPtr(7)
-		rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Text = "ユーザー認証が必要です"
-		rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Action = &richmenu.URIAction{Type: "message", Label: "action", Text: strToPtr("ユーザ認証")}
-	}
+	// TODO: なんとかする
+	//if info.IsVerified {
+	//	_, err := url.ParseRequestURI(info.URL)
+	//	switch {
+	//	case info.URL != "" && err == nil:
+	//		rakutanDetail.Body.Contents[0].Contents[6].Contents[1].Text = "○"
+	//		rakutanDetail.Body.Contents[0].Contents[6].Contents[1].Color = "#0fd142"
+	//		rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Text = "リンク"
+	//		rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Color = "#4c7cf5"
+	//		rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Action.URI = &info.URL
+	//	case info.KUWikiErr != "":
+	//		rakutanDetail.Body.Contents[0].Contents[6].Contents[1].Text = "×"
+	//		rakutanDetail.Body.Contents[0].Contents[6].Contents[1].Color = "#ef1d2f"
+	//		rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Text = info.KUWikiErr
+	//		rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Action = &richmenu.URIAction{Type: "uri", Label: "action", URI: strToPtr("https://www.kuwiki.net/upload-exams")}
+	//	default:
+	//		rakutanDetail.Body.Contents[0].Contents[6].Contents[1].Text = "×"
+	//		rakutanDetail.Body.Contents[0].Contents[6].Contents[1].Color = "#ef1d2f"
+	//		rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Text = "提供する"
+	//		rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Action = &richmenu.URIAction{Type: "uri", Label: "action", URI: strToPtr("https://www.kuwiki.net/upload-exams")}
+	//	}
+	//} else {
+	//	rakutanDetail.Body.Contents[0].Contents[6].Contents[1].Flex = intToPtr(0)
+	//	rakutanDetail.Body.Contents[0].Contents[6].Contents[1].Text = "△"
+	//	rakutanDetail.Body.Contents[0].Contents[6].Contents[1].Color = "#ffb101"
+	//	rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Flex = intToPtr(7)
+	//	rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Text = "ユーザー認証が必要です"
+	//	rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Action = &richmenu.URIAction{Type: "message", Label: "action", Text: strToPtr("ユーザ認証")}
+	//}
 
 	flex, err := rakutanDetail.Marshal()
 	if err != nil {
@@ -127,7 +127,7 @@ func CreateRakutanDetail(info models.RakutanInfo, o OmikujiType) []FlexMessage {
 	return []FlexMessage{{FlexContainer: flexContainer, AltText: altText}}
 }
 
-func CreateSearchResult(searchText string, infos []models.RakutanInfo) []FlexMessage {
+func CreateSearchResult(searchText string, infos []RakutanInfo2) []FlexMessage {
 	var messages []FlexMessage
 	searchResult := LoadSearchResult()
 	searchResultMore := LoadSearchResultMore()
@@ -182,7 +182,7 @@ func CreateFlexMessage(flex []byte, altText string) []FlexMessage {
 	return []FlexMessage{{FlexContainer: flexContainer, AltText: altText}}
 }
 
-func getLectureList(infos []models.RakutanInfo, pageCount int) []richmenu.PurpleContent {
+func getLectureList(infos []RakutanInfo2, pageCount int) []richmenu.PurpleContent {
 	searchResult := LoadSearchResult()
 	var lectureList []richmenu.PurpleContent
 	lecture := searchResult.Body.Contents[1].Contents[0]
@@ -231,17 +231,21 @@ func toFlexContainer(json richmenu.Marshal) linebot.FlexContainer {
 	return flexContainer
 }
 
-func getRakutanPercent(accept int, total int) string {
-	breakdown := "(" + toStr(accept) + "/" + toStr(total) + ")"
-	if total == 0 {
-		return "---% " + breakdown
-	} else {
-		return fmt.Sprintf("%.1f%% ", getPercentage(accept, total)) + breakdown
+func getRakutanPercent(passed []int, register []int) []string {
+	var rakutanPercent []string
+	for i := 0; i < len(passed); i++ {
+		breakdown := "(" + toStr(passed[i]) + "/" + toStr(register[i]) + ")"
+		if register[i] == 0 {
+			rakutanPercent = append(rakutanPercent, "---% "+breakdown)
+		} else {
+			rakutanPercent = append(rakutanPercent, fmt.Sprintf("%.1f%% ", getPercentage(passed[i], register[i]))+breakdown)
+		}
 	}
+	return rakutanPercent
 }
 
-func getRakutanJudge(rds models.RakutanDetails) RakutanJudge {
-	accept, total := rds.GetLatestDetail()
+func getRakutanJudge(r RakutanInfo2) RakutanJudge {
+	accept, total := r.GetLatestDetail()
 	if total == 0 {
 		return judgeList[8]
 	}

@@ -160,17 +160,17 @@ func CreateSearchResult(searchText string, infos []models.RakutanInfo) []FlexMes
 	return messages
 }
 
-func CreateFavorites(favs []models.Favorite) []FlexMessage {
+func CreateFavorites2(r []RakutanInfo2) []FlexMessage {
 	var messages []FlexMessage
 	favorites := LoadFavorites()
 
 	pageCount := 0
-	maxPageCount := len(favs)/MaxResultsPerPage + 1
+	maxPageCount := len(r)/MaxResultsPerPage + 1
 
 	for pageCount = 1; pageCount <= maxPageCount; pageCount++ {
 		altText := fmt.Sprintf("お気に入りリスト(%d/%d)", pageCount, maxPageCount)
 		// Set body text
-		favorites.Body.Contents[0].Contents = getFavoriteList(favs, pageCount)
+		favorites.Body.Contents[0].Contents = getFavoriteList2(r, pageCount)
 		flexContainer := toFlexContainer(&favorites)
 		messages = append(messages, FlexMessage{FlexContainer: flexContainer, AltText: altText})
 	}
@@ -204,17 +204,17 @@ func getLectureList(infos []models.RakutanInfo, pageCount int) []richmenu.Purple
 	return lectureList
 }
 
-func getFavoriteList(favs []models.Favorite, pageCount int) []richmenu.FavoritesBodyContents {
+func getFavoriteList2(r []RakutanInfo2, pageCount int) []richmenu.FavoritesBodyContents {
 	favorites := LoadFavorites()
 	var favoriteList []richmenu.FavoritesBodyContents
 	favorite := favorites.Body.Contents[0].Contents[0]
 
 	offset := (pageCount - 1) * MaxResultsPerPage
-	for i := offset; i < int(math.Min(float64(len(favs)), float64(MaxResultsPerPage+offset))); i++ {
+	for i := offset; i < int(math.Min(float64(len(r)), float64(MaxResultsPerPage+offset))); i++ {
 		tmp := favorite.DeepCopy()
-		tmp.Contents[0].Text = favs[i].LectureName
-		tmp.Contents[1].Action.Text = strToPtr(fmt.Sprintf("#%d", favs[i].ID))
-		tmp.Contents[2].Action.Data = strToPtr(fmt.Sprintf("type=del&id=%d&lecname=%s", favs[i].ID, favs[i].LectureName))
+		tmp.Contents[0].Text = r[i].LectureName
+		tmp.Contents[1].Action.Text = strToPtr(fmt.Sprintf("#%d", r[i].ID))
+		tmp.Contents[2].Action.Data = strToPtr(fmt.Sprintf("type=del&id=%d&lecname=%s", r[i].ID, r[i].LectureName))
 
 		favoriteList = append(favoriteList, tmp)
 	}

@@ -105,17 +105,17 @@ func (p *Postgres) GetRakutanInfoByLectureName(lectureName string) (QueryStatus2
 	return status, nil
 }
 
-func (p *Postgres) GetFavorites(uid string) (QueryStatus2, error) {
+func (p *Postgres) GetFavorites(uid string) (QueryStatus2, bool) {
 	var status QueryStatus2
 	var rakutanInfos []RakutanInfo2
-	err := p.Client.Select(&rakutanInfos, "SELECT * FROM favorites as f INNER JOIN rakutan2021 as r WHERE f.id = r.id AND f.uid = $1", uid)
+	err := p.Client.Select(&rakutanInfos, "SELECT r.* FROM favorites as f INNER JOIN rakutan2021 as r WHERE f.id = r.id AND f.uid = $1", uid)
 	if err != nil {
 		log.Println(err)
-		status.Err = err.Error()
-		return status, err
+		status.Err = ErrorMessageGetFavError
+		return status, false
 	}
 	status.Result = rakutanInfos
-	return status, nil
+	return status, true
 }
 
 func (p *Postgres) SetFavorite(uid string, id int) (string, bool) {

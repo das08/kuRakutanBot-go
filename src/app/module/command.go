@@ -106,13 +106,13 @@ func onitanCmd(c Clients, env *Environments, lb *LINEBot) {
 }
 
 func getFavoritesCmd(c Clients, env *Environments, lb *LINEBot) {
-	queryStatus, result := GetFavorites(c, env, lb.senderUid)
-	if queryStatus.Success {
-		flexMessages := CreateFavorites(result)
-		lb.SendFlexMessage(flexMessages)
-	} else {
-		lb.SendTextMessage(ReplyText{Status: queryStatus.Status, Text: queryStatus.Message})
+	queryStatus, ok := c.Postgres.GetFavorites(lb.senderUid)
+	if !ok {
+		lb.SendTextMessage2(queryStatus.Err)
+		return
 	}
+	flexMessages := CreateFavorites2(queryStatus.Result)
+	lb.SendFlexMessage(flexMessages)
 }
 
 func verificationCmd(c Clients, env *Environments, lb *LINEBot) {

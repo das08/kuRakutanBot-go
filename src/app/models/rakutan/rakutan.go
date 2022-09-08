@@ -1,5 +1,7 @@
 package models
 
+import "github.com/lib/pq"
+
 type RakutanInfo struct {
 	ID          int            `bson:"id"`
 	FacultyName string         `bson:"faculty_name"`
@@ -10,6 +12,14 @@ type RakutanInfo struct {
 	IsVerified  bool
 	IsFavorite  bool
 	KUWikiErr   string
+}
+
+type RakutanInfo2 struct {
+	ID          int           `db:"id"`
+	FacultyName string        `db:"faculty_name"`
+	LectureName string        `db:"lecture_name"`
+	Register    pq.Int32Array `db:"register"`
+	Passed      pq.Int32Array `db:"passed"`
 }
 
 type RakutanDetail struct {

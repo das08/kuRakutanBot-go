@@ -28,8 +28,9 @@ type Redis struct {
 }
 
 type Clients struct {
-	Mongo *MongoDB
-	Redis *Redis
+	Mongo    *MongoDB
+	Postgres *Postgres
+	Redis    *Redis
 }
 
 type KV struct {

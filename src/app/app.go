@@ -53,8 +53,12 @@ func main() {
 				panic(err)
 			}
 		}()
+
+		postgres := module.CreatePostgresClient(&env)
+		defer postgres.Client.Close()
+
 		redis := module.CreateRedisClient()
-		clients := module.Clients{Mongo: mongoDB, Redis: redis}
+		clients := module.Clients{Postgres: postgres, Redis: redis}
 
 		for _, event := range events {
 			switch event.Type {
@@ -65,7 +69,7 @@ func main() {
 				switch message := event.Message.(type) {
 				case *linebot.TextMessage:
 					messageText := strings.TrimSpace(message.Text)
-					module.CountMessage(clients, &env, uid)
+					//module.CountMessage(clients, &env, uid)
 
 					// コマンドが送られてきた場合
 					isCommand, function := module.IsCommand(messageText)

@@ -118,20 +118,39 @@ func (p *Postgres) GetFavorites(uid string) (QueryStatus2, error) {
 	return status, nil
 }
 
-func (p *Postgres) SetFavorite(uid string, id int) bool {
-	_, err := p.Client.Exec("INSERT INTO favorites (uid, id) VALUES ($1, $2)", uid, id)
+func (p *Postgres) SetFavorite(uid string, id int) (string, bool) {
+	var favoriteIDs []int
+	err := p.Client.Select(&favoriteIDs, "SELECT id FROM favorites WHERE uid = $1", uid)
 	if err != nil {
 		log.Println(err)
-		return false
+		return ErrorMessageGetFavError, false
 	}
-	return true
+	for _, favoriteID := range favoriteIDs {
+		if favoriteID == id {
+			return ErrorMessageAlreadyFavError, false
+		}
+	}
+	if len(favoriteIDs) >= 50 {
+		return ErrorMessageFavLimitError, false
+	}
+
+	_, err = p.Client.Exec("INSERT INTO favorites (uid, id) VALUES ($1, $2)", uid, id)
+	// TODO: Duplicate key errorをチェックする
+	if err != nil {
+		log.Println(err)
+		return ErrorMessageInsertFavError, false
+	}
+
+	// TODO: 講義名を取得する
+	return fmt.Sprintf(SuccessMessageInsertFav, ""), true
 }
 
-func (p *Postgres) UnsetFavorite(uid string, id int) bool {
+func (p *Postgres) UnsetFavorite(uid string, id int) (string, bool) {
 	_, err := p.Client.Exec("DELETE FROM favorites WHERE uid = $1 AND id = $2", uid, id)
 	if err != nil {
 		log.Println(err)
-		return false
+		return ErrorMessageDeleteFavError, false
 	}
-	return true
+	// TODO: 講義名を取得する
+	return fmt.Sprintf(SuccessMessageDeleteFav, ""), true
 }

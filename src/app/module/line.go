@@ -58,6 +58,17 @@ func (lb *LINEBot) SendTextMessage(rt ReplyText) {
 	}
 }
 
+func (lb *LINEBot) SendTextMessage2(text string) {
+	if lb.isMockUser {
+		lb.mockContext.JSON(200, text)
+		return
+	}
+	_, err := lb.Bot.ReplyMessage(lb.replyToken, linebot.NewTextMessage(text)).Do()
+	if err != nil {
+		log.Print(err)
+	}
+}
+
 func (lb *LINEBot) SendFlexMessage(flexMessages []FlexMessage) {
 	if lb.isMockUser {
 		lb.mockContext.JSON(200, ReplyFlex{Status: KRBSuccess, Flex: flexMessages})

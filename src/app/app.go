@@ -45,14 +45,14 @@ func main() {
 			return
 		}
 
-		mongoDB := module.CreateDBClient(&env)
-		defer mongoDB.Cancel()
-		defer func() {
-			//log.Println("[DB] Closed")
-			if err := mongoDB.Client.Disconnect(mongoDB.Ctx); err != nil {
-				panic(err)
-			}
-		}()
+		//mongoDB := module.CreateDBClient(&env)
+		//defer mongoDB.Cancel()
+		//defer func() {
+		//	//log.Println("[DB] Closed")
+		//	if err := mongoDB.Client.Disconnect(mongoDB.Ctx); err != nil {
+		//		panic(err)
+		//	}
+		//}()
 
 		postgres := module.CreatePostgresClient(&env)
 		defer postgres.Client.Close()
@@ -109,13 +109,16 @@ func main() {
 				success, params := module.ParsePBParam(data)
 				if success {
 					fmt.Println("Params: ", params)
+					id := params.ID
 					switch params.Type {
 					case module.Fav:
-						insertStatus := module.InsertFavorite(mongoDB, &env, module.PostbackEntry{Uid: uid, Param: params})
-						lb.SendTextMessage(module.ReplyText{Status: insertStatus.Status, Text: insertStatus.Message})
+						// TODO: validate
+						message, _ := postgres.SetFavorite(uid, id)
+						lb.SendTextMessage2(message)
 					case module.Del:
-						deleteStatus := module.DeleteFavorite(mongoDB, &env, module.PostbackEntry{Uid: uid, Param: params})
-						lb.SendTextMessage(module.ReplyText{Status: deleteStatus.Status, Text: deleteStatus.Message})
+						// TODO: validate
+						message, _ := postgres.UnsetFavorite(uid, id)
+						lb.SendTextMessage2(message)
 					}
 				}
 			}

@@ -152,33 +152,26 @@ func searchRakutan(c module.Clients, env *module.Environments, uid string, searc
 		recordCount := len(rakutanInfos)
 		switch {
 		case recordCount == 0:
-			searchStatus.Err = fmt.Sprintf("「%s」は見つかりませんでした。\n【検索のヒント】%%を頭につけて検索すると部分一致検索ができます。ex.)「%%地理学」", searchText)
-			//searchSuccess = false
-
+			searchStatus.Err = fmt.Sprintf(module.ErrorMessageRakutanNotFound, searchText)
 		case recordCount == 1:
 			favEntry, ok := c.Postgres.GetFavoriteByID(uid, rakutanInfos[0].ID)
 			if ok && len(favEntry.Result) == 1 {
 				rakutanInfos[0].IsFavorite = true
 			}
 			if !ok {
-				searchStatus.Err = "お気に入りの取得に失敗しました。"
-				//searchSuccess = false
+				searchStatus.Err = module.ErrorMessageGetFavError
 			} else {
 				searchStatus.Result = module.CreateRakutanDetail(rakutanInfos[0], env, module.Normal)
 				searchSuccess = true
 			}
-
 		case recordCount <= 5*module.MaxResultsPerPage:
 			searchStatus.Result = module.CreateSearchResult(searchText, rakutanInfos)
 			searchSuccess = true
-
 		default:
-			searchStatus.Err = fmt.Sprintf("「%s」は%d件あります。検索条件を絞ってください。", searchText, recordCount)
-			//searchSuccess = false
+			searchStatus.Err = fmt.Sprintf(module.ErrorMessageTooManyRakutan, searchText, recordCount)
 		}
 	} else {
-		searchStatus.Err = "エラーが発生しました。"
-		//searchSuccess = false
+		searchStatus.Err = module.ErrorMessageDatabaseError
 	}
 	return searchStatus, searchSuccess
 }

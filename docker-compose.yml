@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   app:
-    container_name: kuRakutanBot-go
+    container_name: rakutan-app
     build:
       context: ./src/app
       dockerfile: Dockerfile
@@ -10,38 +10,28 @@ services:
     volumes:
       - ./src/app:/usr/src/app
     depends_on:
-      - mongo
+      - postgres
       - redis
     ports:
       - "8081:8081"
-       
-  mongo:
-    container_name: mongodb
-    image: mongo:5.0.6-focal
-    restart: always
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: rakutanbot
-      MONGO_INITDB_ROOT_PASSWORD: QoS64f4wXSeoj67Or2u5
-    ports:
-      - "27018:27017"
+
+  postgres:
+    container_name: rakutan-db
+    build:
+      context: ./db
+      dockerfile: Dockerfile
     volumes:
-      - type: bind
-        source: ./src/db/docker-entrypoint-initdb.d
-        target: /docker-entrypoint-initdb.d
-      - type: volume
-        source: mongo
-        target: /data/db
-        volume:
-          nocopy: true
-      - type: volume
-        source: mongo
-        target: /data/configdb
-        volume:
-          nocopy: true
+      - postgres:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
 
   redis:
     image: redis:6.2.6
-    container_name: redis
+    container_name: rakutan-redis
     restart: always
     command: redis-server --appendonly yes
     volumes:
@@ -49,6 +39,7 @@ services:
     ports:
       - "6379:6379"
 
+
 volumes:
-  mongo:
+  postgres:
   redis:

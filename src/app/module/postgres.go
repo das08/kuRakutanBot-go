@@ -3,8 +3,8 @@ package module
 import (
 	"context"
 	"fmt"
-	rakutan "github.com/das08/kuRakutanBot-go/models/rakutan"
 	"github.com/jmoiron/sqlx"
+	"github.com/lib/pq"
 	"log"
 	"time"
 
@@ -29,8 +29,16 @@ const (
 	UserActionHelp     UserAction = "help"
 )
 
+type RakutanInfo2 struct {
+	ID          int           `db:"id"`
+	FacultyName string        `db:"faculty_name"`
+	LectureName string        `db:"lecture_name"`
+	Register    pq.Int32Array `db:"register"`
+	Passed      pq.Int32Array `db:"passed"`
+}
+
 type RakutanType interface {
-	[]rakutan.RakutanInfo2
+	[]RakutanInfo2
 }
 
 type QueryStatus2[T RakutanType] struct {
@@ -48,6 +56,19 @@ func CreatePostgresClient(e *Environments) *Postgres {
 	return &Postgres{Client: db, Ctx: context.Background()}
 }
 
+func (p *Postgres) InsertUser(uid string) bool {
+	result, err := p.Client.Exec("INSERT INTO users (uid, is_verified, registered_at) VALUES ($1, $2)", uid, false, time.Now())
+	if err != nil {
+		log.Println(err)
+		return false
+	}
+	rowsAffected, _ := result.RowsAffected()
+	if rowsAffected == 0 {
+		return false
+	}
+	return true
+}
+
 func (p *Postgres) InsertUserAction(userID string, action UserAction) error {
 	_, err := p.Client.Exec("INSERT INTO user_logs (uid, action, timestamp) VALUES ($1, $2, $3)", userID, action, time.Now())
 	if err != nil {
@@ -56,9 +77,9 @@ func (p *Postgres) InsertUserAction(userID string, action UserAction) error {
 	return nil
 }
 
-func (p *Postgres) getRakutanInfoByID(id int) (QueryStatus2, error) {
+func (p *Postgres) GetRakutanInfoByID(id int) (QueryStatus2, error) {
 	var status QueryStatus2
-	var rakutanInfos []rakutan.RakutanInfo2
+	var rakutanInfos []RakutanInfo2
 	// TODO: do not hard code table name
 	err := p.Client.Select(&rakutanInfos, "SELECT * FROM rakutan2021 WHERE id = $1", id)
 	if err != nil {
@@ -70,9 +91,9 @@ func (p *Postgres) getRakutanInfoByID(id int) (QueryStatus2, error) {
 	return status, nil
 }
 
-func (p *Postgres) getRakutanInfoByLectureName(lectureName string) (QueryStatus2, error) {
+func (p *Postgres) GetRakutanInfoByLectureName(lectureName string) (QueryStatus2, error) {
 	var status QueryStatus2
-	var rakutanInfos []rakutan.RakutanInfo2
+	var rakutanInfos []RakutanInfo2
 	// TODO: consider LIKE search
 	err := p.Client.Select(&rakutanInfos, "SELECT * FROM rakutan2021 WHERE lecture_name = $1", lectureName)
 	if err != nil {
@@ -84,9 +105,9 @@ func (p *Postgres) getRakutanInfoByLectureName(lectureName string) (QueryStatus2
 	return status, nil
 }
 
-func (p *Postgres) getFavorites(uid string) (QueryStatus2, error) {
+func (p *Postgres) GetFavorites(uid string) (QueryStatus2, error) {
 	var status QueryStatus2
-	var rakutanInfos []rakutan.RakutanInfo2
+	var rakutanInfos []RakutanInfo2
 	err := p.Client.Select(&rakutanInfos, "SELECT * FROM favorites as f INNER JOIN rakutan2021 as r WHERE f.id = r.id AND f.uid = $1", uid)
 	if err != nil {
 		log.Println(err)
@@ -95,4 +116,22 @@ func (p *Postgres) getFavorites(uid string) (QueryStatus2, error) {
 	}
 	status.Result = rakutanInfos
 	return status, nil
+}
+
+func (p *Postgres) SetFavorite(uid string, id int) bool {
+	_, err := p.Client.Exec("INSERT INTO favorites (uid, id) VALUES ($1, $2)", uid, id)
+	if err != nil {
+		log.Println(err)
+		return false
+	}
+	return true
+}
+
+func (p *Postgres) UnsetFavorite(uid string, id int) bool {
+	_, err := p.Client.Exec("DELETE FROM favorites WHERE uid = $1 AND id = $2", uid, id)
+	if err != nil {
+		log.Println(err)
+		return false
+	}
+	return true
 }

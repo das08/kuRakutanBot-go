@@ -6,7 +6,7 @@ CREATE TYPE user_action AS ENUM ('search', 'rakutan', 'onitan', 'set_fav', 'unse
 
 CREATE TABLE users (
     uid VARCHAR(64) NOT NULL,
-    is_verified BOOLEAN NOT NULL,
+    is_verified BOOLEAN NOT NULL DEFAULT FALSE,
     registered_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     verified_at TIMESTAMP WITH TIME ZONE,
     PRIMARY KEY (uid)

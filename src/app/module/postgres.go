@@ -128,8 +128,7 @@ func (p *Postgres) IsVerified(uid string) (bool, error) {
 func (p *Postgres) GetRakutanInfoByID(id int) (QueryStatus2[[]RakutanInfo2], bool) {
 	var status QueryStatus2[[]RakutanInfo2]
 	var rakutanInfos []RakutanInfo2
-	// TODO: do not hard code table name
-	err := p.Client.Select(&rakutanInfos, "SELECT * FROM rakutan2021 WHERE id = $1", id)
+	err := p.Client.Select(&rakutanInfos, "SELECT * FROM rakutan WHERE id = $1", id)
 	if err != nil {
 		log.Println(err)
 		status.Err = ErrorMessageGetRakutanInfoByIDError
@@ -143,7 +142,7 @@ func (p *Postgres) GetRakutanInfoByLectureName(lectureName string) (QueryStatus2
 	var status QueryStatus2[[]RakutanInfo2]
 	var rakutanInfos []RakutanInfo2
 	// TODO: consider LIKE search
-	err := p.Client.Select(&rakutanInfos, "SELECT * FROM rakutan2021 WHERE lecture_name = $1", lectureName)
+	err := p.Client.Select(&rakutanInfos, "SELECT * FROM rakutan WHERE lecture_name = $1", lectureName)
 	if err != nil {
 		log.Println(err)
 		status.Err = ErrorMessageGetRakutanInfoByNameError
@@ -156,7 +155,7 @@ func (p *Postgres) GetRakutanInfoByLectureName(lectureName string) (QueryStatus2
 func (p *Postgres) GetFavorites(uid string) (QueryStatus2[[]RakutanInfo2], bool) {
 	var status QueryStatus2[[]RakutanInfo2]
 	var rakutanInfos []RakutanInfo2
-	err := p.Client.Select(&rakutanInfos, "SELECT r.* FROM favorites as f INNER JOIN rakutan2021 as r WHERE f.id = r.id AND f.uid = $1", uid)
+	err := p.Client.Select(&rakutanInfos, "SELECT r.* FROM favorites as f INNER JOIN rakutan as r WHERE f.id = r.id AND f.uid = $1", uid)
 	if err != nil {
 		log.Println(err)
 		status.Err = ErrorMessageGetFavError
@@ -169,7 +168,7 @@ func (p *Postgres) GetFavorites(uid string) (QueryStatus2[[]RakutanInfo2], bool)
 func (p *Postgres) GetFavoriteByID(uid string, id int) (QueryStatus2[[]RakutanInfo2], bool) {
 	var status QueryStatus2[[]RakutanInfo2]
 	var rakutanInfos []RakutanInfo2
-	err := p.Client.Select(&rakutanInfos, "SELECT r.* FROM favorites as f INNER JOIN rakutan2021 as r WHERE f.id = r.id AND f.uid = $1 AND f.id = $2", uid, id)
+	err := p.Client.Select(&rakutanInfos, "SELECT r.* FROM favorites as f INNER JOIN rakutan as r WHERE f.id = r.id AND f.uid = $1 AND f.id = $2", uid, id)
 	if err != nil {
 		log.Println(err)
 		status.Err = ErrorMessageGetFavError

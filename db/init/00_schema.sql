@@ -33,7 +33,7 @@ CREATE TABLE favorites (
     PRIMARY KEY (uid, id)
 );
 
-CREATE TABLE rakutan2021 (
+CREATE TABLE rakutan (
     id INTEGER NOT NULL,
     faculty_name VARCHAR(64) NOT NULL,
     lecture_name VARCHAR(64) NOT NULL,

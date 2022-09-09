@@ -65,10 +65,10 @@ type KUWikiStatus struct {
 	Result  string
 }
 
-func GetKakomonURL(e *Environments, lectureName string) KUWikiStatus {
-	kakomonURL := ""
-	method := "GET"
-	req, err := http.NewRequest(method, e.KuwikiEndpoint, nil)
+func GetKakomonURL(e *Environments, lectureName string) (ExecStatus[KUWikiKakomon], bool) {
+	var status ExecStatus[KUWikiKakomon]
+	var kakomonURL KUWikiKakomon
+	req, err := http.NewRequest("GET", e.KuwikiEndpoint, nil)
 	if err != nil {
 		log.Fatalf("NewRequest err=%s", err.Error())
 	}
@@ -83,30 +83,33 @@ func GetKakomonURL(e *Environments, lectureName string) KUWikiStatus {
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Printf("Client.Do err=%s", err.Error())
-		return KUWikiStatus{false, "取得失敗"}
+		status.Err = ErrorMessageKUWikiGetFailed
+		return status, false
 	}
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Printf("ioutil.ReadAll err=%s", err.Error())
-		return KUWikiStatus{false, "取得失敗"}
+		status.Err = ErrorMessageKUWikiGetFailed
+		return status, false
 	}
 
 	response := KUWiki{}
 	err = json.Unmarshal(body, &response)
 	if err != nil {
-		log.Printf("json.Unmarshal err=%s", err.Error())
-		return KUWikiStatus{false, "取得失敗"}
+		status.Err = ErrorMessageKUWikiGetFailed
+		return status, false
 	}
 
 	for _, result := range response.Results {
 		if result.Name == lectureName {
 			for _, exam := range result.ExamSet {
-				kakomonURL = exam.DriveLink
+				kakomonURL = KUWikiKakomon(exam.DriveLink)
 			}
 		}
 	}
 	log.Println("[KUWiki] Got kakomon URL")
-	return KUWikiStatus{true, kakomonURL}
+	status.Result = kakomonURL
+	return status, true
 }

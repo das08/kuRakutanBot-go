@@ -274,7 +274,7 @@ func GetRakutanInfo(c Clients, method FindByMethod, value interface{}) (ExecStat
 	}
 
 	// Set isVerified, isFavorite and kakomonURL
-	//if ok && len(result) == 1 {
+	//if ok && len(status.Result) == 1 {
 	//	isVerified := IsVerified(c, env, uid)
 	//	result[0].IsVerified = isVerified
 	//	result[0].IsFavorite = exist(env, c.Mongo, env.DB_COLLECTION.Favorites, []KV{{Key: "uid", Value: uid}, {Key: "id", Value: result[0].ID}})

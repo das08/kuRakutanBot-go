@@ -6,8 +6,6 @@ import (
 	"github.com/go-redis/redis/v8"
 	"log"
 	"time"
-
-	rakutan "github.com/das08/kuRakutanBot-go/models/rakutan"
 )
 
 type Redis struct {
@@ -46,13 +44,13 @@ func setRedis(c Clients, key string, value interface{}, cacheTime time.Duration)
 	}
 }
 
-func getRedisRakutanInfo(c Clients, key string) (QueryStatus, []rakutan.RakutanInfo) {
+func getRedisRakutanInfo(c Clients, key string) (QueryStatus, []RakutanInfo2) {
 	data, err := c.Redis.Client.Get(c.Redis.Ctx, key).Result()
 	if err != nil {
 		return QueryStatus{Success: false}, nil
 	}
 
-	rakutanInfo := new([]rakutan.RakutanInfo)
+	rakutanInfo := new([]RakutanInfo2)
 	err = json.Unmarshal([]byte(data), rakutanInfo)
 	if err != nil {
 		return QueryStatus{Success: false}, nil

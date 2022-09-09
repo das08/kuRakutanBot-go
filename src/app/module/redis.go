@@ -2,7 +2,10 @@ package module
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/go-redis/redis/v8"
+	"log"
+	"time"
 )
 
 type Redis struct {
@@ -21,42 +24,31 @@ func CreateRedisClient() *Redis {
 	return &Redis{Client: rdb, Ctx: ctx}
 }
 
-//func setRedis(c Clients, key string, value interface{}, cacheTime time.Duration) {
-//	resultJson, _ := json.Marshal(value)
-//	err := c.Redis.Client.Set(c.Redis.Ctx, key, resultJson, cacheTime).Err()
-//	if err != nil {
-//		log.Println("[Redis] Error:", err)
-//	} else {
-//		log.Printf("[Redis] Saved %s to redis", key)
-//	}
-//}
-//
-//func getRedisRakutanInfo(c Clients, key string) (ExecStatus, RakutanInfos) {
-//	data, err := c.Redis.Client.Get(c.Redis.Ctx, key).Result()
-//	if err != nil {
-//		return ExecStatus{Success: false}, nil
-//	}
-//
-//	rakutanInfo := new(RakutanInfos)
-//	err = json.Unmarshal([]byte(data), rakutanInfo)
-//	if err != nil {
-//		return ExecStatus{Success: false}, nil
-//	}
-//	log.Printf("[Redis] Fetched RakutanInfo from redis")
-//	return ExecStatus{Success: true}, *rakutanInfo
-//}
-//
-//func getRedisKakomonURL(c Clients, key string) (ExecStatus, string) {
-//	data, err := c.Redis.Client.Get(c.Redis.Ctx, key).Result()
-//	if err != nil {
-//		return ExecStatus{Success: false}, ""
-//	}
-//
-//	kakomonURL := new(string)
-//	err = json.Unmarshal([]byte(data), kakomonURL)
-//	if err != nil {
-//		return ExecStatus{Success: false}, ""
-//	}
-//	log.Printf("[Redis] Fetched %s from redis", key)
-//	return ExecStatus{Success: true}, *kakomonURL
-//}
+func setRedis(c Clients, key string, value interface{}, cacheTime time.Duration) {
+	resultJson, _ := json.Marshal(value)
+	err := c.Redis.Client.Set(c.Redis.Ctx, key, resultJson, cacheTime).Err()
+	if err != nil {
+		log.Println("[Redis] Error:", err)
+	} else {
+		log.Printf("[Redis] Saved %s to redis", key)
+	}
+}
+
+func getRedisKakomonURL(c Clients, key string) (ExecStatus[KUWikiKakomon], bool) {
+	var status ExecStatus[KUWikiKakomon]
+	var kakomonURL KUWikiKakomon
+	data, err := c.Redis.Client.Get(c.Redis.Ctx, key).Result()
+	if err != nil {
+		status.Err = ErrorMessageRedisGetFailed
+		return status, false
+	}
+
+	err = json.Unmarshal([]byte(data), &kakomonURL)
+	if err != nil {
+		status.Err = ErrorMessageRedisGetFailed
+		return status, false
+	}
+	log.Printf("[Redis] Fetched %s from redis", key)
+	status.Result = kakomonURL
+	return status, true
+}

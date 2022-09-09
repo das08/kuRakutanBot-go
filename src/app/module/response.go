@@ -18,6 +18,7 @@ const (
 	ErrorMessageVerificationTokenSendError   = "認証トークンの送信に失敗しました。"
 	ErrorMessageVerificationFailed           = "すでに認証済みか、認証コードが間違っています。"
 	ErrorMessageKUWikiGetFailed              = "京大Wikiから過去問リンクの取得に失敗しました。"
+	ErrorMessageRedisGetFailed               = "過去問リンクのキャッシュ取得に失敗しました。"
 
 	SuccessMessageInsertFav    = "「%s」をお気に入りに登録しました。"
 	SuccessMessageDeleteFav    = "「%s」をお気に入りから削除しました。"

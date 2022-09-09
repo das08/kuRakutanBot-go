@@ -98,13 +98,21 @@ func (p *Postgres) InsertVerificationToken(uid string, token string) error {
 	return nil
 }
 
-func (p *Postgres) GetVerificationToken(uid string) (string, error) {
-	var token string
-	err := p.Client.Get(&token, "SELECT token FROM verification_tokens WHERE uid = $1", uid)
+func (p *Postgres) CheckVerificationToken(uid, token string) (bool, error) {
+	var i int
+	err := p.Client.Get(&i, "SELECT count(*) FROM verification_tokens WHERE uid = $1 AND token = $2", uid, token)
 	if err != nil {
-		return "", err
+		return false, err
 	}
-	return token, nil
+	return i > 0, nil
+}
+
+func (p *Postgres) UpdateUserVerification(uid string) error {
+	_, err := p.Client.Exec("UPDATE users SET is_verified = true WHERE uid = $1", uid)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (p *Postgres) IsVerified(uid string) (bool, error) {

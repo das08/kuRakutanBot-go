@@ -22,18 +22,27 @@ func main() {
 	})
 
 	router.GET("/verification", func(c *gin.Context) {
+		// TODO: UIDも付与する
+		uid := c.Query("uid")
 		code := c.Query("code")
-		mongoDB := module.CreateDBClient(&env)
-		defer mongoDB.Cancel()
-		defer func() {
-			//log.Println("[DB] Closed")
-			if err := mongoDB.Client.Disconnect(mongoDB.Ctx); err != nil {
-				panic(err)
+		postgres := module.CreatePostgresClient(&env)
+		defer postgres.Client.Close()
+
+		ok, err := postgres.CheckVerificationToken(uid, code)
+		if err != nil {
+			c.String(http.StatusOK, module.ErrorMessageDatabaseError)
+			return
+		}
+		if ok {
+			err = postgres.UpdateUserVerification(uid)
+			if err != nil {
+				c.String(http.StatusOK, module.ErrorMessageDatabaseError)
+				return
 			}
-		}()
-		clients := module.Clients{Mongo: mongoDB}
-		res := module.CheckVerification(clients, &env, code)
-		c.String(http.StatusOK, res.Message)
+			c.String(http.StatusOK, module.SuccessVerified)
+		} else {
+			c.String(http.StatusOK, module.ErrorMessageVerificationFailed)
+		}
 	})
 
 	router.POST("/callback", func(c *gin.Context) {
@@ -47,15 +56,6 @@ func main() {
 			}
 			return
 		}
-
-		//mongoDB := module.CreateDBClient(&env)
-		//defer mongoDB.Cancel()
-		//defer func() {
-		//	//log.Println("[DB] Closed")
-		//	if err := mongoDB.Client.Disconnect(mongoDB.Ctx); err != nil {
-		//		panic(err)
-		//	}
-		//}()
 
 		postgres := module.CreatePostgresClient(&env)
 		defer postgres.Client.Close()

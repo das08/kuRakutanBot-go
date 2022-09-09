@@ -15,8 +15,10 @@ const (
 	ErrorMessageCheckVerificateError       = "認証の確認に失敗しました。"
 	ErrorMessageInsertVerificateError      = "認証トークンの作成に失敗しました。"
 	ErrorMessageVerificationTokenSendError = "認証トークンの送信に失敗しました。"
+	ErrorMessageVerificationFailed         = "すでに認証済みか、認証コードが間違っています。"
 
 	SuccessMessageInsertFav    = "「%s」をお気に入りに登録しました。"
 	SuccessMessageDeleteFav    = "「%s」をお気に入りから削除しました。"
 	SuccessVericationTokenSent = "認証コードを送信しました。送られたメール内の認証リンクをクリックすると有効化されます。\n届いていない場合は、アドレスが間違っているか迷惑メールに入っている可能性があります。"
+	SuccessVerified            = "認証に成功しました。"
 )

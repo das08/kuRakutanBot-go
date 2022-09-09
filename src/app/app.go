@@ -146,9 +146,9 @@ func searchRakutan(c module.Clients, env *module.Environments, uid string, searc
 
 	isLectureNumber, lectureID := module.IsLectureID(searchText)
 	if isLectureNumber {
-		status, ok = module.GetRakutanInfo(c, env, uid, module.ID, lectureID)
+		status, ok = module.GetRakutanInfo(c, module.ID, lectureID)
 	} else {
-		status, ok = module.GetRakutanInfo(c, env, uid, module.Name, searchText)
+		status, ok = module.GetRakutanInfo(c, module.Name, searchText)
 	}
 
 	if ok {

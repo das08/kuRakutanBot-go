@@ -83,8 +83,7 @@ func loadFlexMessages(filename string, altText string) []FlexMessage {
 }
 
 func rakutanCmd(c Clients, env *Environments, lb *LINEBot) {
-	// TODO: GetRakutanInfoにおみくじの場合分けを返す
-	status, ok := GetRakutanInfo(c, env, lb.senderUid, Omikuji, "rakutan")
+	status, ok := GetRakutanInfo(c, Omikuji, "rakutan")
 	//countUp(env, c.Mongo, lb.senderUid, "rakutan") // TODO
 	if ok {
 		flexMessages := CreateRakutanDetail(status.Result[0], env, Rakutan)
@@ -95,8 +94,7 @@ func rakutanCmd(c Clients, env *Environments, lb *LINEBot) {
 }
 
 func onitanCmd(c Clients, env *Environments, lb *LINEBot) {
-	// TODO: GetRakutanInfoにおみくじの場合分けを返す
-	status, ok := GetRakutanInfo(c, env, lb.senderUid, Omikuji, "onitan")
+	status, ok := GetRakutanInfo(c, Omikuji, "onitan")
 	//countUp(env, c.Mongo, lb.senderUid, "onitan") // TODO
 	if ok {
 		flexMessages := CreateRakutanDetail(status.Result[0], env, Rakutan)

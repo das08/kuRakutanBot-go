@@ -302,7 +302,7 @@ const (
 	Omikuji
 )
 
-func GetRakutanInfo(c Clients, env *Environments, uid string, method FindByMethod, value interface{}) (QueryStatus2[[]RakutanInfo2], bool) {
+func GetRakutanInfo(c Clients, method FindByMethod, value interface{}) (QueryStatus2[[]RakutanInfo2], bool) {
 	var ok bool
 	var status QueryStatus2[[]RakutanInfo2]
 
@@ -311,6 +311,8 @@ func GetRakutanInfo(c Clients, env *Environments, uid string, method FindByMetho
 		status, ok = c.Postgres.GetRakutanInfoByID(value.(int))
 	case Name:
 		status, ok = c.Postgres.GetRakutanInfoByLectureName(value.(string))
+	case Omikuji:
+		status, ok = c.Postgres.GetRakutanInfoByOmikuji(value.(OmikujiType))
 	}
 
 	// Set isVerified, isFavorite and kakomonURL

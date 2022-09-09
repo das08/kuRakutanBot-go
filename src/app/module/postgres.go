@@ -152,6 +152,25 @@ func (p *Postgres) GetRakutanInfoByLectureName(lectureName string) (QueryStatus2
 	return status, true
 }
 
+func (p *Postgres) GetRakutanInfoByOmikuji(types OmikujiType) (QueryStatus2[[]RakutanInfo2], bool) {
+	var status QueryStatus2[[]RakutanInfo2]
+	var rakutanInfos []RakutanInfo2
+	var err error
+	switch types {
+	case Rakutan:
+		err = p.Client.Select(&rakutanInfos, "SELECT * FROM mat_view_rakutan ORDER BY random() LIMIT 1")
+	case Onitan:
+		err = p.Client.Select(&rakutanInfos, "SELECT * FROM mat_view_onitan ORDER BY random() LIMIT 1")
+	}
+	if err != nil {
+		log.Println(err)
+		status.Err = ErrorMessageGetRakutanInfoByOmikujiError
+		return status, false
+	}
+	status.Result = rakutanInfos
+	return status, true
+}
+
 func (p *Postgres) GetFavorites(uid string) (QueryStatus2[[]RakutanInfo2], bool) {
 	var status QueryStatus2[[]RakutanInfo2]
 	var rakutanInfos []RakutanInfo2

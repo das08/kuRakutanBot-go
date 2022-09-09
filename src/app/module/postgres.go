@@ -185,7 +185,7 @@ func (p *Postgres) GetRakutanInfoByOmikuji(types OmikujiType) (QueryStatus2[[]Ra
 	case Rakutan:
 		rows, err = p.Client.Query(p.Ctx, "SELECT id, faculty_name, lecture_name, register, passed FROM mat_view_rakutan ORDER BY random() LIMIT 1")
 	case Onitan:
-		rows, err = p.Client.Query(p.Ctx, "SELECT * FROM mat_view_onitan ORDER BY random() LIMIT 1")
+		rows, err = p.Client.Query(p.Ctx, "SELECT id, faculty_name, lecture_name, register, passed FROM mat_view_onitan ORDER BY random() LIMIT 1")
 	}
 	if err != nil {
 		log.Println(err)

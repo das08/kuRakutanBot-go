@@ -65,7 +65,25 @@ type KUWikiStatus struct {
 	Result  string
 }
 
-func GetKakomonURL(e *Environments, lectureName string) (ExecStatus[KUWikiKakomon], bool) {
+func GetKakomonURL(c Clients, e *Environments, id int, lectureName string) (ExecStatus[KUWikiKakomon], bool) {
+	var status ExecStatus[KUWikiKakomon]
+	redisKey := fmt.Sprintf("kuwiki:%d", id)
+	cache, found := c.Redis.GetKakomonURL(redisKey)
+	if found {
+		status.Result = cache.Result
+		return status, true
+	}
+	kuwiki, ok := getKUWikiKakomonURL(e, lectureName)
+	if !ok {
+		status.Err = ErrorMessageKUWikiGetFailed
+		return status, false
+	}
+	c.Redis.SetRedis(redisKey, kuwiki.Result, 24*time.Hour)
+	status.Result = kuwiki.Result
+	return status, true
+}
+
+func getKUWikiKakomonURL(e *Environments, lectureName string) (ExecStatus[KUWikiKakomon], bool) {
 	var status ExecStatus[KUWikiKakomon]
 	var kakomonURL KUWikiKakomon
 	req, err := http.NewRequest("GET", e.KuwikiEndpoint, nil)

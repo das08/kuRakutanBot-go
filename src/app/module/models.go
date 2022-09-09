@@ -43,6 +43,7 @@ type RakutanInfo struct {
 	Passed      pgtype.Int2Array `db:"passed"`
 	KakomonURL  string           `db:"kakomon_url"`
 	IsFavorite  bool
+	IsVerified  bool
 }
 
 func (r *RakutanInfo) GetLatestDetail() (int, int) {

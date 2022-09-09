@@ -24,9 +24,9 @@ func CreateRedisClient() *Redis {
 	return &Redis{Client: rdb, Ctx: ctx}
 }
 
-func setRedis(c Clients, key string, value interface{}, cacheTime time.Duration) {
+func (r *Redis) SetRedis(key string, value interface{}, cacheTime time.Duration) {
 	resultJson, _ := json.Marshal(value)
-	err := c.Redis.Client.Set(c.Redis.Ctx, key, resultJson, cacheTime).Err()
+	err := r.Client.Set(r.Ctx, key, resultJson, cacheTime).Err()
 	if err != nil {
 		log.Println("[Redis] Error:", err)
 	} else {
@@ -34,11 +34,12 @@ func setRedis(c Clients, key string, value interface{}, cacheTime time.Duration)
 	}
 }
 
-func getRedisKakomonURL(c Clients, key string) (ExecStatus[KUWikiKakomon], bool) {
+func (r *Redis) GetKakomonURL(key string) (ExecStatus[KUWikiKakomon], bool) {
 	var status ExecStatus[KUWikiKakomon]
 	var kakomonURL KUWikiKakomon
-	data, err := c.Redis.Client.Get(c.Redis.Ctx, key).Result()
+	data, err := r.Client.Get(r.Ctx, key).Result()
 	if err != nil {
+		log.Println("[Redis] Error:", err)
 		status.Err = ErrorMessageRedisGetFailed
 		return status, false
 	}

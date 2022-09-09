@@ -7,6 +7,7 @@ import (
 	"github.com/line/line-bot-sdk-go/v7/linebot"
 	"log"
 	"math"
+	"net/url"
 	"strconv"
 )
 
@@ -15,14 +16,14 @@ type FlexMessage struct {
 	AltText       string
 }
 
-type rakutanJudge struct {
+type RakutanJudge struct {
 	percentBound float32
 	rank         string
 	color        string
 }
 
 var MaxResultsPerPage = 25
-var judgeList = [9]rakutanJudge{
+var judgeList = [9]RakutanJudge{
 	{percentBound: 90, rank: "SSS", color: "#c3c45b"},
 	{percentBound: 85, rank: "SS", color: "#c3c45b"},
 	{percentBound: 80, rank: "S", color: "#c3c45b"},
@@ -77,34 +78,29 @@ func CreateRakutanDetail(info RakutanInfo, e *Environments, o OmikujiType) FlexM
 
 	// 過去問リンク
 	// TODO: なんとかする
-	//if info.IsVerified {
-	//	_, err := url.ParseRequestURI(info.URL)
-	//	switch {
-	//	case info.URL != "" && err == nil:
-	//		rakutanDetail.Body.Contents[0].Contents[6].Contents[1].Text = "○"
-	//		rakutanDetail.Body.Contents[0].Contents[6].Contents[1].Color = "#0fd142"
-	//		rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Text = "リンク"
-	//		rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Color = "#4c7cf5"
-	//		rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Action.URI = &info.URL
-	//	case info.KUWikiErr != "":
-	//		rakutanDetail.Body.Contents[0].Contents[6].Contents[1].Text = "×"
-	//		rakutanDetail.Body.Contents[0].Contents[6].Contents[1].Color = "#ef1d2f"
-	//		rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Text = info.KUWikiErr
-	//		rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Action = &richmenu.URIAction{Type: "uri", Label: "action", URI: strToPtr("https://www.kuwiki.net/upload-exams")}
-	//	default:
-	//		rakutanDetail.Body.Contents[0].Contents[6].Contents[1].Text = "×"
-	//		rakutanDetail.Body.Contents[0].Contents[6].Contents[1].Color = "#ef1d2f"
-	//		rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Text = "提供する"
-	//		rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Action = &richmenu.URIAction{Type: "uri", Label: "action", URI: strToPtr("https://www.kuwiki.net/upload-exams")}
-	//	}
-	//} else {
-	//	rakutanDetail.Body.Contents[0].Contents[6].Contents[1].Flex = intToPtr(0)
-	//	rakutanDetail.Body.Contents[0].Contents[6].Contents[1].Text = "△"
-	//	rakutanDetail.Body.Contents[0].Contents[6].Contents[1].Color = "#ffb101"
-	//	rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Flex = intToPtr(7)
-	//	rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Text = "ユーザー認証が必要です"
-	//	rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Action = &richmenu.URIAction{Type: "message", Label: "action", Text: strToPtr("ユーザ認証")}
-	//}
+	if info.IsVerified {
+		_, err := url.ParseRequestURI(info.KakomonURL)
+		switch {
+		case info.KakomonURL != "" && err == nil:
+			rakutanDetail.Body.Contents[0].Contents[offset+3].Contents[1].Text = "○"
+			rakutanDetail.Body.Contents[0].Contents[offset+3].Contents[1].Color = "#0fd142"
+			rakutanDetail.Body.Contents[0].Contents[offset+3].Contents[2].Text = "リンク"
+			rakutanDetail.Body.Contents[0].Contents[offset+3].Contents[2].Color = "#4c7cf5"
+			rakutanDetail.Body.Contents[0].Contents[offset+3].Contents[2].Action.URI = &info.KakomonURL
+		default:
+			rakutanDetail.Body.Contents[0].Contents[offset+3].Contents[1].Text = "×"
+			rakutanDetail.Body.Contents[0].Contents[offset+3].Contents[1].Color = "#ef1d2f"
+			rakutanDetail.Body.Contents[0].Contents[offset+3].Contents[2].Text = "提供する"
+			rakutanDetail.Body.Contents[0].Contents[offset+3].Contents[2].Action = &richmenu.URIAction{Type: "uri", Label: "action", URI: strToPtr("https://www.kuwiki.net/upload-exams")}
+		}
+	} else {
+		rakutanDetail.Body.Contents[0].Contents[offset+3].Contents[1].Flex = intToPtr(0)
+		rakutanDetail.Body.Contents[0].Contents[offset+3].Contents[1].Text = "△"
+		rakutanDetail.Body.Contents[0].Contents[offset+3].Contents[1].Color = "#ffb101"
+		rakutanDetail.Body.Contents[0].Contents[offset+3].Contents[2].Flex = intToPtr(7)
+		rakutanDetail.Body.Contents[0].Contents[offset+3].Contents[2].Text = "ユーザー認証が必要です"
+		rakutanDetail.Body.Contents[0].Contents[offset+3].Contents[2].Action = &richmenu.URIAction{Type: "message", Label: "action", Text: strToPtr("ユーザ認証")}
+	}
 
 	flex, err := rakutanDetail.Marshal()
 	if err != nil {
@@ -235,7 +231,7 @@ func getRakutanPercent(passed pgtype.Int2Array, register pgtype.Int2Array) []str
 	return rakutanPercent
 }
 
-func getRakutanJudge(r RakutanInfo) rakutanJudge {
+func getRakutanJudge(r RakutanInfo) RakutanJudge {
 	accept, total := r.GetLatestDetail()
 	if total == 0 {
 		return judgeList[8]
@@ -262,4 +258,8 @@ func toStr(i int) string {
 
 func strToPtr(s string) *string {
 	return &s
+}
+
+func intToPtr(i int) *int {
+	return &i
 }

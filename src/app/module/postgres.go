@@ -254,7 +254,7 @@ const (
 	Omikuji
 )
 
-func GetRakutanInfo(c Clients, uid string, method FindByMethod, value interface{}) (ExecStatus[RakutanInfos], bool) {
+func GetRakutanInfo(c Clients, e *Environments, uid string, method FindByMethod, value interface{}) (ExecStatus[RakutanInfos], bool) {
 	var ok bool
 	var status ExecStatus[RakutanInfos]
 
@@ -275,31 +275,15 @@ func GetRakutanInfo(c Clients, uid string, method FindByMethod, value interface{
 
 	// Set isVerified, isFavorite and kakomonURL
 	if ok && len(status.Result) == 1 {
-		isVerified, err := c.Postgres.IsVerified(uid)
-		if err != nil {
-			status.Err = ErrorMessageCheckVerificateError
-			return status, false
-		}
-		//status.Result[0].IsVerified = isVerified
-
 		if faforites, ok := c.Postgres.GetFavoriteByID(uid, status.Result[0].ID); ok && len(faforites.Result) == 1 {
 			status.Result[0].IsFavorite = true
 		}
-
-		//if isVerified && result[0].URL == "" {
-		//	redisKey := fmt.Sprintf("#%d", result[0].ID)
-		//	if redisStatus, cacheURL := getRedisKakomonURL(c, redisKey); redisStatus.Success {
-		//		result[0].URL = cacheURL
-		//	} else {
-		//		kuWikiStatus := GetKakomonURL(env, result[0].LectureName)
-		//		if kuWikiStatus.Success {
-		//			result[0].URL = kuWikiStatus.Result
-		//			setRedis(c, redisKey, kuWikiStatus.Result, time.Hour*72)
-		//		} else {
-		//			result[0].KUWikiErr = kuWikiStatus.Result
-		//		}
-		//	}
-		//}
+		if isVerified, err := c.Postgres.IsVerified(uid); err == nil && isVerified {
+			status.Result[0].IsVerified = true
+			if kakomonStatus, found := GetKakomonURL(c, e, status.Result[0].ID, status.Result[0].LectureName); found {
+				status.Result[0].KakomonURL = string(any(kakomonStatus.Result).(KUWikiKakomon))
+			}
+		}
 	}
 
 	return status, ok

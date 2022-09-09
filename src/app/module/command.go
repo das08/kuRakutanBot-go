@@ -83,7 +83,7 @@ func loadFlexMessages(filename string, altText string) []FlexMessage {
 }
 
 func rakutanCmd(c Clients, env *Environments, lb *LINEBot) {
-	status, ok := GetRakutanInfo(c, Omikuji, "rakutan")
+	status, ok := GetRakutanInfo(c, Omikuji, Rakutan)
 	//countUp(env, c.Mongo, lb.senderUid, "rakutan") // TODO
 	if ok {
 		flexMessages := CreateRakutanDetail(status.Result[0], env, Rakutan)
@@ -94,7 +94,7 @@ func rakutanCmd(c Clients, env *Environments, lb *LINEBot) {
 }
 
 func onitanCmd(c Clients, env *Environments, lb *LINEBot) {
-	status, ok := GetRakutanInfo(c, Omikuji, "onitan")
+	status, ok := GetRakutanInfo(c, Omikuji, Onitan)
 	//countUp(env, c.Mongo, lb.senderUid, "onitan") // TODO
 	if ok {
 		flexMessages := CreateRakutanDetail(status.Result[0], env, Rakutan)
@@ -108,6 +108,10 @@ func getFavoritesCmd(c Clients, env *Environments, lb *LINEBot) {
 	queryStatus, ok := c.Postgres.GetFavorites(lb.senderUid)
 	if !ok {
 		lb.SendTextMessage2(queryStatus.Err)
+		return
+	}
+	if len(queryStatus.Result) == 0 {
+		lb.SendTextMessage2(SuccessNoFavorites)
 		return
 	}
 	flexMessages := CreateFavorites2(queryStatus.Result)

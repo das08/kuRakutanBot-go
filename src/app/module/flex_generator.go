@@ -3,6 +3,7 @@ package module
 import (
 	"fmt"
 	"github.com/das08/kuRakutanBot-go/models/richmenu"
+	"github.com/jackc/pgtype"
 	"github.com/line/line-bot-sdk-go/v7/linebot"
 	"log"
 	"math"
@@ -20,12 +21,12 @@ type RakutanJudge struct {
 	color        string
 }
 
-type OmikujiType int
+type OmikujiType string
 
 const (
-	Normal OmikujiType = iota
-	Rakutan
-	Onitan
+	Normal  OmikujiType = "normal"
+	Rakutan OmikujiType = "rakutan"
+	Onitan  OmikujiType = "onitan"
 )
 
 type OmikujiText struct {
@@ -78,7 +79,7 @@ func CreateRakutanDetail(info RakutanInfo2, e *Environments, o OmikujiType) []Fl
 
 	// 単位取得率
 	rakutanPercents := getRakutanPercent(info.Passed, info.Register)
-	for i := range info.Register {
+	for i := range info.Register.Elements {
 		rakutanDetail.Body.Contents[0].Contents[i+1].Contents[0].Text = fmt.Sprintf("%d年度", e.YEAR-i)
 		rakutanDetail.Body.Contents[0].Contents[i+1].Contents[1].Text = rakutanPercents[i]
 	}
@@ -231,14 +232,16 @@ func toFlexContainer(json richmenu.Marshal) linebot.FlexContainer {
 	return flexContainer
 }
 
-func getRakutanPercent(passed []int, register []int) []string {
+func getRakutanPercent(passed pgtype.Int2Array, register pgtype.Int2Array) []string {
 	var rakutanPercent []string
-	for i := 0; i < len(passed); i++ {
-		breakdown := "(" + toStr(passed[i]) + "/" + toStr(register[i]) + ")"
-		if register[i] == 0 {
+	for i := 0; i < len(passed.Elements); i++ {
+		p := int(passed.Elements[i].Int)
+		r := int(register.Elements[i].Int)
+		breakdown := fmt.Sprintf("(%d/%d)", p, r)
+		if register.Elements[i].Status == pgtype.Null {
 			rakutanPercent = append(rakutanPercent, "---% "+breakdown)
 		} else {
-			rakutanPercent = append(rakutanPercent, fmt.Sprintf("%.1f%% ", getPercentage(passed[i], register[i]))+breakdown)
+			rakutanPercent = append(rakutanPercent, fmt.Sprintf("%.1f%% ", getPercentage(p, r))+breakdown)
 		}
 	}
 	return rakutanPercent

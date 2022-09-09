@@ -18,6 +18,7 @@ func main() {
 	env := module.LoadEnv(true)
 	router := gin.Default()
 	router.GET("/hello", func(c *gin.Context) {
+		log.Println("Hello")
 		c.String(http.StatusOK, "Hello World!!")
 	})
 
@@ -26,7 +27,7 @@ func main() {
 		uid := c.Query("uid")
 		code := c.Query("code")
 		postgres := module.CreatePostgresClient(&env)
-		defer postgres.Client.Close()
+		defer postgres.Client.Close(postgres.Ctx)
 
 		ok, err := postgres.CheckVerificationToken(uid, code)
 		if err != nil {
@@ -46,6 +47,8 @@ func main() {
 	})
 
 	router.POST("/callback", func(c *gin.Context) {
+		log.Println("callback")
+		log.Printf("%v", env)
 		lb := module.CreateLINEBotClient(&env, c)
 		events, err := lb.Bot.ParseRequest(c.Request)
 		if err != nil {
@@ -58,7 +61,7 @@ func main() {
 		}
 
 		postgres := module.CreatePostgresClient(&env)
-		defer postgres.Client.Close()
+		defer postgres.Client.Close(postgres.Ctx)
 
 		redis := module.CreateRedisClient()
 		clients := module.Clients{Postgres: postgres, Redis: redis}

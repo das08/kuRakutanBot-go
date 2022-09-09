@@ -3,15 +3,17 @@ package module
 import (
 	"context"
 	"fmt"
-	"github.com/jmoiron/sqlx"
+	"github.com/jackc/pgtype"
+	"github.com/jackc/pgx/v4"
 	"log"
+	"os"
 	"time"
 
 	_ "github.com/lib/pq"
 )
 
 type Postgres struct {
-	Client *sqlx.DB
+	Client *pgx.Conn
 	Ctx    context.Context
 }
 
@@ -29,21 +31,21 @@ const (
 )
 
 type RakutanInfo2 struct {
-	ID          int    `db:"id"`
-	FacultyName string `db:"faculty_name"`
-	LectureName string `db:"lecture_name"`
-	Register    []int  `db:"register"`
-	Passed      []int  `db:"passed"`
-	KakomonURL  string `db:"kakomon_url"`
+	ID          int              `db:"id"`
+	FacultyName string           `db:"faculty_name"`
+	LectureName string           `db:"lecture_name"`
+	Register    pgtype.Int2Array `db:"register"`
+	Passed      pgtype.Int2Array `db:"passed"`
+	KakomonURL  string           `db:"kakomon_url"`
 	IsFavorite  bool
 }
 
 func (r *RakutanInfo2) GetLatestDetail() (int, int) {
 	passed, register := 0, 0
-	for i := 0; i < len(r.Register); i++ {
-		if r.Register[i] != 0 {
-			passed = r.Passed[i]
-			register = r.Register[i]
+	for i := 0; i < len(r.Register.Elements); i++ {
+		if r.Register.Elements[i].Status == pgtype.Present {
+			passed = int(r.Passed.Elements[i].Int)
+			register = int(r.Register.Elements[i].Int)
 			break
 		}
 	}
@@ -59,23 +61,48 @@ type QueryStatus2[T ReturnType] struct {
 	Err    string
 }
 
-func CreatePostgresClient(e *Environments) *Postgres {
-	dsn := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", e.DB_USER, e.DB_PASS, e.DB_NAME)
-	db, err := sqlx.Open("postgres", dsn)
-	if err != nil {
-		log.Fatal(err)
+func ScanRakutanInfo2(rows pgx.Rows) []RakutanInfo2 {
+	var rakutanInfos []RakutanInfo2
+	defer rows.Close()
+	for rows.Next() {
+		var id int
+		var facultyName, lectureName string
+		var register, passed pgtype.Int2Array
+
+		err := rows.Scan(&id, &facultyName, &lectureName, &register, &passed)
+		if err != nil {
+			log.Println(err)
+		}
+		rakutanInfos = append(rakutanInfos, RakutanInfo2{
+			ID:          id,
+			FacultyName: facultyName,
+			LectureName: lectureName,
+			Register:    register,
+			Passed:      passed,
+		})
 	}
-	//defer db.Close()
-	return &Postgres{Client: db, Ctx: context.Background()}
+	return rakutanInfos
+}
+
+func CreatePostgresClient(e *Environments) *Postgres {
+	ctx := context.Background()
+	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s", e.DB_USER, e.DB_PASS, e.DB_HOST, e.DB_PORT, e.DB_NAME)
+	db, err := pgx.Connect(ctx, dsn)
+	if err != nil {
+		fmt.Printf("Unable to connect to database: %v\n", err)
+		os.Exit(1)
+	}
+	//defer db.Close(ctx)
+	return &Postgres{Client: db, Ctx: ctx}
 }
 
 func (p *Postgres) InsertUser(uid string) bool {
-	result, err := p.Client.Exec("INSERT INTO users (uid, is_verified, registered_at) VALUES ($1, $2)", uid, false, time.Now())
+	result, err := p.Client.Exec(p.Ctx, "INSERT INTO users (uid, is_verified, registered_at) VALUES ($1, $2)", uid, false, time.Now())
 	if err != nil {
 		log.Println(err)
 		return false
 	}
-	rowsAffected, _ := result.RowsAffected()
+	rowsAffected := result.RowsAffected()
 	if rowsAffected == 0 {
 		return false
 	}
@@ -83,7 +110,7 @@ func (p *Postgres) InsertUser(uid string) bool {
 }
 
 func (p *Postgres) InsertUserAction(userID string, action UserAction) error {
-	_, err := p.Client.Exec("INSERT INTO user_logs (uid, action, timestamp) VALUES ($1, $2, $3)", userID, action, time.Now())
+	_, err := p.Client.Exec(p.Ctx, "INSERT INTO user_logs (uid, action, timestamp) VALUES ($1, $2, $3)", userID, action, time.Now())
 	if err != nil {
 		return err
 	}
@@ -91,7 +118,7 @@ func (p *Postgres) InsertUserAction(userID string, action UserAction) error {
 }
 
 func (p *Postgres) InsertVerificationToken(uid string, token string) error {
-	_, err := p.Client.Exec("INSERT INTO verification_tokens (uid, token, created_at) VALUES ($1, $2, $3)", uid, token, time.Now())
+	_, err := p.Client.Exec(p.Ctx, "INSERT INTO verification_tokens (uid, token, created_at) VALUES ($1, $2, $3)", uid, token, time.Now())
 	if err != nil {
 		return err
 	}
@@ -100,7 +127,7 @@ func (p *Postgres) InsertVerificationToken(uid string, token string) error {
 
 func (p *Postgres) CheckVerificationToken(uid, token string) (bool, error) {
 	var i int
-	err := p.Client.Get(&i, "SELECT count(*) FROM verification_tokens WHERE uid = $1 AND token = $2", uid, token)
+	err := p.Client.QueryRow(p.Ctx, "SELECT count(*) FROM verification_tokens WHERE uid = $1 AND token = $2", uid, token).Scan(&i)
 	if err != nil {
 		return false, err
 	}
@@ -108,7 +135,7 @@ func (p *Postgres) CheckVerificationToken(uid, token string) (bool, error) {
 }
 
 func (p *Postgres) UpdateUserVerification(uid string) error {
-	_, err := p.Client.Exec("UPDATE users SET is_verified = true WHERE uid = $1", uid)
+	_, err := p.Client.Exec(p.Ctx, "UPDATE users SET is_verified = true WHERE uid = $1", uid)
 	if err != nil {
 		return err
 	}
@@ -117,7 +144,7 @@ func (p *Postgres) UpdateUserVerification(uid string) error {
 
 func (p *Postgres) IsVerified(uid string) (bool, error) {
 	var isVerified bool
-	err := p.Client.Get(&isVerified, "SELECT is_verified FROM users WHERE uid = $1", uid)
+	err := p.Client.QueryRow(p.Ctx, "SELECT is_verified FROM users WHERE uid = $1", uid).Scan(&isVerified)
 	if err != nil {
 		log.Println(err)
 		return false, err
@@ -127,82 +154,87 @@ func (p *Postgres) IsVerified(uid string) (bool, error) {
 
 func (p *Postgres) GetRakutanInfoByID(id int) (QueryStatus2[[]RakutanInfo2], bool) {
 	var status QueryStatus2[[]RakutanInfo2]
-	var rakutanInfos []RakutanInfo2
-	err := p.Client.Select(&rakutanInfos, "SELECT * FROM rakutan WHERE id = $1", id)
+	rows, err := p.Client.Query(p.Ctx, "SELECT * FROM rakutan WHERE id = $1", id)
 	if err != nil {
 		log.Println(err)
 		status.Err = ErrorMessageGetRakutanInfoByIDError
 		return status, false
 	}
-	status.Result = rakutanInfos
+	status.Result = ScanRakutanInfo2(rows)
 	return status, true
 }
 
 func (p *Postgres) GetRakutanInfoByLectureName(lectureName string) (QueryStatus2[[]RakutanInfo2], bool) {
 	var status QueryStatus2[[]RakutanInfo2]
-	var rakutanInfos []RakutanInfo2
 	// TODO: consider LIKE search
-	err := p.Client.Select(&rakutanInfos, "SELECT * FROM rakutan WHERE lecture_name = $1", lectureName)
+	rows, err := p.Client.Query(p.Ctx, "SELECT * FROM rakutan WHERE lecture_name = $1", lectureName)
 	if err != nil {
 		log.Println(err)
 		status.Err = ErrorMessageGetRakutanInfoByNameError
 		return status, false
 	}
-	status.Result = rakutanInfos
+	status.Result = ScanRakutanInfo2(rows)
 	return status, true
 }
 
 func (p *Postgres) GetRakutanInfoByOmikuji(types OmikujiType) (QueryStatus2[[]RakutanInfo2], bool) {
 	var status QueryStatus2[[]RakutanInfo2]
-	var rakutanInfos []RakutanInfo2
 	var err error
+	var rows pgx.Rows
 	switch types {
 	case Rakutan:
-		err = p.Client.Select(&rakutanInfos, "SELECT * FROM mat_view_rakutan ORDER BY random() LIMIT 1")
+		rows, err = p.Client.Query(p.Ctx, "SELECT id, faculty_name, lecture_name, register, passed FROM mat_view_rakutan ORDER BY random() LIMIT 1")
 	case Onitan:
-		err = p.Client.Select(&rakutanInfos, "SELECT * FROM mat_view_onitan ORDER BY random() LIMIT 1")
+		rows, err = p.Client.Query(p.Ctx, "SELECT * FROM mat_view_onitan ORDER BY random() LIMIT 1")
 	}
 	if err != nil {
 		log.Println(err)
 		status.Err = ErrorMessageGetRakutanInfoByOmikujiError
 		return status, false
 	}
-	status.Result = rakutanInfos
+	status.Result = ScanRakutanInfo2(rows)
 	return status, true
 }
 
 func (p *Postgres) GetFavorites(uid string) (QueryStatus2[[]RakutanInfo2], bool) {
 	var status QueryStatus2[[]RakutanInfo2]
-	var rakutanInfos []RakutanInfo2
-	err := p.Client.Select(&rakutanInfos, "SELECT r.* FROM favorites as f INNER JOIN rakutan as r WHERE f.id = r.id AND f.uid = $1", uid)
+	rows, err := p.Client.Query(p.Ctx, "SELECT r.* FROM favorites as f INNER JOIN rakutan as r ON f.id = r.id WHERE f.uid = $1", uid)
 	if err != nil {
 		log.Println(err)
 		status.Err = ErrorMessageGetFavError
 		return status, false
 	}
-	status.Result = rakutanInfos
+	status.Result = ScanRakutanInfo2(rows)
 	return status, true
 }
 
 func (p *Postgres) GetFavoriteByID(uid string, id int) (QueryStatus2[[]RakutanInfo2], bool) {
 	var status QueryStatus2[[]RakutanInfo2]
-	var rakutanInfos []RakutanInfo2
-	err := p.Client.Select(&rakutanInfos, "SELECT r.* FROM favorites as f INNER JOIN rakutan as r WHERE f.id = r.id AND f.uid = $1 AND f.id = $2", uid, id)
+	rows, err := p.Client.Query(p.Ctx, "SELECT r.* FROM favorites as f INNER JOIN rakutan as r ON f.id = r.id WHERE f.uid = $1 AND f.id = $2", uid, id)
 	if err != nil {
 		log.Println(err)
 		status.Err = ErrorMessageGetFavError
 		return status, false
 	}
-	status.Result = rakutanInfos
+	status.Result = ScanRakutanInfo2(rows)
 	return status, true
 }
 
 func (p *Postgres) SetFavorite(uid string, id int) (string, bool) {
 	var favoriteIDs []int
-	err := p.Client.Select(&favoriteIDs, "SELECT id FROM favorites WHERE uid = $1", uid)
+	rows, err := p.Client.Query(p.Ctx, "SELECT id FROM favorites WHERE uid = $1", uid)
 	if err != nil {
 		log.Println(err)
 		return ErrorMessageGetFavError, false
+	}
+	for rows.Next() {
+		var id int
+		err := rows.Scan(&id)
+		if err != nil {
+			log.Println(err)
+			return ErrorMessageGetFavError, false
+		}
+		favoriteIDs = append(favoriteIDs, id)
 	}
 	for _, favoriteID := range favoriteIDs {
 		if favoriteID == id {
@@ -213,7 +245,7 @@ func (p *Postgres) SetFavorite(uid string, id int) (string, bool) {
 		return ErrorMessageFavLimitError, false
 	}
 
-	_, err = p.Client.Exec("INSERT INTO favorites (uid, id) VALUES ($1, $2)", uid, id)
+	_, err = p.Client.Exec(p.Ctx, "INSERT INTO favorites (uid, id) VALUES ($1, $2)", uid, id)
 	// TODO: Duplicate key errorをチェックする
 	if err != nil {
 		log.Println(err)
@@ -225,7 +257,7 @@ func (p *Postgres) SetFavorite(uid string, id int) (string, bool) {
 }
 
 func (p *Postgres) UnsetFavorite(uid string, id int) (string, bool) {
-	_, err := p.Client.Exec("DELETE FROM favorites WHERE uid = $1 AND id = $2", uid, id)
+	_, err := p.Client.Exec(p.Ctx, "DELETE FROM favorites WHERE uid = $1 AND id = $2", uid, id)
 	if err != nil {
 		log.Println(err)
 		return ErrorMessageDeleteFavError, false

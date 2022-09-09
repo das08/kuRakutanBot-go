@@ -132,7 +132,7 @@ func verificationCmd(c Clients, env *Environments, lb *LINEBot) {
 }
 
 func myUIDCmd(_ Clients, _ *Environments, lb *LINEBot) {
-	lb.SendTextMessage(ReplyText{Status: KRBSuccess, Text: lb.senderUid})
+	lb.SendTextMessage2(lb.senderUid)
 }
 
 func SendVerificationCmd(c Clients, env *Environments, lb *LINEBot, email string) {

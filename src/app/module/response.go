@@ -21,4 +21,5 @@ const (
 	SuccessMessageDeleteFav    = "「%s」をお気に入りから削除しました。"
 	SuccessVericationTokenSent = "認証コードを送信しました。送られたメール内の認証リンクをクリックすると有効化されます。\n届いていない場合は、アドレスが間違っているか迷惑メールに入っている可能性があります。"
 	SuccessVerified            = "認証に成功しました。"
+	SuccessAlreadyVerified     = "すでに認証済みです。"
 )

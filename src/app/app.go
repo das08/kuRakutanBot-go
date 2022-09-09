@@ -89,7 +89,7 @@ func main() {
 							lb.SendTextMessage2(module.ErrorMessageCheckVerificateError)
 						}
 						if verified {
-							lb.SendTextMessage(module.ReplyText{Status: module.KRBSuccess, Text: "すでに認証済みです。"})
+							lb.SendTextMessage2(module.SuccessAlreadyVerified)
 						} else {
 							log.Printf("[Bot] Sent verification")
 							module.SendVerificationCmd(clients, &env, lb, messageText)

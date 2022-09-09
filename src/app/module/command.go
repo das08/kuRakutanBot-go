@@ -88,7 +88,6 @@ func loadFlexMessages(filename string, altText string) FlexMessages {
 func rakutanCmd(c Clients, env *Environments, lb *LINEBot) {
 	c.Postgres.InsertUserAction(lb.senderUid, UserActionRakutan)
 	status, ok := GetRakutanInfo(c, Omikuji, Rakutan)
-	//countUp(env, c.Mongo, lb.senderUid, "rakutan") // TODO
 	if ok {
 		flexMessages := CreateRakutanDetail(status.Result[0], env, Rakutan)
 		lb.SendFlexMessage(flexMessages)
@@ -100,7 +99,6 @@ func rakutanCmd(c Clients, env *Environments, lb *LINEBot) {
 func onitanCmd(c Clients, env *Environments, lb *LINEBot) {
 	c.Postgres.InsertUserAction(lb.senderUid, UserActionOnitan)
 	status, ok := GetRakutanInfo(c, Omikuji, Onitan)
-	//countUp(env, c.Mongo, lb.senderUid, "onitan") // TODO
 	if ok {
 		flexMessages := CreateRakutanDetail(status.Result[0], env, Rakutan)
 		lb.SendFlexMessage(flexMessages)

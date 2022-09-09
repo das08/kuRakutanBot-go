@@ -10,15 +10,10 @@ import (
 	"strings"
 )
 
-const (
-	YEAR = "year"
-)
-
 func main() {
 	env := module.LoadEnv(true)
 	router := gin.Default()
 	router.GET("/hello", func(c *gin.Context) {
-		log.Println("Hello")
 		c.String(http.StatusOK, "Hello World!!")
 	})
 
@@ -48,8 +43,6 @@ func main() {
 	})
 
 	router.POST("/callback", func(c *gin.Context) {
-		log.Println("callback")
-		log.Printf("%v", env)
 		lb := module.CreateLINEBotClient(&env, c)
 		events, err := lb.Bot.ParseRequest(c.Request)
 		if err != nil {
@@ -77,7 +70,6 @@ func main() {
 				switch message := event.Message.(type) {
 				case *linebot.TextMessage:
 					messageText := strings.TrimSpace(message.Text)
-					//module.CountMessage(clients, &env, uid)
 
 					// コマンドが送られてきた場合
 					isCommand, function := module.IsCommand(messageText)

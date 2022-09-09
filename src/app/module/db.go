@@ -310,7 +310,13 @@ func GetRakutanInfo(c Clients, method FindByMethod, value interface{}) (QuerySta
 	case ID:
 		status, ok = c.Postgres.GetRakutanInfoByID(value.(int))
 	case Name:
-		status, ok = c.Postgres.GetRakutanInfoByLectureName(value.(string))
+		var subStringSearch bool
+		searchWord := value.(string)
+		if search := []rune(value.(string)); string(search[:1]) == "%" || string(search[:1]) == "％" {
+			subStringSearch = true
+			searchWord = string(search[1:])
+		}
+		status, ok = c.Postgres.GetRakutanInfoByLectureName(searchWord, subStringSearch)
 	case Omikuji:
 		status, ok = c.Postgres.GetRakutanInfoByOmikuji(value.(OmikujiType))
 	}

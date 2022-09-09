@@ -164,10 +164,16 @@ func (p *Postgres) GetRakutanInfoByID(id int) (QueryStatus2[[]RakutanInfo2], boo
 	return status, true
 }
 
-func (p *Postgres) GetRakutanInfoByLectureName(lectureName string) (QueryStatus2[[]RakutanInfo2], bool) {
+func (p *Postgres) GetRakutanInfoByLectureName(lectureName string, subStringSearch bool) (QueryStatus2[[]RakutanInfo2], bool) {
 	var status QueryStatus2[[]RakutanInfo2]
-	// TODO: consider LIKE search
-	rows, err := p.Client.Query(p.Ctx, "SELECT * FROM rakutan WHERE lecture_name = $1", lectureName)
+	var rows pgx.Rows
+	var err error
+	if subStringSearch {
+		rows, err = p.Client.Query(p.Ctx, "SELECT * FROM rakutan WHERE lecture_name LIKE CONCAT('%%', $1::text,'%%')", lectureName)
+	} else {
+		rows, err = p.Client.Query(p.Ctx, "SELECT * FROM rakutan WHERE lecture_name LIKE CONCAT($1::text,'%%')", lectureName)
+	}
+
 	if err != nil {
 		log.Println(err)
 		status.Err = ErrorMessageGetRakutanInfoByNameError

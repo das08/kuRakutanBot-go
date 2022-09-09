@@ -68,6 +68,7 @@ func main() {
 		clients := module.Clients{Postgres: postgres, Redis: redis}
 
 		for _, event := range events {
+			postgres.IsRegistered(event.Source.UserID)
 			switch event.Type {
 			case linebot.EventTypeMessage:
 				uid := event.Source.UserID

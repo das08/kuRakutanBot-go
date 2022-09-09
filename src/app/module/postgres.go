@@ -15,7 +15,19 @@ type Postgres struct {
 	Ctx    context.Context
 }
 
-func ScanRakutanInfo2(rows pgx.Rows) RakutanInfos {
+func CreatePostgresClient(e *Environments) *Postgres {
+	ctx := context.Background()
+	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s", e.DbUser, e.DbPass, e.DbHost, e.DbPort, e.DbName)
+	db, err := pgx.Connect(ctx, dsn)
+	if err != nil {
+		fmt.Printf("Unable to connect to database: %v\n", err)
+		os.Exit(1)
+	}
+	//defer db.Close(ctx)
+	return &Postgres{Client: db, Ctx: ctx}
+}
+
+func ScanRakutanInfo(rows pgx.Rows) RakutanInfos {
 	var rakutanInfos RakutanInfos
 	defer rows.Close()
 	for rows.Next() {
@@ -36,18 +48,6 @@ func ScanRakutanInfo2(rows pgx.Rows) RakutanInfos {
 		})
 	}
 	return rakutanInfos
-}
-
-func CreatePostgresClient(e *Environments) *Postgres {
-	ctx := context.Background()
-	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s", e.DbUser, e.DbPass, e.DbHost, e.DbPort, e.DbName)
-	db, err := pgx.Connect(ctx, dsn)
-	if err != nil {
-		fmt.Printf("Unable to connect to database: %v\n", err)
-		os.Exit(1)
-	}
-	//defer db.Close(ctx)
-	return &Postgres{Client: db, Ctx: ctx}
 }
 
 func (p *Postgres) InsertUser(uid string) bool {
@@ -96,6 +96,14 @@ func (p *Postgres) UpdateUserVerification(uid string) error {
 	return nil
 }
 
+func (p *Postgres) IsRegistered(uid string) error {
+	_, err := p.Client.Exec(p.Ctx, "INSERT INTO users(uid) SELECT $1 WHERE NOT EXISTS ( SELECT 1 FROM users WHERE uid = $2)", uid, uid)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (p *Postgres) IsVerified(uid string) (bool, error) {
 	var isVerified bool
 	err := p.Client.QueryRow(p.Ctx, "SELECT is_verified FROM users WHERE uid = $1", uid).Scan(&isVerified)
@@ -114,7 +122,7 @@ func (p *Postgres) GetRakutanInfoByID(id int) (ExecStatus[RakutanInfos], bool) {
 		status.Err = ErrorMessageGetRakutanInfoByIDError
 		return status, false
 	}
-	status.Result = ScanRakutanInfo2(rows)
+	status.Result = ScanRakutanInfo(rows)
 	return status, true
 }
 
@@ -133,7 +141,7 @@ func (p *Postgres) GetRakutanInfoByLectureName(lectureName string, subStringSear
 		status.Err = ErrorMessageGetRakutanInfoByNameError
 		return status, false
 	}
-	status.Result = ScanRakutanInfo2(rows)
+	status.Result = ScanRakutanInfo(rows)
 	return status, true
 }
 
@@ -152,7 +160,7 @@ func (p *Postgres) GetRakutanInfoByOmikuji(types OmikujiType) (ExecStatus[Rakuta
 		status.Err = ErrorMessageGetRakutanInfoByOmikujiError
 		return status, false
 	}
-	status.Result = ScanRakutanInfo2(rows)
+	status.Result = ScanRakutanInfo(rows)
 	return status, true
 }
 
@@ -164,7 +172,7 @@ func (p *Postgres) GetFavorites(uid string) (ExecStatus[RakutanInfos], bool) {
 		status.Err = ErrorMessageGetFavError
 		return status, false
 	}
-	status.Result = ScanRakutanInfo2(rows)
+	status.Result = ScanRakutanInfo(rows)
 	return status, true
 }
 
@@ -176,7 +184,7 @@ func (p *Postgres) GetFavoriteByID(uid string, id int) (ExecStatus[RakutanInfos]
 		status.Err = ErrorMessageGetFavError
 		return status, false
 	}
-	status.Result = ScanRakutanInfo2(rows)
+	status.Result = ScanRakutanInfo(rows)
 	return status, true
 }
 

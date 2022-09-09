@@ -2,6 +2,11 @@ package module
 
 import "github.com/jackc/pgtype"
 
+type Clients struct {
+	Postgres *Postgres
+	Redis    *Redis
+}
+
 type OmikujiType string
 
 const (

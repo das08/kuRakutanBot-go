@@ -45,7 +45,7 @@ var omikujiType = map[OmikujiType]OmikujiText{
 }
 
 func CreateRakutanDetail(info RakutanInfo, e *Environments, o OmikujiType) FlexMessages {
-	rakutanDetail := LoadRakutanDetail()
+	rakutanDetail := richmenu.LoadRakutanDetail()
 	rakutanDetail.Header.Contents[0].Contents[1].Text = strToPtr("Search ID:#" + toStr(info.ID))
 	rakutanDetail.Header.Contents[1].Text = &info.LectureName             // Lecture name
 	rakutanDetail.Header.Contents[3].Contents[1].Text = &info.FacultyName // Faculty name
@@ -118,8 +118,8 @@ func CreateRakutanDetail(info RakutanInfo, e *Environments, o OmikujiType) FlexM
 
 func CreateSearchResult(searchText string, infos RakutanInfos) FlexMessages {
 	var messages FlexMessages
-	searchResult := LoadSearchResult()
-	searchResultMore := LoadSearchResultMore()
+	searchResult := richmenu.LoadSearchResult()
+	searchResultMore := richmenu.LoadSearchResultMore()
 
 	pageCount := 0
 	maxPageCount := len(infos)/MaxResultsPerPage + 1
@@ -151,7 +151,7 @@ func CreateSearchResult(searchText string, infos RakutanInfos) FlexMessages {
 
 func CreateFavorites(r RakutanInfos) FlexMessages {
 	var messages FlexMessages
-	favorites := LoadFavorites()
+	favorites := richmenu.LoadFavorites()
 
 	pageCount := 0
 	maxPageCount := len(r)/MaxResultsPerPage + 1
@@ -172,7 +172,7 @@ func CreateFlexMessage(flex []byte, altText string) FlexMessages {
 }
 
 func getLectureList(infos RakutanInfos, pageCount int) []richmenu.PurpleContent {
-	searchResult := LoadSearchResult()
+	searchResult := richmenu.LoadSearchResult()
 	var lectureList []richmenu.PurpleContent
 	lecture := searchResult.Body.Contents[1].Contents[0]
 
@@ -194,7 +194,7 @@ func getLectureList(infos RakutanInfos, pageCount int) []richmenu.PurpleContent 
 }
 
 func getFavoriteList(r RakutanInfos, pageCount int) []richmenu.FavoritesBodyContents {
-	favorites := LoadFavorites()
+	favorites := richmenu.LoadFavorites()
 	var favoriteList []richmenu.FavoritesBodyContents
 	favorite := favorites.Body.Contents[0].Contents[0]
 

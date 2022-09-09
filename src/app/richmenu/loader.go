@@ -1,42 +1,40 @@
-package module
+package richmenu
 
 import (
 	"io/ioutil"
 	"log"
-
-	"github.com/das08/kuRakutanBot-go/richmenu"
 )
 
-func LoadRakutanDetail() richmenu.RakutanDetail {
+func LoadRakutanDetail() RakutanDetail {
 	jsonFile := LoadJSON("./assets/richmenu/rakutan_detail.json")
-	jsonData, err := richmenu.UnmarshalRakutanDetail(jsonFile)
+	jsonData, err := UnmarshalRakutanDetail(jsonFile)
 	if err != nil {
 		log.Fatal(err)
 	}
 	return jsonData
 }
 
-func LoadSearchResult() richmenu.SearchResult {
+func LoadSearchResult() SearchResult {
 	jsonFile := LoadJSON("./assets/richmenu/search_result.json")
-	jsonData, err := richmenu.UnmarshalSearchResult(jsonFile)
+	jsonData, err := UnmarshalSearchResult(jsonFile)
 	if err != nil {
 		log.Fatal(err)
 	}
 	return jsonData
 }
 
-func LoadSearchResultMore() richmenu.SearchResultMore {
+func LoadSearchResultMore() SearchResultMore {
 	jsonFile := LoadJSON("./assets/richmenu/search_result_more.json")
-	jsonData, err := richmenu.UnmarshalSearchResultMore(jsonFile)
+	jsonData, err := UnmarshalSearchResultMore(jsonFile)
 	if err != nil {
 		log.Fatal(err)
 	}
 	return jsonData
 }
 
-func LoadFavorites() richmenu.Favorites {
+func LoadFavorites() Favorites {
 	jsonFile := LoadJSON("./assets/richmenu/favorites.json")
-	jsonData, err := richmenu.UnmarshalFavorites(jsonFile)
+	jsonData, err := UnmarshalFavorites(jsonFile)
 	if err != nil {
 		log.Fatal(err)
 	}

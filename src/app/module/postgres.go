@@ -225,3 +225,55 @@ func (p *Postgres) UnsetFavorite(uid string, id int) (string, bool) {
 	// TODO: 講義名を取得する
 	return fmt.Sprintf(SuccessMessageDeleteFav, ""), true
 }
+
+type FindByMethod int
+
+const (
+	Name FindByMethod = iota
+	ID
+	Omikuji
+)
+
+func GetRakutanInfo(c Clients, method FindByMethod, value interface{}) (ExecStatus[RakutanInfos], bool) {
+	var ok bool
+	var status ExecStatus[RakutanInfos]
+
+	switch method {
+	case ID:
+		status, ok = c.Postgres.GetRakutanInfoByID(value.(int))
+	case Name:
+		var subStringSearch bool
+		searchWord := value.(string)
+		if search := []rune(value.(string)); string(search[:1]) == "%" || string(search[:1]) == "％" {
+			subStringSearch = true
+			searchWord = string(search[1:])
+		}
+		status, ok = c.Postgres.GetRakutanInfoByLectureName(searchWord, subStringSearch)
+	case Omikuji:
+		status, ok = c.Postgres.GetRakutanInfoByOmikuji(value.(OmikujiType))
+	}
+
+	// Set isVerified, isFavorite and kakomonURL
+	//if ok && len(result) == 1 {
+	//	isVerified := IsVerified(c, env, uid)
+	//	result[0].IsVerified = isVerified
+	//	result[0].IsFavorite = exist(env, c.Mongo, env.DB_COLLECTION.Favorites, []KV{{Key: "uid", Value: uid}, {Key: "id", Value: result[0].ID}})
+	//
+	//	if isVerified && result[0].URL == "" {
+	//		redisKey := fmt.Sprintf("#%d", result[0].ID)
+	//		if redisStatus, cacheURL := getRedisKakomonURL(c, redisKey); redisStatus.Success {
+	//			result[0].URL = cacheURL
+	//		} else {
+	//			kuWikiStatus := GetKakomonURL(env, result[0].LectureName)
+	//			if kuWikiStatus.Success {
+	//				result[0].URL = kuWikiStatus.Result
+	//				setRedis(c, redisKey, kuWikiStatus.Result, time.Hour*72)
+	//			} else {
+	//				result[0].KUWikiErr = kuWikiStatus.Result
+	//			}
+	//		}
+	//	}
+	//}
+
+	return status, ok
+}

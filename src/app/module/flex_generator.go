@@ -276,7 +276,3 @@ func toStr(i int) string {
 func strToPtr(s string) *string {
 	return &s
 }
-
-func intToPtr(i int) *int {
-	return &i
-}

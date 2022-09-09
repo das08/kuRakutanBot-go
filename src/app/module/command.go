@@ -89,7 +89,7 @@ func rakutanCmd(c Clients, env *Environments, lb *LINEBot) {
 		flexMessages := CreateRakutanDetail(status.Result[0], env, Rakutan)
 		lb.SendFlexMessage(flexMessages)
 	} else {
-		lb.SendTextMessage2(status.Err)
+		lb.SendTextMessage(status.Err)
 	}
 }
 
@@ -100,18 +100,18 @@ func onitanCmd(c Clients, env *Environments, lb *LINEBot) {
 		flexMessages := CreateRakutanDetail(status.Result[0], env, Rakutan)
 		lb.SendFlexMessage(flexMessages)
 	} else {
-		lb.SendTextMessage2(status.Err)
+		lb.SendTextMessage(status.Err)
 	}
 }
 
 func getFavoritesCmd(c Clients, env *Environments, lb *LINEBot) {
 	queryStatus, ok := c.Postgres.GetFavorites(lb.senderUid)
 	if !ok {
-		lb.SendTextMessage2(queryStatus.Err)
+		lb.SendTextMessage(queryStatus.Err)
 		return
 	}
 	if len(queryStatus.Result) == 0 {
-		lb.SendTextMessage2(SuccessNoFavorites)
+		lb.SendTextMessage(SuccessNoFavorites)
 		return
 	}
 	flexMessages := CreateFavorites(queryStatus.Result)
@@ -121,7 +121,7 @@ func getFavoritesCmd(c Clients, env *Environments, lb *LINEBot) {
 func verificationCmd(c Clients, env *Environments, lb *LINEBot) {
 	verified, err := c.Postgres.IsVerified(lb.senderUid)
 	if err != nil {
-		lb.SendTextMessage2(ErrorMessageCheckVerificateError)
+		lb.SendTextMessage(ErrorMessageCheckVerificateError)
 		return
 	}
 	var flexMessages FlexMessages
@@ -134,7 +134,7 @@ func verificationCmd(c Clients, env *Environments, lb *LINEBot) {
 }
 
 func myUIDCmd(_ Clients, _ *Environments, lb *LINEBot) {
-	lb.SendTextMessage2(lb.senderUid)
+	lb.SendTextMessage(lb.senderUid)
 }
 
 func SendVerificationCmd(c Clients, env *Environments, lb *LINEBot, email string) {
@@ -143,13 +143,13 @@ func SendVerificationCmd(c Clients, env *Environments, lb *LINEBot, email string
 	code := uuid.NewSHA1(uuidObj, data).String()
 	err := c.Postgres.InsertVerificationToken(lb.senderUid, code)
 	if err != nil {
-		lb.SendTextMessage2(ErrorMessageInsertVerificateError)
+		lb.SendTextMessage(ErrorMessageInsertVerificateError)
 		return
 	}
 	err = SendVerification(env, email, code)
 	if err != nil {
-		lb.SendTextMessage2(ErrorMessageVerificationTokenSendError)
+		lb.SendTextMessage(ErrorMessageVerificationTokenSendError)
 		return
 	}
-	lb.SendTextMessage2(SuccessVericationTokenSent)
+	lb.SendTextMessage(SuccessVericationTokenSent)
 }

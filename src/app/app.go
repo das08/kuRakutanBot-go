@@ -89,10 +89,10 @@ func main() {
 					if module.IsStudentAddress(messageText) {
 						verified, err := clients.Postgres.IsVerified(uid)
 						if err != nil {
-							lb.SendTextMessage2(module.ErrorMessageCheckVerificateError)
+							lb.SendTextMessage(module.ErrorMessageCheckVerificateError)
 						}
 						if verified {
-							lb.SendTextMessage2(module.SuccessAlreadyVerified)
+							lb.SendTextMessage(module.SuccessAlreadyVerified)
 						} else {
 							log.Printf("[Bot] Sent verification")
 							module.SendVerificationCmd(clients, &env, lb, messageText)
@@ -104,7 +104,7 @@ func main() {
 					searchStatus, ok := searchRakutan(clients, &env, uid, messageText)
 					log.Printf("[Bot] Search: %s", messageText)
 					if !ok {
-						lb.SendTextMessage2(searchStatus.Err)
+						lb.SendTextMessage(searchStatus.Err)
 					} else {
 						lb.SendFlexMessage(searchStatus.Result)
 					}
@@ -124,11 +124,11 @@ func main() {
 					case module.Fav:
 						// TODO: validate
 						message, _ := postgres.SetFavorite(uid, id)
-						lb.SendTextMessage2(message)
+						lb.SendTextMessage(message)
 					case module.Del:
 						// TODO: validate
 						message, _ := postgres.UnsetFavorite(uid, id)
-						lb.SendTextMessage2(message)
+						lb.SendTextMessage(message)
 					}
 				}
 			}

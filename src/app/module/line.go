@@ -37,7 +37,7 @@ func (lb *LINEBot) SetSenderUid(e *Environments, senderUid string) {
 	}
 }
 
-func (lb *LINEBot) SendTextMessage2(text string) {
+func (lb *LINEBot) SendTextMessage(text string) {
 	if lb.isMockUser {
 		lb.mockContext.JSON(200, text)
 		return

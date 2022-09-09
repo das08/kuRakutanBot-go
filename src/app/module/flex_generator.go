@@ -2,7 +2,7 @@ package module
 
 import (
 	"fmt"
-	"github.com/das08/kuRakutanBot-go/models/richmenu"
+	"github.com/das08/kuRakutanBot-go/richmenu"
 	"github.com/jackc/pgtype"
 	"github.com/line/line-bot-sdk-go/v7/linebot"
 	"log"

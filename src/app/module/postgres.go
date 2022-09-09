@@ -60,7 +60,7 @@ type ReturnType interface {
 	RakutanInfos | FlexMessages
 }
 
-type QueryStatus2[T ReturnType] struct {
+type Status[T ReturnType] struct {
 	Result T
 	Err    string
 }
@@ -156,8 +156,8 @@ func (p *Postgres) IsVerified(uid string) (bool, error) {
 	return isVerified, nil
 }
 
-func (p *Postgres) GetRakutanInfoByID(id int) (QueryStatus2[RakutanInfos], bool) {
-	var status QueryStatus2[RakutanInfos]
+func (p *Postgres) GetRakutanInfoByID(id int) (Status[RakutanInfos], bool) {
+	var status Status[RakutanInfos]
 	rows, err := p.Client.Query(p.Ctx, "SELECT * FROM rakutan WHERE id = $1", id)
 	if err != nil {
 		log.Println(err)
@@ -168,8 +168,8 @@ func (p *Postgres) GetRakutanInfoByID(id int) (QueryStatus2[RakutanInfos], bool)
 	return status, true
 }
 
-func (p *Postgres) GetRakutanInfoByLectureName(lectureName string, subStringSearch bool) (QueryStatus2[RakutanInfos], bool) {
-	var status QueryStatus2[RakutanInfos]
+func (p *Postgres) GetRakutanInfoByLectureName(lectureName string, subStringSearch bool) (Status[RakutanInfos], bool) {
+	var status Status[RakutanInfos]
 	var rows pgx.Rows
 	var err error
 	if subStringSearch {
@@ -187,8 +187,8 @@ func (p *Postgres) GetRakutanInfoByLectureName(lectureName string, subStringSear
 	return status, true
 }
 
-func (p *Postgres) GetRakutanInfoByOmikuji(types OmikujiType) (QueryStatus2[RakutanInfos], bool) {
-	var status QueryStatus2[RakutanInfos]
+func (p *Postgres) GetRakutanInfoByOmikuji(types OmikujiType) (Status[RakutanInfos], bool) {
+	var status Status[RakutanInfos]
 	var err error
 	var rows pgx.Rows
 	switch types {
@@ -206,8 +206,8 @@ func (p *Postgres) GetRakutanInfoByOmikuji(types OmikujiType) (QueryStatus2[Raku
 	return status, true
 }
 
-func (p *Postgres) GetFavorites(uid string) (QueryStatus2[RakutanInfos], bool) {
-	var status QueryStatus2[RakutanInfos]
+func (p *Postgres) GetFavorites(uid string) (Status[RakutanInfos], bool) {
+	var status Status[RakutanInfos]
 	rows, err := p.Client.Query(p.Ctx, "SELECT r.* FROM favorites as f INNER JOIN rakutan as r ON f.id = r.id WHERE f.uid = $1", uid)
 	if err != nil {
 		log.Println(err)
@@ -218,8 +218,8 @@ func (p *Postgres) GetFavorites(uid string) (QueryStatus2[RakutanInfos], bool) {
 	return status, true
 }
 
-func (p *Postgres) GetFavoriteByID(uid string, id int) (QueryStatus2[RakutanInfos], bool) {
-	var status QueryStatus2[RakutanInfos]
+func (p *Postgres) GetFavoriteByID(uid string, id int) (Status[RakutanInfos], bool) {
+	var status Status[RakutanInfos]
 	rows, err := p.Client.Query(p.Ctx, "SELECT r.* FROM favorites as f INNER JOIN rakutan as r ON f.id = r.id WHERE f.uid = $1 AND f.id = $2", uid, id)
 	if err != nil {
 		log.Println(err)

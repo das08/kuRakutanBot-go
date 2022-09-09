@@ -14,16 +14,6 @@ type LINEBot struct {
 	mockContext *gin.Context
 }
 
-type ReplyText struct {
-	Status KRBStatus
-	Text   string
-}
-
-type ReplyFlex struct {
-	Status KRBStatus
-	Flex   FlexMessages
-}
-
 func CreateLINEBotClient(e *Environments, c *gin.Context) *LINEBot {
 	bot, err := linebot.New(
 		e.LineChannelSecret,
@@ -47,17 +37,6 @@ func (lb *LINEBot) SetSenderUid(e *Environments, senderUid string) {
 	}
 }
 
-func (lb *LINEBot) SendTextMessage(rt ReplyText) {
-	if lb.isMockUser {
-		lb.mockContext.JSON(200, rt)
-		return
-	}
-	_, err := lb.Bot.ReplyMessage(lb.replyToken, linebot.NewTextMessage(rt.Text)).Do()
-	if err != nil {
-		log.Print(err)
-	}
-}
-
 func (lb *LINEBot) SendTextMessage2(text string) {
 	if lb.isMockUser {
 		lb.mockContext.JSON(200, text)
@@ -71,7 +50,7 @@ func (lb *LINEBot) SendTextMessage2(text string) {
 
 func (lb *LINEBot) SendFlexMessage(flexMessages FlexMessages) {
 	if lb.isMockUser {
-		lb.mockContext.JSON(200, ReplyFlex{Status: KRBSuccess, Flex: flexMessages})
+		lb.mockContext.JSON(200, flexMessages)
 		return
 	}
 	var messages []linebot.SendingMessage

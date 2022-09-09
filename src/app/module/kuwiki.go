@@ -9,10 +9,6 @@ import (
 	"time"
 )
 
-func (r *KUWiki) Marshal() ([]byte, error) {
-	return json.Marshal(r)
-}
-
 type KUWiki struct {
 	Count    int64       `json:"count"`
 	Next     interface{} `json:"next"`
@@ -58,6 +54,10 @@ type LectureSet struct {
 type Set struct {
 	Lecture string `json:"lecture"`
 	Name    string `json:"name"`
+}
+
+func (r *KUWiki) Marshal() ([]byte, error) {
+	return json.Marshal(r)
 }
 
 type KUWikiStatus struct {

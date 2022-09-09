@@ -15,11 +15,6 @@ type Clients struct {
 	Redis    *Redis
 }
 
-type KV struct {
-	Key   string
-	Value interface{}
-}
-
 func CreateRedisClient() *Redis {
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     "redis:6379",
@@ -41,34 +36,34 @@ func CreateRedisClient() *Redis {
 //	}
 //}
 //
-//func getRedisRakutanInfo(c Clients, key string) (Status, RakutanInfos) {
+//func getRedisRakutanInfo(c Clients, key string) (ExecStatus, RakutanInfos) {
 //	data, err := c.Redis.Client.Get(c.Redis.Ctx, key).Result()
 //	if err != nil {
-//		return Status{Success: false}, nil
+//		return ExecStatus{Success: false}, nil
 //	}
 //
 //	rakutanInfo := new(RakutanInfos)
 //	err = json.Unmarshal([]byte(data), rakutanInfo)
 //	if err != nil {
-//		return Status{Success: false}, nil
+//		return ExecStatus{Success: false}, nil
 //	}
 //	log.Printf("[Redis] Fetched RakutanInfo from redis")
-//	return Status{Success: true}, *rakutanInfo
+//	return ExecStatus{Success: true}, *rakutanInfo
 //}
 //
-//func getRedisKakomonURL(c Clients, key string) (Status, string) {
+//func getRedisKakomonURL(c Clients, key string) (ExecStatus, string) {
 //	data, err := c.Redis.Client.Get(c.Redis.Ctx, key).Result()
 //	if err != nil {
-//		return Status{Success: false}, ""
+//		return ExecStatus{Success: false}, ""
 //	}
 //
 //	kakomonURL := new(string)
 //	err = json.Unmarshal([]byte(data), kakomonURL)
 //	if err != nil {
-//		return Status{Success: false}, ""
+//		return ExecStatus{Success: false}, ""
 //	}
 //	log.Printf("[Redis] Fetched %s from redis", key)
-//	return Status{Success: true}, *kakomonURL
+//	return ExecStatus{Success: true}, *kakomonURL
 //}
 
 type FindByMethod int
@@ -79,9 +74,9 @@ const (
 	Omikuji
 )
 
-func GetRakutanInfo(c Clients, method FindByMethod, value interface{}) (Status[RakutanInfos], bool) {
+func GetRakutanInfo(c Clients, method FindByMethod, value interface{}) (ExecStatus[RakutanInfos], bool) {
 	var ok bool
-	var status Status[RakutanInfos]
+	var status ExecStatus[RakutanInfos]
 
 	switch method {
 	case ID:

@@ -31,7 +31,7 @@ func TestGetRakutanPercent(t *testing.T) {
 
 func TestGetRakutanJudge(t *testing.T) {
 	patterns := []struct {
-		expect RakutanJudge          // expectation
+		expect rakutanJudge          // expectation
 		given  models.RakutanDetails // given input
 	}{
 		{judgeList[8], models.RakutanDetails{{2021, 0, 0}, {2020, 0, 0}, {2019, 0, 0}}},

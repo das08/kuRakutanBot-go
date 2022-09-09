@@ -8,61 +8,11 @@ import (
 	"log"
 	"os"
 	"time"
-
-	_ "github.com/lib/pq"
 )
 
 type Postgres struct {
 	Client *pgx.Conn
 	Ctx    context.Context
-}
-
-type UserAction string
-
-const (
-	UserActionSearch   UserAction = "search"
-	UserActionRakutan  UserAction = "rakutan"
-	UserActionOnitan   UserAction = "onitan"
-	UserActionSetFav   UserAction = "set_fav"
-	UserActionUnsetFav UserAction = "unset_fav"
-	UserActionGetFav   UserAction = "get_fav"
-	UserActionInfo     UserAction = "info"
-	UserActionHelp     UserAction = "help"
-)
-
-type RakutanInfo struct {
-	ID          int              `db:"id"`
-	FacultyName string           `db:"faculty_name"`
-	LectureName string           `db:"lecture_name"`
-	Register    pgtype.Int2Array `db:"register"`
-	Passed      pgtype.Int2Array `db:"passed"`
-	KakomonURL  string           `db:"kakomon_url"`
-	IsFavorite  bool
-}
-
-func (r *RakutanInfo) GetLatestDetail() (int, int) {
-	passed, register := 0, 0
-	for i := 0; i < len(r.Register.Elements); i++ {
-		if r.Register.Elements[i].Status == pgtype.Present {
-			passed = int(r.Passed.Elements[i].Int)
-			register = int(r.Register.Elements[i].Int)
-			break
-		}
-	}
-	return passed, register
-}
-
-type RakutanInfos []RakutanInfo
-
-type FlexMessages []FlexMessage
-
-type ReturnType interface {
-	RakutanInfos | FlexMessages
-}
-
-type Status[T ReturnType] struct {
-	Result T
-	Err    string
 }
 
 func ScanRakutanInfo2(rows pgx.Rows) RakutanInfos {
@@ -156,8 +106,8 @@ func (p *Postgres) IsVerified(uid string) (bool, error) {
 	return isVerified, nil
 }
 
-func (p *Postgres) GetRakutanInfoByID(id int) (Status[RakutanInfos], bool) {
-	var status Status[RakutanInfos]
+func (p *Postgres) GetRakutanInfoByID(id int) (ExecStatus[RakutanInfos], bool) {
+	var status ExecStatus[RakutanInfos]
 	rows, err := p.Client.Query(p.Ctx, "SELECT * FROM rakutan WHERE id = $1", id)
 	if err != nil {
 		log.Println(err)
@@ -168,8 +118,8 @@ func (p *Postgres) GetRakutanInfoByID(id int) (Status[RakutanInfos], bool) {
 	return status, true
 }
 
-func (p *Postgres) GetRakutanInfoByLectureName(lectureName string, subStringSearch bool) (Status[RakutanInfos], bool) {
-	var status Status[RakutanInfos]
+func (p *Postgres) GetRakutanInfoByLectureName(lectureName string, subStringSearch bool) (ExecStatus[RakutanInfos], bool) {
+	var status ExecStatus[RakutanInfos]
 	var rows pgx.Rows
 	var err error
 	if subStringSearch {
@@ -187,8 +137,8 @@ func (p *Postgres) GetRakutanInfoByLectureName(lectureName string, subStringSear
 	return status, true
 }
 
-func (p *Postgres) GetRakutanInfoByOmikuji(types OmikujiType) (Status[RakutanInfos], bool) {
-	var status Status[RakutanInfos]
+func (p *Postgres) GetRakutanInfoByOmikuji(types OmikujiType) (ExecStatus[RakutanInfos], bool) {
+	var status ExecStatus[RakutanInfos]
 	var err error
 	var rows pgx.Rows
 	switch types {
@@ -206,8 +156,8 @@ func (p *Postgres) GetRakutanInfoByOmikuji(types OmikujiType) (Status[RakutanInf
 	return status, true
 }
 
-func (p *Postgres) GetFavorites(uid string) (Status[RakutanInfos], bool) {
-	var status Status[RakutanInfos]
+func (p *Postgres) GetFavorites(uid string) (ExecStatus[RakutanInfos], bool) {
+	var status ExecStatus[RakutanInfos]
 	rows, err := p.Client.Query(p.Ctx, "SELECT r.* FROM favorites as f INNER JOIN rakutan as r ON f.id = r.id WHERE f.uid = $1", uid)
 	if err != nil {
 		log.Println(err)
@@ -218,8 +168,8 @@ func (p *Postgres) GetFavorites(uid string) (Status[RakutanInfos], bool) {
 	return status, true
 }
 
-func (p *Postgres) GetFavoriteByID(uid string, id int) (Status[RakutanInfos], bool) {
-	var status Status[RakutanInfos]
+func (p *Postgres) GetFavoriteByID(uid string, id int) (ExecStatus[RakutanInfos], bool) {
+	var status ExecStatus[RakutanInfos]
 	rows, err := p.Client.Query(p.Ctx, "SELECT r.* FROM favorites as f INNER JOIN rakutan as r ON f.id = r.id WHERE f.uid = $1 AND f.id = $2", uid, id)
 	if err != nil {
 		log.Println(err)

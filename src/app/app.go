@@ -142,10 +142,10 @@ func main() {
 	}
 }
 
-func searchRakutan(c module.Clients, env *module.Environments, uid string, searchText string) (module.Status[module.FlexMessages], bool) {
+func searchRakutan(c module.Clients, env *module.Environments, uid string, searchText string) (module.ExecStatus[module.FlexMessages], bool) {
 	var ok, searchSuccess bool
-	var status module.Status[module.RakutanInfos]
-	var searchStatus module.Status[module.FlexMessages]
+	var status module.ExecStatus[module.RakutanInfos]
+	var searchStatus module.ExecStatus[module.FlexMessages]
 
 	isLectureNumber, lectureID := module.IsLectureID(searchText)
 	if isLectureNumber {

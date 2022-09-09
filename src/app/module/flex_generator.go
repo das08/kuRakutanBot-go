@@ -15,27 +15,14 @@ type FlexMessage struct {
 	AltText       string
 }
 
-type RakutanJudge struct {
+type rakutanJudge struct {
 	percentBound float32
 	rank         string
 	color        string
 }
 
-type OmikujiType string
-
-const (
-	Normal  OmikujiType = "normal"
-	Rakutan OmikujiType = "rakutan"
-	Onitan  OmikujiType = "onitan"
-)
-
-type OmikujiText struct {
-	Text  string
-	Color string
-}
-
 var MaxResultsPerPage = 25
-var judgeList = [9]RakutanJudge{
+var judgeList = [9]rakutanJudge{
 	{percentBound: 90, rank: "SSS", color: "#c3c45b"},
 	{percentBound: 85, rank: "SS", color: "#c3c45b"},
 	{percentBound: 80, rank: "S", color: "#c3c45b"},
@@ -248,7 +235,7 @@ func getRakutanPercent(passed pgtype.Int2Array, register pgtype.Int2Array) []str
 	return rakutanPercent
 }
 
-func getRakutanJudge(r RakutanInfo) RakutanJudge {
+func getRakutanJudge(r RakutanInfo) rakutanJudge {
 	accept, total := r.GetLatestDetail()
 	if total == 0 {
 		return judgeList[8]

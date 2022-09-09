@@ -150,7 +150,7 @@ func SendVerificationCmd(c Clients, env *Environments, lb *LINEBot, email string
 		lb.SendTextMessage(ErrorMessageInsertVerificateError)
 		return
 	}
-	err = SendVerification(env, email, code)
+	err = SendVerification(env, email, code, lb.senderUid)
 	if err != nil {
 		lb.SendTextMessage(ErrorMessageVerificationTokenSendError)
 		return

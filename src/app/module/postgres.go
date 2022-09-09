@@ -88,8 +88,20 @@ func (p *Postgres) CheckVerificationToken(uid, token string) (bool, error) {
 	return i > 0, nil
 }
 
+func (p *Postgres) DeleteVerificationToken(uid string) error {
+	_, err := p.Client.Exec(p.Ctx, "DELETE FROM verification_tokens WHERE uid = $1", uid)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (p *Postgres) UpdateUserVerification(uid string) error {
-	_, err := p.Client.Exec(p.Ctx, "UPDATE users SET is_verified = true WHERE uid = $1", uid)
+	_, err := p.Client.Exec(p.Ctx, "UPDATE users SET is_verified = true, verified_at = $1 WHERE uid = $2", time.Now(), uid)
+	if err != nil {
+		return err
+	}
+	err = p.DeleteVerificationToken(uid)
 	if err != nil {
 		return err
 	}

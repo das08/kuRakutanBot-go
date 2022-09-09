@@ -30,7 +30,7 @@ const (
 	UserActionHelp     UserAction = "help"
 )
 
-type RakutanInfo2 struct {
+type RakutanInfo struct {
 	ID          int              `db:"id"`
 	FacultyName string           `db:"faculty_name"`
 	LectureName string           `db:"lecture_name"`
@@ -40,7 +40,7 @@ type RakutanInfo2 struct {
 	IsFavorite  bool
 }
 
-func (r *RakutanInfo2) GetLatestDetail() (int, int) {
+func (r *RakutanInfo) GetLatestDetail() (int, int) {
 	passed, register := 0, 0
 	for i := 0; i < len(r.Register.Elements); i++ {
 		if r.Register.Elements[i].Status == pgtype.Present {
@@ -52,8 +52,12 @@ func (r *RakutanInfo2) GetLatestDetail() (int, int) {
 	return passed, register
 }
 
+type RakutanInfos []RakutanInfo
+
+type FlexMessages []FlexMessage
+
 type ReturnType interface {
-	[]RakutanInfo2 | []FlexMessage
+	RakutanInfos | FlexMessages
 }
 
 type QueryStatus2[T ReturnType] struct {
@@ -61,8 +65,8 @@ type QueryStatus2[T ReturnType] struct {
 	Err    string
 }
 
-func ScanRakutanInfo2(rows pgx.Rows) []RakutanInfo2 {
-	var rakutanInfos []RakutanInfo2
+func ScanRakutanInfo2(rows pgx.Rows) RakutanInfos {
+	var rakutanInfos RakutanInfos
 	defer rows.Close()
 	for rows.Next() {
 		var id int
@@ -73,7 +77,7 @@ func ScanRakutanInfo2(rows pgx.Rows) []RakutanInfo2 {
 		if err != nil {
 			log.Println(err)
 		}
-		rakutanInfos = append(rakutanInfos, RakutanInfo2{
+		rakutanInfos = append(rakutanInfos, RakutanInfo{
 			ID:          id,
 			FacultyName: facultyName,
 			LectureName: lectureName,
@@ -152,8 +156,8 @@ func (p *Postgres) IsVerified(uid string) (bool, error) {
 	return isVerified, nil
 }
 
-func (p *Postgres) GetRakutanInfoByID(id int) (QueryStatus2[[]RakutanInfo2], bool) {
-	var status QueryStatus2[[]RakutanInfo2]
+func (p *Postgres) GetRakutanInfoByID(id int) (QueryStatus2[RakutanInfos], bool) {
+	var status QueryStatus2[RakutanInfos]
 	rows, err := p.Client.Query(p.Ctx, "SELECT * FROM rakutan WHERE id = $1", id)
 	if err != nil {
 		log.Println(err)
@@ -164,8 +168,8 @@ func (p *Postgres) GetRakutanInfoByID(id int) (QueryStatus2[[]RakutanInfo2], boo
 	return status, true
 }
 
-func (p *Postgres) GetRakutanInfoByLectureName(lectureName string, subStringSearch bool) (QueryStatus2[[]RakutanInfo2], bool) {
-	var status QueryStatus2[[]RakutanInfo2]
+func (p *Postgres) GetRakutanInfoByLectureName(lectureName string, subStringSearch bool) (QueryStatus2[RakutanInfos], bool) {
+	var status QueryStatus2[RakutanInfos]
 	var rows pgx.Rows
 	var err error
 	if subStringSearch {
@@ -183,8 +187,8 @@ func (p *Postgres) GetRakutanInfoByLectureName(lectureName string, subStringSear
 	return status, true
 }
 
-func (p *Postgres) GetRakutanInfoByOmikuji(types OmikujiType) (QueryStatus2[[]RakutanInfo2], bool) {
-	var status QueryStatus2[[]RakutanInfo2]
+func (p *Postgres) GetRakutanInfoByOmikuji(types OmikujiType) (QueryStatus2[RakutanInfos], bool) {
+	var status QueryStatus2[RakutanInfos]
 	var err error
 	var rows pgx.Rows
 	switch types {
@@ -202,8 +206,8 @@ func (p *Postgres) GetRakutanInfoByOmikuji(types OmikujiType) (QueryStatus2[[]Ra
 	return status, true
 }
 
-func (p *Postgres) GetFavorites(uid string) (QueryStatus2[[]RakutanInfo2], bool) {
-	var status QueryStatus2[[]RakutanInfo2]
+func (p *Postgres) GetFavorites(uid string) (QueryStatus2[RakutanInfos], bool) {
+	var status QueryStatus2[RakutanInfos]
 	rows, err := p.Client.Query(p.Ctx, "SELECT r.* FROM favorites as f INNER JOIN rakutan as r ON f.id = r.id WHERE f.uid = $1", uid)
 	if err != nil {
 		log.Println(err)
@@ -214,8 +218,8 @@ func (p *Postgres) GetFavorites(uid string) (QueryStatus2[[]RakutanInfo2], bool)
 	return status, true
 }
 
-func (p *Postgres) GetFavoriteByID(uid string, id int) (QueryStatus2[[]RakutanInfo2], bool) {
-	var status QueryStatus2[[]RakutanInfo2]
+func (p *Postgres) GetFavoriteByID(uid string, id int) (QueryStatus2[RakutanInfos], bool) {
+	var status QueryStatus2[RakutanInfos]
 	rows, err := p.Client.Query(p.Ctx, "SELECT r.* FROM favorites as f INNER JOIN rakutan as r ON f.id = r.id WHERE f.uid = $1 AND f.id = $2", uid, id)
 	if err != nil {
 		log.Println(err)

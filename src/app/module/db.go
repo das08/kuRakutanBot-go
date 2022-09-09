@@ -44,13 +44,13 @@ func setRedis(c Clients, key string, value interface{}, cacheTime time.Duration)
 	}
 }
 
-func getRedisRakutanInfo(c Clients, key string) (QueryStatus, []RakutanInfo2) {
+func getRedisRakutanInfo(c Clients, key string) (QueryStatus, RakutanInfos) {
 	data, err := c.Redis.Client.Get(c.Redis.Ctx, key).Result()
 	if err != nil {
 		return QueryStatus{Success: false}, nil
 	}
 
-	rakutanInfo := new([]RakutanInfo2)
+	rakutanInfo := new(RakutanInfos)
 	err = json.Unmarshal([]byte(data), rakutanInfo)
 	if err != nil {
 		return QueryStatus{Success: false}, nil
@@ -82,9 +82,9 @@ const (
 	Omikuji
 )
 
-func GetRakutanInfo(c Clients, method FindByMethod, value interface{}) (QueryStatus2[[]RakutanInfo2], bool) {
+func GetRakutanInfo(c Clients, method FindByMethod, value interface{}) (QueryStatus2[RakutanInfos], bool) {
 	var ok bool
-	var status QueryStatus2[[]RakutanInfo2]
+	var status QueryStatus2[RakutanInfos]
 
 	switch method {
 	case ID:

@@ -77,7 +77,7 @@ func infoCmd(_ Clients, _ *Environments, lb *LINEBot) {
 	lb.SendFlexMessage(flexMessages)
 }
 
-func loadFlexMessages(filename string, altText string) []FlexMessage {
+func loadFlexMessages(filename string, altText string) FlexMessages {
 	json := LoadJSON(filename)
 	return CreateFlexMessage(json, altText)
 }
@@ -114,7 +114,7 @@ func getFavoritesCmd(c Clients, env *Environments, lb *LINEBot) {
 		lb.SendTextMessage2(SuccessNoFavorites)
 		return
 	}
-	flexMessages := CreateFavorites2(queryStatus.Result)
+	flexMessages := CreateFavorites(queryStatus.Result)
 	lb.SendFlexMessage(flexMessages)
 }
 
@@ -124,7 +124,7 @@ func verificationCmd(c Clients, env *Environments, lb *LINEBot) {
 		lb.SendTextMessage2(ErrorMessageCheckVerificateError)
 		return
 	}
-	var flexMessages []FlexMessage
+	var flexMessages FlexMessages
 	if verified {
 		flexMessages = loadFlexMessages("./assets/richmenu/verified.json", "ユーザー認証済み")
 	} else {

@@ -21,7 +21,7 @@ type ReplyText struct {
 
 type ReplyFlex struct {
 	Status KRBStatus
-	Flex   []FlexMessage
+	Flex   FlexMessages
 }
 
 func CreateLINEBotClient(e *Environments, c *gin.Context) *LINEBot {
@@ -69,7 +69,7 @@ func (lb *LINEBot) SendTextMessage2(text string) {
 	}
 }
 
-func (lb *LINEBot) SendFlexMessage(flexMessages []FlexMessage) {
+func (lb *LINEBot) SendFlexMessage(flexMessages FlexMessages) {
 	if lb.isMockUser {
 		lb.mockContext.JSON(200, ReplyFlex{Status: KRBSuccess, Flex: flexMessages})
 		return

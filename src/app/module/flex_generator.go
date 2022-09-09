@@ -57,7 +57,7 @@ var omikujiType = map[OmikujiType]OmikujiText{
 	Onitan:  {Text: "鬼単おみくじ結果", Color: "#6d7bff"},
 }
 
-func CreateRakutanDetail(info RakutanInfo2, e *Environments, o OmikujiType) []FlexMessage {
+func CreateRakutanDetail(info RakutanInfo, e *Environments, o OmikujiType) FlexMessages {
 	rakutanDetail := LoadRakutanDetail()
 	rakutanDetail.Header.Contents[0].Contents[1].Text = strToPtr("Search ID:#" + toStr(info.ID))
 	rakutanDetail.Header.Contents[1].Text = &info.LectureName             // Lecture name
@@ -126,11 +126,11 @@ func CreateRakutanDetail(info RakutanInfo2, e *Environments, o OmikujiType) []Fl
 	flexContainer, _ := linebot.UnmarshalFlexMessageJSON(flex)
 	altText := fmt.Sprintf("「%s」のらくたん情報", info.LectureName)
 
-	return []FlexMessage{{FlexContainer: flexContainer, AltText: altText}}
+	return FlexMessages{{FlexContainer: flexContainer, AltText: altText}}
 }
 
-func CreateSearchResult(searchText string, infos []RakutanInfo2) []FlexMessage {
-	var messages []FlexMessage
+func CreateSearchResult(searchText string, infos RakutanInfos) FlexMessages {
+	var messages FlexMessages
 	searchResult := LoadSearchResult()
 	searchResultMore := LoadSearchResultMore()
 
@@ -162,8 +162,8 @@ func CreateSearchResult(searchText string, infos []RakutanInfo2) []FlexMessage {
 	return messages
 }
 
-func CreateFavorites2(r []RakutanInfo2) []FlexMessage {
-	var messages []FlexMessage
+func CreateFavorites(r RakutanInfos) FlexMessages {
+	var messages FlexMessages
 	favorites := LoadFavorites()
 
 	pageCount := 0
@@ -172,19 +172,19 @@ func CreateFavorites2(r []RakutanInfo2) []FlexMessage {
 	for pageCount = 1; pageCount <= maxPageCount; pageCount++ {
 		altText := fmt.Sprintf("お気に入りリスト(%d/%d)", pageCount, maxPageCount)
 		// Set body text
-		favorites.Body.Contents[0].Contents = getFavoriteList2(r, pageCount)
+		favorites.Body.Contents[0].Contents = getFavoriteList(r, pageCount)
 		flexContainer := toFlexContainer(&favorites)
 		messages = append(messages, FlexMessage{FlexContainer: flexContainer, AltText: altText})
 	}
 	return messages
 }
 
-func CreateFlexMessage(flex []byte, altText string) []FlexMessage {
+func CreateFlexMessage(flex []byte, altText string) FlexMessages {
 	flexContainer, _ := linebot.UnmarshalFlexMessageJSON(flex)
-	return []FlexMessage{{FlexContainer: flexContainer, AltText: altText}}
+	return FlexMessages{{FlexContainer: flexContainer, AltText: altText}}
 }
 
-func getLectureList(infos []RakutanInfo2, pageCount int) []richmenu.PurpleContent {
+func getLectureList(infos RakutanInfos, pageCount int) []richmenu.PurpleContent {
 	searchResult := LoadSearchResult()
 	var lectureList []richmenu.PurpleContent
 	lecture := searchResult.Body.Contents[1].Contents[0]
@@ -206,7 +206,7 @@ func getLectureList(infos []RakutanInfo2, pageCount int) []richmenu.PurpleConten
 	return lectureList
 }
 
-func getFavoriteList2(r []RakutanInfo2, pageCount int) []richmenu.FavoritesBodyContents {
+func getFavoriteList(r RakutanInfos, pageCount int) []richmenu.FavoritesBodyContents {
 	favorites := LoadFavorites()
 	var favoriteList []richmenu.FavoritesBodyContents
 	favorite := favorites.Body.Contents[0].Contents[0]
@@ -248,7 +248,7 @@ func getRakutanPercent(passed pgtype.Int2Array, register pgtype.Int2Array) []str
 	return rakutanPercent
 }
 
-func getRakutanJudge(r RakutanInfo2) RakutanJudge {
+func getRakutanJudge(r RakutanInfo) RakutanJudge {
 	accept, total := r.GetLatestDetail()
 	if total == 0 {
 		return judgeList[8]

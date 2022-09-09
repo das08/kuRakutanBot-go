@@ -135,7 +135,7 @@ func main() {
 		}
 	})
 
-	err := router.Run(":" + env.APP_PORT)
+	err := router.Run(":" + env.AppPort)
 	if err != nil {
 		fmt.Println("Error: creating router failed.")
 		return

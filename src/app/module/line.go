@@ -26,8 +26,8 @@ type ReplyFlex struct {
 
 func CreateLINEBotClient(e *Environments, c *gin.Context) *LINEBot {
 	bot, err := linebot.New(
-		e.LINE_CHANNEL_SECRET,
-		e.LINE_CHANNEL_ACCESS_TOKEN,
+		e.LineChannelSecret,
+		e.LineChannelAccessToken,
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -42,7 +42,7 @@ func (lb *LINEBot) SetReplyToken(replyToken string) {
 
 func (lb *LINEBot) SetSenderUid(e *Environments, senderUid string) {
 	lb.senderUid = senderUid
-	if senderUid == e.LINE_MOCK_UID {
+	if senderUid == e.LineMockUid {
 		lb.isMockUser = true
 	}
 }

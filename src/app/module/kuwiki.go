@@ -18,7 +18,7 @@ type KUWikiStatus struct {
 func GetKakomonURL(e *Environments, lectureName string) KUWikiStatus {
 	kakomonURL := ""
 	method := "GET"
-	req, err := http.NewRequest(method, e.KUWIKI_ENDPOINT, nil)
+	req, err := http.NewRequest(method, e.KuwikiEndpoint, nil)
 	if err != nil {
 		log.Fatalf("NewRequest err=%s", err.Error())
 	}
@@ -27,7 +27,7 @@ func GetKakomonURL(e *Environments, lectureName string) KUWikiStatus {
 	q.Add("name", lectureName)
 	req.URL.RawQuery = q.Encode()
 
-	req.Header.Add("Authorization", fmt.Sprintf("Token %s", e.KUWIKI_ACCESS_TOKEN))
+	req.Header.Add("Authorization", fmt.Sprintf("Token %s", e.KuwikiAccessToken))
 
 	client := &http.Client{Timeout: 2 * time.Second}
 	resp, err := client.Do(req)

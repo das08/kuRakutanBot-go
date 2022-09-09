@@ -86,7 +86,7 @@ func ScanRakutanInfo2(rows pgx.Rows) []RakutanInfo2 {
 
 func CreatePostgresClient(e *Environments) *Postgres {
 	ctx := context.Background()
-	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s", e.DB_USER, e.DB_PASS, e.DB_HOST, e.DB_PORT, e.DB_NAME)
+	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s", e.DbUser, e.DbPass, e.DbHost, e.DbPort, e.DbName)
 	db, err := pgx.Connect(ctx, dsn)
 	if err != nil {
 		fmt.Printf("Unable to connect to database: %v\n", err)

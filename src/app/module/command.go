@@ -1,6 +1,7 @@
 package module
 
 import (
+	"github.com/das08/kuRakutanBot-go/richmenu"
 	"github.com/google/uuid"
 	"strings"
 )
@@ -52,7 +53,8 @@ func IsCommand(messageText string) (bool, func(c Clients, env *Environments, lb 
 	return isCommand, function
 }
 
-func helpCmd(_ Clients, _ *Environments, lb *LINEBot) {
+func helpCmd(c Clients, _ *Environments, lb *LINEBot) {
+	c.Postgres.InsertUserAction(lb.senderUid, UserActionHelp)
 	flexMessages := loadFlexMessages("./assets/richmenu/help.json", "ヘルプ")
 	lb.SendFlexMessage(flexMessages)
 }
@@ -72,17 +74,19 @@ func iconCmd(_ Clients, _ *Environments, lb *LINEBot) {
 	lb.SendFlexMessage(flexMessages)
 }
 
-func infoCmd(_ Clients, _ *Environments, lb *LINEBot) {
+func infoCmd(c Clients, _ *Environments, lb *LINEBot) {
+	c.Postgres.InsertUserAction(lb.senderUid, UserActionInfo)
 	flexMessages := loadFlexMessages("./assets/richmenu/info.json", "お知らせ")
 	lb.SendFlexMessage(flexMessages)
 }
 
 func loadFlexMessages(filename string, altText string) FlexMessages {
-	json := LoadJSON(filename)
+	json := richmenu.LoadJSON(filename)
 	return CreateFlexMessage(json, altText)
 }
 
 func rakutanCmd(c Clients, env *Environments, lb *LINEBot) {
+	c.Postgres.InsertUserAction(lb.senderUid, UserActionRakutan)
 	status, ok := GetRakutanInfo(c, Omikuji, Rakutan)
 	//countUp(env, c.Mongo, lb.senderUid, "rakutan") // TODO
 	if ok {
@@ -94,6 +98,7 @@ func rakutanCmd(c Clients, env *Environments, lb *LINEBot) {
 }
 
 func onitanCmd(c Clients, env *Environments, lb *LINEBot) {
+	c.Postgres.InsertUserAction(lb.senderUid, UserActionOnitan)
 	status, ok := GetRakutanInfo(c, Omikuji, Onitan)
 	//countUp(env, c.Mongo, lb.senderUid, "onitan") // TODO
 	if ok {
@@ -105,6 +110,7 @@ func onitanCmd(c Clients, env *Environments, lb *LINEBot) {
 }
 
 func getFavoritesCmd(c Clients, env *Environments, lb *LINEBot) {
+	c.Postgres.InsertUserAction(lb.senderUid, UserActionGetFav)
 	queryStatus, ok := c.Postgres.GetFavorites(lb.senderUid)
 	if !ok {
 		lb.SendTextMessage(queryStatus.Err)

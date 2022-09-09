@@ -31,6 +31,8 @@ const (
 	UserActionGetFav   UserAction = "get_fav"
 	UserActionInfo     UserAction = "info"
 	UserActionHelp     UserAction = "help"
+	UserActionEmail    UserAction = "email"
+	UserActionVerify   UserAction = "verify"
 )
 
 type RakutanInfo struct {

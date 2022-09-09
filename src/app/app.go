@@ -35,6 +35,7 @@ func main() {
 			return
 		}
 		if ok {
+			postgres.InsertUserAction(uid, module.UserActionVerify)
 			err = postgres.UpdateUserVerification(uid)
 			if err != nil {
 				c.String(http.StatusOK, module.ErrorMessageDatabaseError)
@@ -94,6 +95,7 @@ func main() {
 						if verified {
 							lb.SendTextMessage(module.SuccessAlreadyVerified)
 						} else {
+							postgres.InsertUserAction(uid, module.UserActionEmail)
 							log.Printf("[Bot] Sent verification")
 							module.SendVerificationCmd(clients, &env, lb, messageText)
 						}
@@ -101,6 +103,7 @@ func main() {
 					}
 
 					// その他講義名が送られてきた場合
+					postgres.InsertUserAction(uid, module.UserActionSearch)
 					searchStatus, ok := searchRakutan(clients, &env, uid, messageText)
 					log.Printf("[Bot] Search: %s", messageText)
 					if !ok {
@@ -123,10 +126,12 @@ func main() {
 					switch params.Type {
 					case module.Fav:
 						// TODO: validate
+						postgres.InsertUserAction(uid, module.UserActionSetFav)
 						message, _ := postgres.SetFavorite(uid, id)
 						lb.SendTextMessage(message)
 					case module.Del:
 						// TODO: validate
+						postgres.InsertUserAction(uid, module.UserActionUnsetFav)
 						message, _ := postgres.UnsetFavorite(uid, id)
 						lb.SendTextMessage(message)
 					}

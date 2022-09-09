@@ -84,7 +84,11 @@ func main() {
 
 					// 認証用のメールアドレスが送られてきた場合
 					if module.IsStudentAddress(messageText) {
-						if module.IsVerified(clients, &env, uid) {
+						verified, err := clients.Postgres.IsVerified(uid)
+						if err != nil {
+							lb.SendTextMessage2(module.ErrorMessageCheckVerificateError)
+						}
+						if verified {
 							lb.SendTextMessage(module.ReplyText{Status: module.KRBSuccess, Text: "すでに認証済みです。"})
 						} else {
 							log.Printf("[Bot] Sent verification")

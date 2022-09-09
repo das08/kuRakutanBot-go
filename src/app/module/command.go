@@ -1,7 +1,6 @@
 package module
 
 import (
-	models "github.com/das08/kuRakutanBot-go/models/rakutan"
 	"github.com/google/uuid"
 	"strings"
 )
@@ -118,13 +117,18 @@ func getFavoritesCmd(c Clients, env *Environments, lb *LINEBot) {
 }
 
 func verificationCmd(c Clients, env *Environments, lb *LINEBot) {
-	if IsVerified(c, env, lb.senderUid) {
-		flexMessages := loadFlexMessages("./assets/richmenu/verified.json", "ユーザー認証済み")
-		lb.SendFlexMessage(flexMessages)
-	} else {
-		flexMessages := loadFlexMessages("./assets/richmenu/verification.json", "ユーザー認証をする")
-		lb.SendFlexMessage(flexMessages)
+	verified, err := c.Postgres.IsVerified(lb.senderUid)
+	if err != nil {
+		lb.SendTextMessage2(ErrorMessageCheckVerificateError)
+		return
 	}
+	var flexMessages []FlexMessage
+	if verified {
+		flexMessages = loadFlexMessages("./assets/richmenu/verified.json", "ユーザー認証済み")
+	} else {
+		flexMessages = loadFlexMessages("./assets/richmenu/verification.json", "ユーザー認証をする")
+	}
+	lb.SendFlexMessage(flexMessages)
 }
 
 func myUIDCmd(_ Clients, _ *Environments, lb *LINEBot) {
@@ -134,12 +138,16 @@ func myUIDCmd(_ Clients, _ *Environments, lb *LINEBot) {
 func SendVerificationCmd(c Clients, env *Environments, lb *LINEBot, email string) {
 	uuidObj, _ := uuid.NewUUID()
 	data := []byte(lb.senderUid)
-	code := uuid.NewSHA1(uuidObj, data)
-	verification := models.Verification{
-		Uid:   lb.senderUid,
-		Code:  code.String(),
-		Email: email,
+	code := uuid.NewSHA1(uuidObj, data).String()
+	err := c.Postgres.InsertVerificationToken(lb.senderUid, code)
+	if err != nil {
+		lb.SendTextMessage2(ErrorMessageInsertVerificateError)
+		return
 	}
-	queryStatus := InsertVerification(c, env, verification)
-	lb.SendTextMessage(ReplyText{Status: queryStatus.Status, Text: queryStatus.Message})
+	err = SendVerification(env, email, code)
+	if err != nil {
+		lb.SendTextMessage2(ErrorMessageVerificationTokenSendError)
+		return
+	}
+	lb.SendTextMessage2(SuccessVericationTokenSent)
 }

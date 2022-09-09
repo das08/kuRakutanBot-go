@@ -90,6 +90,33 @@ func (p *Postgres) InsertUserAction(userID string, action UserAction) error {
 	return nil
 }
 
+func (p *Postgres) InsertVerificationToken(uid string, token string) error {
+	_, err := p.Client.Exec("INSERT INTO verification_tokens (uid, token, created_at) VALUES ($1, $2, $3)", uid, token, time.Now())
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (p *Postgres) GetVerificationToken(uid string) (string, error) {
+	var token string
+	err := p.Client.Get(&token, "SELECT token FROM verification_tokens WHERE uid = $1", uid)
+	if err != nil {
+		return "", err
+	}
+	return token, nil
+}
+
+func (p *Postgres) IsVerified(uid string) (bool, error) {
+	var isVerified bool
+	err := p.Client.Get(&isVerified, "SELECT is_verified FROM users WHERE uid = $1", uid)
+	if err != nil {
+		log.Println(err)
+		return false, err
+	}
+	return isVerified, nil
+}
+
 func (p *Postgres) GetRakutanInfoByID(id int) (QueryStatus2[[]RakutanInfo2], bool) {
 	var status QueryStatus2[[]RakutanInfo2]
 	var rakutanInfos []RakutanInfo2

@@ -6,7 +6,7 @@ import (
 	"net/smtp"
 )
 
-func SendVerification(env *Environments, toAddress string, code string) {
+func SendVerification(env *Environments, toAddress string, code string) error {
 	to := []string{
 		toAddress,
 	}
@@ -30,6 +30,7 @@ func SendVerification(env *Environments, toAddress string, code string) {
 	err := smtp.SendMail(smtpHost+":"+smtpPort, auth, env.GMAIL_ID, to, msg)
 	if err != nil {
 		log.Println(err)
-		return
+		return err
 	}
+	return nil
 }

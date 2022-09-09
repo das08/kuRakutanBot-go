@@ -19,6 +19,13 @@ CREATE TABLE user_logs (
     PRIMARY KEY (uid, timestamp)
 );
 
+CREATE TABLE verification_tokens (
+    uid VARCHAR(64) NOT NULL,
+    token VARCHAR(128) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (uid)
+);
+
 CREATE TABLE favorites (
     uid VARCHAR(64) NOT NULL,
     id INTEGER NOT NULL,

@@ -84,8 +84,9 @@ func CreateRakutanDetail(info RakutanInfo2, e *Environments, o OmikujiType) []Fl
 		rakutanDetail.Body.Contents[0].Contents[i+1].Contents[1].Text = rakutanPercents[i]
 	}
 	rakutanJudge := getRakutanJudge(info)
-	rakutanDetail.Body.Contents[0].Contents[5].Contents[1].Text = rakutanJudge.rank
-	rakutanDetail.Body.Contents[0].Contents[5].Contents[1].Color = rakutanJudge.color
+	offset := len(info.Register.Elements)
+	rakutanDetail.Body.Contents[0].Contents[offset+2].Contents[1].Text = rakutanJudge.rank
+	rakutanDetail.Body.Contents[0].Contents[offset+2].Contents[1].Color = rakutanJudge.color
 
 	// 過去問リンク
 	// TODO: なんとかする

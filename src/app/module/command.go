@@ -1,7 +1,7 @@
 package module
 
 import (
-	models "github.com/das08/kuRakutanBot-go/models/rakutan"
+	"github.com/das08/kuRakutanBot-go/richmenu"
 	"github.com/google/uuid"
 	"strings"
 )
@@ -53,7 +53,8 @@ func IsCommand(messageText string) (bool, func(c Clients, env *Environments, lb 
 	return isCommand, function
 }
 
-func helpCmd(_ Clients, _ *Environments, lb *LINEBot) {
+func helpCmd(c Clients, _ *Environments, lb *LINEBot) {
+	c.Postgres.InsertUserAction(lb.senderUid, UserActionHelp)
 	flexMessages := loadFlexMessages("./assets/richmenu/help.json", "ヘルプ")
 	lb.SendFlexMessage(flexMessages)
 }
@@ -73,71 +74,86 @@ func iconCmd(_ Clients, _ *Environments, lb *LINEBot) {
 	lb.SendFlexMessage(flexMessages)
 }
 
-func infoCmd(_ Clients, _ *Environments, lb *LINEBot) {
+func infoCmd(c Clients, _ *Environments, lb *LINEBot) {
+	c.Postgres.InsertUserAction(lb.senderUid, UserActionInfo)
 	flexMessages := loadFlexMessages("./assets/richmenu/info.json", "お知らせ")
 	lb.SendFlexMessage(flexMessages)
 }
 
-func loadFlexMessages(filename string, altText string) []FlexMessage {
-	json := LoadJSON(filename)
+func loadFlexMessages(filename string, altText string) FlexMessages {
+	json := richmenu.LoadJSON(filename)
 	return CreateFlexMessage(json, altText)
 }
 
 func rakutanCmd(c Clients, env *Environments, lb *LINEBot) {
-	queryStatus, result := GetRakutanInfo(c, env, lb.senderUid, Omikuji, "rakutan")
-	countUp(env, c.Mongo, lb.senderUid, "rakutan")
-	if queryStatus.Success {
-		flexMessages := CreateRakutanDetail(result[0], Rakutan)
+	c.Postgres.InsertUserAction(lb.senderUid, UserActionRakutan)
+	status, ok := GetRakutanInfo(c, env, lb.senderUid, Omikuji, Rakutan)
+	if ok {
+		flexMessages := CreateRakutanDetail(status.Result[0], env, Rakutan)
 		lb.SendFlexMessage(flexMessages)
 	} else {
-		lb.SendTextMessage(ReplyText{Status: KRBOmikujiError, Text: "楽単おみくじに失敗しました。"})
+		lb.SendTextMessage(status.Err)
 	}
 }
 
 func onitanCmd(c Clients, env *Environments, lb *LINEBot) {
-	queryStatus, result := GetRakutanInfo(c, env, lb.senderUid, Omikuji, "onitan")
-	countUp(env, c.Mongo, lb.senderUid, "onitan")
-	if queryStatus.Success {
-		flexMessages := CreateRakutanDetail(result[0], Onitan)
+	c.Postgres.InsertUserAction(lb.senderUid, UserActionOnitan)
+	status, ok := GetRakutanInfo(c, env, lb.senderUid, Omikuji, Onitan)
+	if ok {
+		flexMessages := CreateRakutanDetail(status.Result[0], env, Rakutan)
 		lb.SendFlexMessage(flexMessages)
 	} else {
-		lb.SendTextMessage(ReplyText{Status: KRBOmikujiError, Text: "鬼単おみくじに失敗しました。"})
+		lb.SendTextMessage(status.Err)
 	}
 }
 
 func getFavoritesCmd(c Clients, env *Environments, lb *LINEBot) {
-	queryStatus, result := GetFavorites(c, env, lb.senderUid)
-	if queryStatus.Success {
-		flexMessages := CreateFavorites(result)
-		lb.SendFlexMessage(flexMessages)
-	} else {
-		lb.SendTextMessage(ReplyText{Status: queryStatus.Status, Text: queryStatus.Message})
+	c.Postgres.InsertUserAction(lb.senderUid, UserActionGetFav)
+	queryStatus, ok := c.Postgres.GetFavorites(lb.senderUid)
+	if !ok {
+		lb.SendTextMessage(queryStatus.Err)
+		return
 	}
+	if len(queryStatus.Result) == 0 {
+		lb.SendTextMessage(SuccessNoFavorites)
+		return
+	}
+	flexMessages := CreateFavorites(queryStatus.Result)
+	lb.SendFlexMessage(flexMessages)
 }
 
 func verificationCmd(c Clients, env *Environments, lb *LINEBot) {
-	if IsVerified(c, env, lb.senderUid) {
-		flexMessages := loadFlexMessages("./assets/richmenu/verified.json", "ユーザー認証済み")
-		lb.SendFlexMessage(flexMessages)
-	} else {
-		flexMessages := loadFlexMessages("./assets/richmenu/verification.json", "ユーザー認証をする")
-		lb.SendFlexMessage(flexMessages)
+	verified, err := c.Postgres.IsVerified(lb.senderUid)
+	if err != nil {
+		lb.SendTextMessage(ErrorMessageCheckVerificateError)
+		return
 	}
+	var flexMessages FlexMessages
+	if verified {
+		flexMessages = loadFlexMessages("./assets/richmenu/verified.json", "ユーザー認証済み")
+	} else {
+		flexMessages = loadFlexMessages("./assets/richmenu/verification.json", "ユーザー認証をする")
+	}
+	lb.SendFlexMessage(flexMessages)
 }
 
 func myUIDCmd(_ Clients, _ *Environments, lb *LINEBot) {
-	lb.SendTextMessage(ReplyText{Status: KRBSuccess, Text: lb.senderUid})
+	lb.SendTextMessage(lb.senderUid)
 }
 
 func SendVerificationCmd(c Clients, env *Environments, lb *LINEBot, email string) {
 	uuidObj, _ := uuid.NewUUID()
 	data := []byte(lb.senderUid)
-	code := uuid.NewSHA1(uuidObj, data)
-	verification := models.Verification{
-		Uid:   lb.senderUid,
-		Code:  code.String(),
-		Email: email,
+	code := uuid.NewSHA1(uuidObj, data).String()
+	err := c.Postgres.InsertVerificationToken(lb.senderUid, code)
+	if err != nil {
+		lb.SendTextMessage(ErrorMessageInsertVerificateError)
+		return
 	}
-	queryStatus := InsertVerification(c, env, verification)
-	lb.SendTextMessage(ReplyText{Status: queryStatus.Status, Text: queryStatus.Message})
+	err = SendVerification(env, email, code, lb.senderUid)
+	if err != nil {
+		lb.SendTextMessage(ErrorMessageVerificationTokenSendError)
+		return
+	}
+	lb.SendTextMessage(SuccessVericationTokenSent)
 }

@@ -14,20 +14,10 @@ type LINEBot struct {
 	mockContext *gin.Context
 }
 
-type ReplyText struct {
-	Status KRBStatus
-	Text   string
-}
-
-type ReplyFlex struct {
-	Status KRBStatus
-	Flex   []FlexMessage
-}
-
 func CreateLINEBotClient(e *Environments, c *gin.Context) *LINEBot {
 	bot, err := linebot.New(
-		e.LINE_CHANNEL_SECRET,
-		e.LINE_CHANNEL_ACCESS_TOKEN,
+		e.LineChannelSecret,
+		e.LineChannelAccessToken,
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -42,25 +32,25 @@ func (lb *LINEBot) SetReplyToken(replyToken string) {
 
 func (lb *LINEBot) SetSenderUid(e *Environments, senderUid string) {
 	lb.senderUid = senderUid
-	if senderUid == e.LINE_MOCK_UID {
+	if senderUid == e.LineMockUid {
 		lb.isMockUser = true
 	}
 }
 
-func (lb *LINEBot) SendTextMessage(rt ReplyText) {
+func (lb *LINEBot) SendTextMessage(text string) {
 	if lb.isMockUser {
-		lb.mockContext.JSON(200, rt)
+		lb.mockContext.JSON(200, text)
 		return
 	}
-	_, err := lb.Bot.ReplyMessage(lb.replyToken, linebot.NewTextMessage(rt.Text)).Do()
+	_, err := lb.Bot.ReplyMessage(lb.replyToken, linebot.NewTextMessage(text)).Do()
 	if err != nil {
 		log.Print(err)
 	}
 }
 
-func (lb *LINEBot) SendFlexMessage(flexMessages []FlexMessage) {
+func (lb *LINEBot) SendFlexMessage(flexMessages FlexMessages) {
 	if lb.isMockUser {
-		lb.mockContext.JSON(200, ReplyFlex{Status: KRBSuccess, Flex: flexMessages})
+		lb.mockContext.JSON(200, flexMessages)
 		return
 	}
 	var messages []linebot.SendingMessage

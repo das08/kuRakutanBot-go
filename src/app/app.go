@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	rakutan "github.com/das08/kuRakutanBot-go/models/rakutan"
 	"github.com/das08/kuRakutanBot-go/module"
 	"github.com/gin-gonic/gin"
 	"github.com/line/line-bot-sdk-go/v7/linebot"
@@ -19,18 +18,28 @@ func main() {
 	})
 
 	router.GET("/verification", func(c *gin.Context) {
+		// TODO: UIDも付与する
+		uid := c.Query("uid")
 		code := c.Query("code")
-		mongoDB := module.CreateDBClient(&env)
-		defer mongoDB.Cancel()
-		defer func() {
-			//log.Println("[DB] Closed")
-			if err := mongoDB.Client.Disconnect(mongoDB.Ctx); err != nil {
-				panic(err)
+		postgres := module.CreatePostgresClient(&env)
+		defer postgres.Client.Close(postgres.Ctx)
+
+		ok, err := postgres.CheckVerificationToken(uid, code)
+		if err != nil {
+			c.String(http.StatusOK, module.ErrorMessageDatabaseError)
+			return
+		}
+		if ok {
+			postgres.InsertUserAction(uid, module.UserActionVerify)
+			err = postgres.UpdateUserVerification(uid)
+			if err != nil {
+				c.String(http.StatusOK, module.ErrorMessageDatabaseError)
+				return
 			}
-		}()
-		clients := module.Clients{Mongo: mongoDB}
-		res := module.CheckVerification(clients, &env, code)
-		c.String(http.StatusOK, res.Message)
+			c.String(http.StatusOK, module.SuccessVerified)
+		} else {
+			c.String(http.StatusOK, module.ErrorMessageVerificationFailed)
+		}
 	})
 
 	router.POST("/callback", func(c *gin.Context) {
@@ -45,18 +54,14 @@ func main() {
 			return
 		}
 
-		mongoDB := module.CreateDBClient(&env)
-		defer mongoDB.Cancel()
-		defer func() {
-			//log.Println("[DB] Closed")
-			if err := mongoDB.Client.Disconnect(mongoDB.Ctx); err != nil {
-				panic(err)
-			}
-		}()
+		postgres := module.CreatePostgresClient(&env)
+		defer postgres.Client.Close(postgres.Ctx)
+
 		redis := module.CreateRedisClient()
-		clients := module.Clients{Mongo: mongoDB, Redis: redis}
+		clients := module.Clients{Postgres: postgres, Redis: redis}
 
 		for _, event := range events {
+			postgres.IsRegistered(event.Source.UserID)
 			switch event.Type {
 			case linebot.EventTypeMessage:
 				uid := event.Source.UserID
@@ -65,7 +70,6 @@ func main() {
 				switch message := event.Message.(type) {
 				case *linebot.TextMessage:
 					messageText := strings.TrimSpace(message.Text)
-					module.CountMessage(clients, &env, uid)
 
 					// コマンドが送られてきた場合
 					isCommand, function := module.IsCommand(messageText)
@@ -77,9 +81,14 @@ func main() {
 
 					// 認証用のメールアドレスが送られてきた場合
 					if module.IsStudentAddress(messageText) {
-						if module.IsVerified(clients, &env, uid) {
-							lb.SendTextMessage(module.ReplyText{Status: module.KRBSuccess, Text: "すでに認証済みです。"})
+						verified, err := clients.Postgres.IsVerified(uid)
+						if err != nil {
+							lb.SendTextMessage(module.ErrorMessageCheckVerificateError)
+						}
+						if verified {
+							lb.SendTextMessage(module.SuccessAlreadyVerified)
 						} else {
+							postgres.InsertUserAction(uid, module.UserActionEmail)
 							log.Printf("[Bot] Sent verification")
 							module.SendVerificationCmd(clients, &env, lb, messageText)
 						}
@@ -87,12 +96,13 @@ func main() {
 					}
 
 					// その他講義名が送られてきた場合
-					status, flexMessages := searchRakutan(clients, &env, uid, messageText)
+					postgres.InsertUserAction(uid, module.UserActionSearch)
+					searchStatus, ok := searchRakutan(clients, &env, uid, messageText)
 					log.Printf("[Bot] Search: %s", messageText)
-					if status.Success {
-						lb.SendFlexMessage(flexMessages)
+					if !ok {
+						lb.SendTextMessage(searchStatus.Err)
 					} else {
-						lb.SendTextMessage(module.ReplyText{Status: status.Status, Text: status.Message})
+						lb.SendFlexMessage(searchStatus.Result)
 					}
 				}
 			case linebot.EventTypePostback:
@@ -105,59 +115,68 @@ func main() {
 				success, params := module.ParsePBParam(data)
 				if success {
 					fmt.Println("Params: ", params)
+					id := params.ID
 					switch params.Type {
 					case module.Fav:
-						insertStatus := module.InsertFavorite(mongoDB, &env, module.PostbackEntry{Uid: uid, Param: params})
-						lb.SendTextMessage(module.ReplyText{Status: insertStatus.Status, Text: insertStatus.Message})
+						// TODO: validate
+						postgres.InsertUserAction(uid, module.UserActionSetFav)
+						message, _ := postgres.SetFavorite(uid, id)
+						lb.SendTextMessage(message)
 					case module.Del:
-						deleteStatus := module.DeleteFavorite(mongoDB, &env, module.PostbackEntry{Uid: uid, Param: params})
-						lb.SendTextMessage(module.ReplyText{Status: deleteStatus.Status, Text: deleteStatus.Message})
+						// TODO: validate
+						postgres.InsertUserAction(uid, module.UserActionUnsetFav)
+						message, _ := postgres.UnsetFavorite(uid, id)
+						lb.SendTextMessage(message)
 					}
 				}
 			}
 		}
 	})
 
-	err := router.Run(":" + env.APP_PORT)
+	err := router.Run(":" + env.AppPort)
 	if err != nil {
 		fmt.Println("Error: creating router failed.")
 		return
 	}
 }
 
-func searchRakutan(c module.Clients, env *module.Environments, uid string, searchText string) (module.QueryStatus, []module.FlexMessage) {
-	var searchStatus module.QueryStatus
-	var flexMessages []module.FlexMessage
-	var queryStatus module.QueryStatus
-	var result []rakutan.RakutanInfo
+func searchRakutan(c module.Clients, env *module.Environments, uid string, searchText string) (module.ExecStatus[module.FlexMessages], bool) {
+	var ok, searchSuccess bool
+	var status module.ExecStatus[module.RakutanInfos]
+	var searchStatus module.ExecStatus[module.FlexMessages]
 
 	isLectureNumber, lectureID := module.IsLectureID(searchText)
 	if isLectureNumber {
-		queryStatus, result = module.GetRakutanInfo(c, env, uid, module.ID, lectureID)
+		status, ok = module.GetRakutanInfo(c, env, uid, module.ID, lectureID)
 	} else {
-		queryStatus, result = module.GetRakutanInfo(c, env, uid, module.Name, searchText)
+		status, ok = module.GetRakutanInfo(c, env, uid, module.Name, searchText)
 	}
 
-	if queryStatus.Success {
-		recordCount := len(result)
+	if ok {
+		rakutanInfos := status.Result
+		recordCount := len(rakutanInfos)
 		switch {
 		case recordCount == 0:
-			searchStatus.Success = false
-			searchStatus.Message = fmt.Sprintf("「%s」は見つかりませんでした。\n【検索のヒント】%%を頭につけて検索すると部分一致検索ができます。ex.)「%%地理学」", searchText)
+			searchStatus.Err = fmt.Sprintf(module.ErrorMessageRakutanNotFound, searchText)
 		case recordCount == 1:
-			flexMessages = module.CreateRakutanDetail(result[0], module.Normal)
-			searchStatus.Success = true
+			favEntry, ok := c.Postgres.GetFavoriteByID(uid, rakutanInfos[0].ID)
+			if ok && len(favEntry.Result) == 1 {
+				rakutanInfos[0].IsFavorite = true
+			}
+			if !ok {
+				searchStatus.Err = module.ErrorMessageGetFavError
+			} else {
+				searchStatus.Result = module.CreateRakutanDetail(rakutanInfos[0], env, module.Normal)
+				searchSuccess = true
+			}
 		case recordCount <= 5*module.MaxResultsPerPage:
-			flexMessages = module.CreateSearchResult(searchText, result)
-			searchStatus.Success = true
+			searchStatus.Result = module.CreateSearchResult(searchText, rakutanInfos)
+			searchSuccess = true
 		default:
-			searchStatus.Success = false
-			searchStatus.Message = fmt.Sprintf("「%s」は%d件あります。検索条件を絞ってください。", searchText, recordCount)
+			searchStatus.Err = fmt.Sprintf(module.ErrorMessageTooManyRakutan, searchText, recordCount)
 		}
 	} else {
-		searchStatus.Success = false
-		searchStatus.Message = "エラーが発生しました。"
-		searchStatus.Status = queryStatus.Status
+		searchStatus.Err = module.ErrorMessageDatabaseError
 	}
-	return searchStatus, flexMessages
+	return searchStatus, searchSuccess
 }

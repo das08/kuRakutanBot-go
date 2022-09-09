@@ -3,36 +3,28 @@ package module
 import (
 	"log"
 	"os"
+	"strconv"
 
 	"github.com/joho/godotenv"
 )
 
 type Environments struct {
-	APP_PORT                  string
-	APP_HOST                  string
-	LINE_CHANNEL_ACCESS_TOKEN string
-	LINE_CHANNEL_SECRET       string
-	LINE_ADMIN_UID            string
-	LINE_MOCK_UID             string
-	DB_HOST                   string
-	DB_PORT                   string
-	DB_USER                   string
-	DB_PASS                   string
-	DB_NAME                   string
-	DB_COLLECTION             Collections
-	KUWIKI_ENDPOINT           string
-	KUWIKI_ACCESS_TOKEN       string
-	GMAIL_ID                  string
-	GMAIL_PASSWORD            string
-}
-
-type Collection = string
-
-type Collections struct {
-	User         Collection
-	Rakutan      Collection
-	Favorites    Collection
-	Verification Collection
+	AppPort                string
+	AppHost                string
+	YEAR                   int
+	LineChannelAccessToken string
+	LineChannelSecret      string
+	LineAdminUid           string
+	LineMockUid            string
+	DbHost                 string
+	DbPort                 string
+	DbUser                 string
+	DbPass                 string
+	DbName                 string
+	KuwikiEndpoint         string
+	KuwikiAccessToken      string
+	GmailId                string
+	GmailPassword          string
 }
 
 func LoadEnv(debug bool) Environments {
@@ -51,25 +43,22 @@ func LoadEnv(debug bool) Environments {
 	env := new(Environments)
 
 	// Load environment values
-	env.APP_PORT = os.Getenv("APP_PORT")
-	env.APP_HOST = os.Getenv("APP_HOST")
-	env.LINE_CHANNEL_ACCESS_TOKEN = os.Getenv("LINE_CHANNEL_ACCESS_TOKEN")
-	env.LINE_CHANNEL_SECRET = os.Getenv("LINE_CHANNEL_SECRET")
-	env.LINE_ADMIN_UID = os.Getenv("LINE_ADMIN_UID")
-	env.LINE_MOCK_UID = os.Getenv("LINE_MOCK_UID")
-	env.DB_HOST = os.Getenv("DB_HOST")
-	env.DB_PORT = os.Getenv("DB_PORT")
-	env.DB_USER = os.Getenv("DB_USER")
-	env.DB_PASS = os.Getenv("DB_PASS")
-	env.DB_NAME = os.Getenv("DB_NAME")
-	env.DB_COLLECTION.User = os.Getenv("DB_COL_USER")
-	env.DB_COLLECTION.Rakutan = os.Getenv("DB_COL_RAKUTAN")
-	env.DB_COLLECTION.Favorites = os.Getenv("DB_COL_FAV")
-	env.DB_COLLECTION.Verification = os.Getenv("DB_COL_VER")
-	env.KUWIKI_ENDPOINT = os.Getenv("KUWIKI_ENDPOINT")
-	env.KUWIKI_ACCESS_TOKEN = os.Getenv("KUWIKI_ACCESS_TOKEN")
-	env.GMAIL_ID = os.Getenv("GMAIL_ID")
-	env.GMAIL_PASSWORD = os.Getenv("GMAIL_PASSWORD")
+	env.AppPort = os.Getenv("APP_PORT")
+	env.AppHost = os.Getenv("APP_HOST")
+	env.YEAR, _ = strconv.Atoi(os.Getenv("YEAR"))
+	env.LineChannelAccessToken = os.Getenv("LINE_CHANNEL_ACCESS_TOKEN")
+	env.LineChannelSecret = os.Getenv("LINE_CHANNEL_SECRET")
+	env.LineAdminUid = os.Getenv("LINE_ADMIN_UID")
+	env.LineMockUid = os.Getenv("LINE_MOCK_UID")
+	env.DbHost = os.Getenv("DB_HOST")
+	env.DbPort = os.Getenv("DB_PORT")
+	env.DbUser = os.Getenv("DB_USER")
+	env.DbPass = os.Getenv("DB_PASS")
+	env.DbName = os.Getenv("DB_NAME")
+	env.KuwikiEndpoint = os.Getenv("KUWIKI_ENDPOINT")
+	env.KuwikiAccessToken = os.Getenv("KUWIKI_ACCESS_TOKEN")
+	env.GmailId = os.Getenv("GMAIL_ID")
+	env.GmailPassword = os.Getenv("GMAIL_PASSWORD")
 
 	return *env
 }

@@ -2,8 +2,8 @@ package module
 
 import (
 	"fmt"
-	models "github.com/das08/kuRakutanBot-go/models/rakutan"
-	"github.com/das08/kuRakutanBot-go/models/richmenu"
+	"github.com/das08/kuRakutanBot-go/richmenu"
+	"github.com/jackc/pgtype"
 	"github.com/line/line-bot-sdk-go/v7/linebot"
 	"log"
 	"math"
@@ -20,19 +20,6 @@ type RakutanJudge struct {
 	percentBound float32
 	rank         string
 	color        string
-}
-
-type OmikujiType int
-
-const (
-	Normal OmikujiType = iota
-	Rakutan
-	Onitan
-)
-
-type OmikujiText struct {
-	Text  string
-	Color string
 }
 
 var MaxResultsPerPage = 25
@@ -58,8 +45,8 @@ var omikujiType = map[OmikujiType]OmikujiText{
 	Onitan:  {Text: "鬼単おみくじ結果", Color: "#6d7bff"},
 }
 
-func CreateRakutanDetail(info models.RakutanInfo, o OmikujiType) []FlexMessage {
-	rakutanDetail := LoadRakutanDetail()
+func CreateRakutanDetail(info RakutanInfo, e *Environments, o OmikujiType) FlexMessages {
+	rakutanDetail := richmenu.LoadRakutanDetail()
 	rakutanDetail.Header.Contents[0].Contents[1].Text = strToPtr("Search ID:#" + toStr(info.ID))
 	rakutanDetail.Header.Contents[1].Text = &info.LectureName             // Lecture name
 	rakutanDetail.Header.Contents[3].Contents[1].Text = &info.FacultyName // Faculty name
@@ -79,42 +66,40 @@ func CreateRakutanDetail(info models.RakutanInfo, o OmikujiType) []FlexMessage {
 	rakutanDetail.Header.Contents[0].Contents[0].Action.Data = fmt.Sprintf("type=fav&id=%d&lecname=%s", info.ID, info.LectureName)
 
 	// 単位取得率
-	for i, v := range info.Detail {
-		rakutanDetail.Body.Contents[0].Contents[i+1].Contents[0].Text = fmt.Sprintf("%d年度", v.Year)
-		rakutanDetail.Body.Contents[0].Contents[i+1].Contents[1].Text = getRakutanPercent(v.Accepted, v.Total)
+	rakutanPercents := getRakutanPercent(info.Passed, info.Register)
+	for i := range info.Register.Elements {
+		rakutanDetail.Body.Contents[0].Contents[i+1].Contents[0].Text = fmt.Sprintf("%d年度", e.YEAR-i)
+		rakutanDetail.Body.Contents[0].Contents[i+1].Contents[1].Text = rakutanPercents[i]
 	}
-	rakutanJudge := getRakutanJudge(info.Detail)
-	rakutanDetail.Body.Contents[0].Contents[5].Contents[1].Text = rakutanJudge.rank
-	rakutanDetail.Body.Contents[0].Contents[5].Contents[1].Color = rakutanJudge.color
+	rakutanJudge := getRakutanJudge(info)
+	offset := len(info.Register.Elements)
+	rakutanDetail.Body.Contents[0].Contents[offset+2].Contents[1].Text = rakutanJudge.rank
+	rakutanDetail.Body.Contents[0].Contents[offset+2].Contents[1].Color = rakutanJudge.color
 
 	// 過去問リンク
+	// TODO: なんとかする
 	if info.IsVerified {
-		_, err := url.ParseRequestURI(info.URL)
+		_, err := url.ParseRequestURI(info.KakomonURL)
 		switch {
-		case info.URL != "" && err == nil:
-			rakutanDetail.Body.Contents[0].Contents[6].Contents[1].Text = "○"
-			rakutanDetail.Body.Contents[0].Contents[6].Contents[1].Color = "#0fd142"
-			rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Text = "リンク"
-			rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Color = "#4c7cf5"
-			rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Action.URI = &info.URL
-		case info.KUWikiErr != "":
-			rakutanDetail.Body.Contents[0].Contents[6].Contents[1].Text = "×"
-			rakutanDetail.Body.Contents[0].Contents[6].Contents[1].Color = "#ef1d2f"
-			rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Text = info.KUWikiErr
-			rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Action = &richmenu.URIAction{Type: "uri", Label: "action", URI: strToPtr("https://www.kuwiki.net/upload-exams")}
+		case info.KakomonURL != "" && err == nil:
+			rakutanDetail.Body.Contents[0].Contents[offset+3].Contents[1].Text = "○"
+			rakutanDetail.Body.Contents[0].Contents[offset+3].Contents[1].Color = "#0fd142"
+			rakutanDetail.Body.Contents[0].Contents[offset+3].Contents[2].Text = "リンク"
+			rakutanDetail.Body.Contents[0].Contents[offset+3].Contents[2].Color = "#4c7cf5"
+			rakutanDetail.Body.Contents[0].Contents[offset+3].Contents[2].Action.URI = &info.KakomonURL
 		default:
-			rakutanDetail.Body.Contents[0].Contents[6].Contents[1].Text = "×"
-			rakutanDetail.Body.Contents[0].Contents[6].Contents[1].Color = "#ef1d2f"
-			rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Text = "提供する"
-			rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Action = &richmenu.URIAction{Type: "uri", Label: "action", URI: strToPtr("https://www.kuwiki.net/upload-exams")}
+			rakutanDetail.Body.Contents[0].Contents[offset+3].Contents[1].Text = "×"
+			rakutanDetail.Body.Contents[0].Contents[offset+3].Contents[1].Color = "#ef1d2f"
+			rakutanDetail.Body.Contents[0].Contents[offset+3].Contents[2].Text = "提供する"
+			rakutanDetail.Body.Contents[0].Contents[offset+3].Contents[2].Action = &richmenu.URIAction{Type: "uri", Label: "action", URI: strToPtr("https://www.kuwiki.net/upload-exams")}
 		}
 	} else {
-		rakutanDetail.Body.Contents[0].Contents[6].Contents[1].Flex = intToPtr(0)
-		rakutanDetail.Body.Contents[0].Contents[6].Contents[1].Text = "△"
-		rakutanDetail.Body.Contents[0].Contents[6].Contents[1].Color = "#ffb101"
-		rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Flex = intToPtr(7)
-		rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Text = "ユーザー認証が必要です"
-		rakutanDetail.Body.Contents[0].Contents[6].Contents[2].Action = &richmenu.URIAction{Type: "message", Label: "action", Text: strToPtr("ユーザ認証")}
+		rakutanDetail.Body.Contents[0].Contents[offset+3].Contents[1].Flex = intToPtr(0)
+		rakutanDetail.Body.Contents[0].Contents[offset+3].Contents[1].Text = "△"
+		rakutanDetail.Body.Contents[0].Contents[offset+3].Contents[1].Color = "#ffb101"
+		rakutanDetail.Body.Contents[0].Contents[offset+3].Contents[2].Flex = intToPtr(7)
+		rakutanDetail.Body.Contents[0].Contents[offset+3].Contents[2].Text = "ユーザー認証が必要です"
+		rakutanDetail.Body.Contents[0].Contents[offset+3].Contents[2].Action = &richmenu.URIAction{Type: "message", Label: "action", Text: strToPtr("ユーザ認証")}
 	}
 
 	flex, err := rakutanDetail.Marshal()
@@ -124,13 +109,13 @@ func CreateRakutanDetail(info models.RakutanInfo, o OmikujiType) []FlexMessage {
 	flexContainer, _ := linebot.UnmarshalFlexMessageJSON(flex)
 	altText := fmt.Sprintf("「%s」のらくたん情報", info.LectureName)
 
-	return []FlexMessage{{FlexContainer: flexContainer, AltText: altText}}
+	return FlexMessages{{FlexContainer: flexContainer, AltText: altText}}
 }
 
-func CreateSearchResult(searchText string, infos []models.RakutanInfo) []FlexMessage {
-	var messages []FlexMessage
-	searchResult := LoadSearchResult()
-	searchResultMore := LoadSearchResultMore()
+func CreateSearchResult(searchText string, infos RakutanInfos) FlexMessages {
+	var messages FlexMessages
+	searchResult := richmenu.LoadSearchResult()
+	searchResultMore := richmenu.LoadSearchResultMore()
 
 	pageCount := 0
 	maxPageCount := len(infos)/MaxResultsPerPage + 1
@@ -160,30 +145,30 @@ func CreateSearchResult(searchText string, infos []models.RakutanInfo) []FlexMes
 	return messages
 }
 
-func CreateFavorites(favs []models.Favorite) []FlexMessage {
-	var messages []FlexMessage
-	favorites := LoadFavorites()
+func CreateFavorites(r RakutanInfos) FlexMessages {
+	var messages FlexMessages
+	favorites := richmenu.LoadFavorites()
 
 	pageCount := 0
-	maxPageCount := len(favs)/MaxResultsPerPage + 1
+	maxPageCount := len(r)/MaxResultsPerPage + 1
 
 	for pageCount = 1; pageCount <= maxPageCount; pageCount++ {
 		altText := fmt.Sprintf("お気に入りリスト(%d/%d)", pageCount, maxPageCount)
 		// Set body text
-		favorites.Body.Contents[0].Contents = getFavoriteList(favs, pageCount)
+		favorites.Body.Contents[0].Contents = getFavoriteList(r, pageCount)
 		flexContainer := toFlexContainer(&favorites)
 		messages = append(messages, FlexMessage{FlexContainer: flexContainer, AltText: altText})
 	}
 	return messages
 }
 
-func CreateFlexMessage(flex []byte, altText string) []FlexMessage {
+func CreateFlexMessage(flex []byte, altText string) FlexMessages {
 	flexContainer, _ := linebot.UnmarshalFlexMessageJSON(flex)
-	return []FlexMessage{{FlexContainer: flexContainer, AltText: altText}}
+	return FlexMessages{{FlexContainer: flexContainer, AltText: altText}}
 }
 
-func getLectureList(infos []models.RakutanInfo, pageCount int) []richmenu.PurpleContent {
-	searchResult := LoadSearchResult()
+func getLectureList(infos RakutanInfos, pageCount int) []richmenu.PurpleContent {
+	searchResult := richmenu.LoadSearchResult()
 	var lectureList []richmenu.PurpleContent
 	lecture := searchResult.Body.Contents[1].Contents[0]
 
@@ -204,17 +189,17 @@ func getLectureList(infos []models.RakutanInfo, pageCount int) []richmenu.Purple
 	return lectureList
 }
 
-func getFavoriteList(favs []models.Favorite, pageCount int) []richmenu.FavoritesBodyContents {
-	favorites := LoadFavorites()
+func getFavoriteList(r RakutanInfos, pageCount int) []richmenu.FavoritesBodyContents {
+	favorites := richmenu.LoadFavorites()
 	var favoriteList []richmenu.FavoritesBodyContents
 	favorite := favorites.Body.Contents[0].Contents[0]
 
 	offset := (pageCount - 1) * MaxResultsPerPage
-	for i := offset; i < int(math.Min(float64(len(favs)), float64(MaxResultsPerPage+offset))); i++ {
+	for i := offset; i < int(math.Min(float64(len(r)), float64(MaxResultsPerPage+offset))); i++ {
 		tmp := favorite.DeepCopy()
-		tmp.Contents[0].Text = favs[i].LectureName
-		tmp.Contents[1].Action.Text = strToPtr(fmt.Sprintf("#%d", favs[i].ID))
-		tmp.Contents[2].Action.Data = strToPtr(fmt.Sprintf("type=del&id=%d&lecname=%s", favs[i].ID, favs[i].LectureName))
+		tmp.Contents[0].Text = r[i].LectureName
+		tmp.Contents[1].Action.Text = strToPtr(fmt.Sprintf("#%d", r[i].ID))
+		tmp.Contents[2].Action.Data = strToPtr(fmt.Sprintf("type=del&id=%d&lecname=%s", r[i].ID, r[i].LectureName))
 
 		favoriteList = append(favoriteList, tmp)
 	}
@@ -231,17 +216,23 @@ func toFlexContainer(json richmenu.Marshal) linebot.FlexContainer {
 	return flexContainer
 }
 
-func getRakutanPercent(accept int, total int) string {
-	breakdown := "(" + toStr(accept) + "/" + toStr(total) + ")"
-	if total == 0 {
-		return "---% " + breakdown
-	} else {
-		return fmt.Sprintf("%.1f%% ", getPercentage(accept, total)) + breakdown
+func getRakutanPercent(passed pgtype.Int2Array, register pgtype.Int2Array) []string {
+	var rakutanPercent []string
+	for i := 0; i < len(passed.Elements); i++ {
+		p := int(passed.Elements[i].Int)
+		r := int(register.Elements[i].Int)
+		breakdown := fmt.Sprintf("(%d/%d)", p, r)
+		if register.Elements[i].Status == pgtype.Null {
+			rakutanPercent = append(rakutanPercent, "---% "+breakdown)
+		} else {
+			rakutanPercent = append(rakutanPercent, fmt.Sprintf("%.1f%% ", getPercentage(p, r))+breakdown)
+		}
 	}
+	return rakutanPercent
 }
 
-func getRakutanJudge(rds models.RakutanDetails) RakutanJudge {
-	accept, total := rds.GetLatestDetail()
+func getRakutanJudge(r RakutanInfo) RakutanJudge {
+	accept, total := r.GetLatestDetail()
 	if total == 0 {
 		return judgeList[8]
 	}

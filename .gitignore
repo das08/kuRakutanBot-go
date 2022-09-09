@@ -7,9 +7,6 @@
 .env_local
 .env_prod
 
-### MongoDB ###
-db/*
-
 ### Go ###
 # Binaries for programs and plugins
 *.exe

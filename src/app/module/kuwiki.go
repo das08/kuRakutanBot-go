@@ -78,7 +78,7 @@ func GetKakomonURL(c Clients, e *Environments, id int, lectureName string) (Exec
 		status.Err = ErrorMessageKUWikiGetFailed
 		return status, false
 	}
-	c.Redis.SetRedis(redisKey, kuwiki.Result, 24*time.Hour)
+	c.Redis.SetRedis(redisKey, kuwiki.Result, 720*time.Hour)
 	status.Result = kuwiki.Result
 	return status, true
 }

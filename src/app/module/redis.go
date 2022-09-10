@@ -3,6 +3,7 @@ package module
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/go-redis/redis/v8"
 	"log"
 	"time"
@@ -32,6 +33,28 @@ func (r *Redis) SetRedis(key string, value interface{}, cacheTime time.Duration)
 	} else {
 		log.Printf("[Redis] Saved %s to redis", key)
 	}
+}
+
+func (r *Redis) GetRakutanInfoByID(id int) (ExecStatus[RakutanInfos], bool) {
+	var status ExecStatus[RakutanInfos]
+	var rakutanInfo RakutanInfo
+	redisKey := fmt.Sprintf("rinfo:%d", id)
+	result, err := r.Client.Get(r.Ctx, redisKey).Result()
+	if err != nil {
+		log.Println("[Redis] Error:", err)
+		status.Err = ErrorMessageRedisGetFailed
+		return status, false
+	}
+	log.Printf("[Redis] Getting %s from redis", result)
+	err = json.Unmarshal([]byte(result), &rakutanInfo)
+	if err != nil {
+		log.Println("[Redis] Error:", err)
+		status.Err = ErrorMessageRedisGetFailed
+		return status, false
+	}
+	log.Printf("[Redis] Fetched %s from redis", redisKey)
+	status.Result = RakutanInfos{rakutanInfo}
+	return status, true
 }
 
 func (r *Redis) GetKakomonURL(key string) (ExecStatus[KUWikiKakomon], bool) {

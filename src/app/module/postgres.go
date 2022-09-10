@@ -269,7 +269,10 @@ func GetRakutanInfo(c Clients, e *Environments, uid string, method FindByMethod,
 
 	switch method {
 	case ID:
-		status, ok = c.Postgres.GetRakutanInfoByID(value.(int))
+		status, ok = c.Redis.GetRakutanInfoByID(value.(int))
+		if !ok {
+			status, ok = c.Postgres.GetRakutanInfoByID(value.(int))
+		}
 	case Name:
 		var subStringSearch bool
 		searchWord := value.(string)
@@ -284,6 +287,9 @@ func GetRakutanInfo(c Clients, e *Environments, uid string, method FindByMethod,
 
 	// Set isVerified, isFavorite and kakomonURL
 	if ok && len(status.Result) == 1 {
+		redisKey := fmt.Sprintf("rinfo:%d", status.Result[0].ID)
+		c.Redis.SetRedis(redisKey, status.Result[0], 720*time.Hour)
+
 		if faforites, ok := c.Postgres.GetFavoriteByID(uid, status.Result[0].ID); ok && len(faforites.Result) == 1 {
 			status.Result[0].IsFavorite = true
 		}

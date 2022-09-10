@@ -36,14 +36,14 @@ const (
 )
 
 type RakutanInfo struct {
-	ID          int              `db:"id"`
-	FacultyName string           `db:"faculty_name"`
-	LectureName string           `db:"lecture_name"`
-	Register    pgtype.Int2Array `db:"register"`
-	Passed      pgtype.Int2Array `db:"passed"`
-	KakomonURL  string           `db:"kakomon_url"`
-	IsFavorite  bool
-	IsVerified  bool
+	ID          int              `db:"id" json:"id"`
+	FacultyName string           `db:"faculty_name" json:"fn"`
+	LectureName string           `db:"lecture_name" json:"ln"`
+	Register    pgtype.Int2Array `db:"register" json:"r"`
+	Passed      pgtype.Int2Array `db:"passed" json:"p"`
+	KakomonURL  string           `db:"kakomon_url" json:"k"`
+	IsFavorite  bool             `json:"-"`
+	IsVerified  bool             `json:"-"`
 }
 
 func (r *RakutanInfo) GetLatestDetail() (int, int) {

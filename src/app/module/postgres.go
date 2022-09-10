@@ -18,9 +18,9 @@ type Postgres struct {
 
 func CreatePostgresClient(e *Environments) *Postgres {
 	ctx := context.Background()
-	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s", e.DbUser, e.DbPass, e.DbHost, e.DbPort, e.DbName)
+	dsn := fmt.Sprintf("host=/var/run/postgresql port=%s user=%s password=%s dbname=%s sslmode=disable", e.DbPort, e.DbUser, e.DbPass, e.DbName)
 	db, err := pgxpool.Connect(ctx, dsn)
-	db.Config().MaxConns = 10
+	db.Config().MaxConns = 50
 	db.Config().MaxConnIdleTime = 10 * time.Second
 	if err != nil {
 		fmt.Printf("Unable to connect to database: %v\n", err)

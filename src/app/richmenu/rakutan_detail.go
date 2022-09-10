@@ -4,10 +4,10 @@ package richmenu
 
 import "github.com/goccy/go-json"
 
-func UnmarshalRakutanDetail(data []byte) (*RakutanDetail, error) {
+func UnmarshalRakutanDetail(data []byte) (RakutanDetail, error) {
 	var r RakutanDetail
 	err := json.Unmarshal(data, &r)
-	return &r, err
+	return r, err
 }
 
 func (r *RakutanDetail) Marshal() ([]byte, error) {

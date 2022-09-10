@@ -6,10 +6,10 @@ import (
 )
 
 var (
-	RakutanDetailJson    *RakutanDetail
-	SearchResultJson     *SearchResult
-	SearchResultMoreJson *SearchResultMore
-	FavoritesJson        *Favorites
+	RakutanDetailJson    RakutanDetail
+	SearchResultJson     SearchResult
+	SearchResultMoreJson SearchResultMore
+	FavoritesJson        Favorites
 )
 
 func PreloadJson() {

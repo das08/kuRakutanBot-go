@@ -3,17 +3,18 @@ package module
 import (
 	"github.com/das08/kuRakutanBot-go/richmenu"
 	"github.com/google/uuid"
+	"log"
 	"strings"
 )
 
 var (
-	JudgeJson        *FlexMessages
-	InquiryJson      *FlexMessages
-	IconJson         *FlexMessages
-	InfoJson         *FlexMessages
-	VerifiedJson     *FlexMessages
-	VerificationJson *FlexMessages
-	HelpJson         *FlexMessages
+	JudgeJson        FlexMessages
+	InquiryJson      FlexMessages
+	IconJson         FlexMessages
+	InfoJson         FlexMessages
+	VerifiedJson     FlexMessages
+	VerificationJson FlexMessages
+	HelpJson         FlexMessages
 )
 
 type Command struct {
@@ -58,6 +59,8 @@ func PreloadJson() {
 	InfoJson = loadFlexMessages("./assets/richmenu/info.json", "お知らせ")
 	VerifiedJson = loadFlexMessages("./assets/richmenu/verified.json", "認証済み")
 	VerificationJson = loadFlexMessages("./assets/richmenu/verification.json", "認証")
+	log.Println("PreloadJson: Done")
+	log.Printf("PreloadJson: %v", HelpJson)
 }
 
 func IsCommand(messageText string) (bool, func(c Clients, env *Environments, lb *LINEBot)) {
@@ -75,27 +78,28 @@ func IsCommand(messageText string) (bool, func(c Clients, env *Environments, lb 
 
 func helpCmd(c Clients, _ *Environments, lb *LINEBot) {
 	go c.Postgres.InsertUserAction(lb.senderUid, UserActionHelp)
-	lb.SendFlexMessage(*HelpJson)
+	log.Printf("helpCmd: %s %v", lb.senderUid, HelpJson)
+	lb.SendFlexMessage(HelpJson)
 }
 
 func judgeDetailCmd(_ Clients, _ *Environments, lb *LINEBot) {
-	lb.SendFlexMessage(*JudgeJson)
+	lb.SendFlexMessage(JudgeJson)
 }
 
 func inquiryCmd(_ Clients, _ *Environments, lb *LINEBot) {
-	lb.SendFlexMessage(*InquiryJson)
+	lb.SendFlexMessage(InquiryJson)
 }
 
 func iconCmd(_ Clients, _ *Environments, lb *LINEBot) {
-	lb.SendFlexMessage(*IconJson)
+	lb.SendFlexMessage(IconJson)
 }
 
 func infoCmd(c Clients, _ *Environments, lb *LINEBot) {
 	go c.Postgres.InsertUserAction(lb.senderUid, UserActionInfo)
-	lb.SendFlexMessage(*InfoJson)
+	lb.SendFlexMessage(InfoJson)
 }
 
-func loadFlexMessages(filename string, altText string) *FlexMessages {
+func loadFlexMessages(filename string, altText string) FlexMessages {
 	json := richmenu.LoadJSON(filename)
 	return CreateFlexMessage(json, altText)
 }
@@ -143,13 +147,13 @@ func verificationCmd(c Clients, env *Environments, lb *LINEBot) {
 		lb.SendTextMessage(ErrorMessageCheckVerificateError)
 		return
 	}
-	var flexMessages *FlexMessages
+	var flexMessages FlexMessages
 	if verified {
 		flexMessages = VerifiedJson
 	} else {
 		flexMessages = VerificationJson
 	}
-	lb.SendFlexMessage(*flexMessages)
+	lb.SendFlexMessage(flexMessages)
 }
 
 func myUIDCmd(_ Clients, _ *Environments, lb *LINEBot) {

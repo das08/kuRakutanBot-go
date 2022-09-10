@@ -6,10 +6,10 @@ import (
 	"github.com/goccy/go-json"
 )
 
-func UnmarshalFavorites(data []byte) (*Favorites, error) {
+func UnmarshalFavorites(data []byte) (Favorites, error) {
 	var r Favorites
 	err := json.Unmarshal(data, &r)
-	return &r, err
+	return r, err
 }
 
 func (r *Favorites) Marshal() ([]byte, error) {

@@ -4,10 +4,10 @@ package richmenu
 
 import "github.com/goccy/go-json"
 
-func UnmarshalSearchResultMore(data []byte) (*SearchResultMore, error) {
+func UnmarshalSearchResultMore(data []byte) (SearchResultMore, error) {
 	var r SearchResultMore
 	err := json.Unmarshal(data, &r)
-	return &r, err
+	return r, err
 }
 
 func (r *SearchResultMore) Marshal() ([]byte, error) {

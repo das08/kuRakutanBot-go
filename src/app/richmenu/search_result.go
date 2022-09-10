@@ -6,10 +6,10 @@ import (
 	"github.com/goccy/go-json"
 )
 
-func UnmarshalSearchResult(data []byte) (*SearchResult, error) {
+func UnmarshalSearchResult(data []byte) (SearchResult, error) {
 	var r SearchResult
 	err := json.Unmarshal(data, &r)
-	return &r, err
+	return r, err
 }
 
 func (r *SearchResult) Marshal() ([]byte, error) {

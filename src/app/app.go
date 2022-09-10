@@ -21,7 +21,7 @@ func main() {
 		uid := c.Query("uid")
 		code := c.Query("code")
 		postgres := module.CreatePostgresClient(&env)
-		defer postgres.Client.Close(postgres.Ctx)
+		defer postgres.Client.Close()
 
 		ok, err := postgres.CheckVerificationToken(uid, code)
 		if err != nil {
@@ -54,7 +54,7 @@ func main() {
 		}
 
 		postgres := module.CreatePostgresClient(&env)
-		defer postgres.Client.Close(postgres.Ctx)
+		defer postgres.Client.Close()
 
 		redis := module.CreateRedisClient()
 		clients := module.Clients{Postgres: postgres, Redis: redis}

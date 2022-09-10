@@ -5,20 +5,23 @@ import (
 	"fmt"
 	"github.com/jackc/pgtype"
 	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v4/pgxpool"
 	"log"
 	"os"
 	"time"
 )
 
 type Postgres struct {
-	Client *pgx.Conn
+	Client *pgxpool.Pool
 	Ctx    context.Context
 }
 
 func CreatePostgresClient(e *Environments) *Postgres {
 	ctx := context.Background()
 	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s", e.DbUser, e.DbPass, e.DbHost, e.DbPort, e.DbName)
-	db, err := pgx.Connect(ctx, dsn)
+	db, err := pgxpool.Connect(ctx, dsn)
+	db.Config().MaxConns = 10
+	db.Config().MaxConnIdleTime = 10 * time.Second
 	if err != nil {
 		fmt.Printf("Unable to connect to database: %v\n", err)
 		os.Exit(1)

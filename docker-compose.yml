@@ -55,7 +55,7 @@ services:
     networks:
       - rakutan
     build:
-      context: ../ku-rakutanbot-external-api-mock
+      context: ./src/kuwiki-mock
       dockerfile: Dockerfile
     restart: always
     tty: true
@@ -63,6 +63,7 @@ services:
       - "8000:8000"
 
   influxdb:
+    container_name: influxdb
     image: influxdb:1.8
     networks:
       - grafana
@@ -85,7 +86,7 @@ services:
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_BASIC_ENABLED=false
     volumes:
-      - ./grafana:/etc/grafana/provisioning/
+      - ./src/grafana:/etc/grafana/provisioning/
       - grafana:/var/lib/grafana
 
 volumes:

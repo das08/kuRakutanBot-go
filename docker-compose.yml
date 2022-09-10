@@ -25,6 +25,7 @@ services:
   postgres:
     container_name: rakutan-db
     networks:
+      - grafana
       - rakutan
     build:
       context: ./db

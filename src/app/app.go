@@ -110,21 +110,34 @@ func main() {
 				lb.SetSenderUid(&env, uid)
 
 				data := event.Postback.Data
-				fmt.Println("pbdata: ", data)
 				success, params := module.ParsePBParam(data)
 				if success {
 					fmt.Println("Params: ", params)
 					id := params.ID
+					var status module.ExecStatus[module.RakutanInfos]
+					var ok, found bool
+					var message string
 					switch params.Type {
 					case module.Fav:
 						// TODO: validate
 						postgres.InsertUserAction(uid, module.UserActionSetFav)
-						message, _ := postgres.ToggleFavorite(uid, id)
-						lb.SendTextMessage(message)
+						message, ok = postgres.ToggleFavorite(uid, id)
 					case module.Del:
 						// TODO: validate
 						postgres.InsertUserAction(uid, module.UserActionUnsetFav)
-						message, _ := postgres.UnsetFavorite(uid, id)
+						message, ok = postgres.UnsetFavorite(uid, id)
+					}
+					if ok {
+						status, found = redis.GetRakutanInfoByID(id)
+						if !ok {
+							status, found = postgres.GetRakutanInfoByID(id)
+						}
+						if found {
+							lb.SendTextMessage(fmt.Sprintf(message, status.Result[0].LectureName))
+						} else {
+							lb.SendTextMessage(status.Err)
+						}
+					} else {
 						lb.SendTextMessage(message)
 					}
 				}

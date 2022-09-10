@@ -221,28 +221,19 @@ func (p *Postgres) ToggleFavorite(uid string, id int) (string, bool) {
 	}
 	for _, favoriteID := range favoriteIDs {
 		if favoriteID == id {
-			_, err := p.Client.Exec(p.Ctx, "DELETE FROM favorites WHERE uid = $1 AND id = $2", uid, id)
-			if err != nil {
-				log.Println(err)
-				return ErrorMessageDeleteFavError, false
-			}
-			// TODO: 講義名を取得する
-			return fmt.Sprintf(SuccessMessageDeleteFav, ""), true
+			return p.UnsetFavorite(uid, id)
 		}
 	}
 	if len(favoriteIDs) >= 50 {
 		return ErrorMessageFavLimitError, false
 	}
-
 	_, err = p.Client.Exec(p.Ctx, "INSERT INTO favorites (uid, id) VALUES ($1, $2)", uid, id)
 	// TODO: Duplicate key errorをチェックする
 	if err != nil {
 		log.Println(err)
 		return ErrorMessageInsertFavError, false
 	}
-
-	// TODO: 講義名を取得する
-	return fmt.Sprintf(SuccessMessageInsertFav, ""), true
+	return SuccessMessageInsertFav, true
 }
 
 func (p *Postgres) UnsetFavorite(uid string, id int) (string, bool) {
@@ -251,8 +242,7 @@ func (p *Postgres) UnsetFavorite(uid string, id int) (string, bool) {
 		log.Println(err)
 		return ErrorMessageDeleteFavError, false
 	}
-	// TODO: 講義名を取得する
-	return fmt.Sprintf(SuccessMessageDeleteFav, ""), true
+	return SuccessMessageDeleteFav, true
 }
 
 type FindByMethod int

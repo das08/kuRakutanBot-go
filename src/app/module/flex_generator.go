@@ -2,6 +2,7 @@ package module
 
 import (
 	"fmt"
+	richmenu2 "github.com/das08/kuRakutanBot-go/assets/richmenu"
 	"github.com/das08/kuRakutanBot-go/richmenu"
 	"github.com/jackc/pgtype"
 	"github.com/line/line-bot-sdk-go/v7/linebot"
@@ -46,35 +47,35 @@ var omikujiType = map[OmikujiType]OmikujiText{
 }
 
 func CreateRakutanDetail(info RakutanInfo, e *Environments, o OmikujiType) FlexMessages {
-	rakutanDetail := richmenu.RakutanDetailJson
-	rakutanDetail.Header.Contents[0].Contents[1].Text = strToPtr("Search ID:#" + toStr(info.ID))
-	rakutanDetail.Header.Contents[1].Text = &info.LectureName             // Lecture name
-	rakutanDetail.Header.Contents[3].Contents[1].Text = &info.FacultyName // Faculty name
-	rakutanDetail.Header.Contents[4].Contents[1].Text = strToPtr("---")   // Group
-	rakutanDetail.Header.Contents[4].Contents[3].Text = strToPtr("---")   // Credits
+	flexContainer := richmenu2.LoadRakutanDetail()
+	flexContainer.Header.Contents[0].(*linebot.BoxComponent).Contents[1].(*linebot.TextComponent).Text = "Search ID:#" + toStr(info.ID)
+	flexContainer.Header.Contents[1].(*linebot.TextComponent).Text = info.LectureName                                     // Lecture name
+	flexContainer.Header.Contents[3].(*linebot.BoxComponent).Contents[1].(*linebot.TextComponent).Text = info.FacultyName // Faculty name
+	flexContainer.Header.Contents[4].(*linebot.BoxComponent).Contents[1].(*linebot.TextComponent).Text = "---"            // Group
+	flexContainer.Header.Contents[4].(*linebot.BoxComponent).Contents[3].(*linebot.TextComponent).Text = "---"            // Credits
 
 	if info.IsFavorite {
-		rakutanDetail.Header.Contents[0].Contents[0].URL = strToPtr("https://scdn.line-apps.com/n/channel_devcenter/img/fx/review_gold_star_28.png")
+		flexContainer.Header.Contents[0].(*linebot.BoxComponent).Contents[0].(*linebot.ImageComponent).URL = "https://scdn.line-apps.com/n/channel_devcenter/img/fx/review_gold_star_28.png"
 	}
 
 	if o != Normal {
-		rakutanDetail.Header.Contents[0].Contents[1].Text = strToPtr(omikujiType[o].Text)
-		rakutanDetail.Header.Contents[0].Contents[1].Color = strToPtr(omikujiType[o].Color)
+		flexContainer.Header.Contents[0].(*linebot.BoxComponent).Contents[1].(*linebot.TextComponent).Text = omikujiType[o].Text
+		flexContainer.Header.Contents[0].(*linebot.BoxComponent).Contents[1].(*linebot.TextComponent).Color = omikujiType[o].Color
 	}
 
 	// Postbackパラメータ
-	rakutanDetail.Header.Contents[0].Contents[0].Action.Data = fmt.Sprintf("type=fav&id=%d&lecname=%s", info.ID, info.LectureName)
+	flexContainer.Header.Contents[0].(*linebot.BoxComponent).Contents[0].(*linebot.ImageComponent).Action.(*linebot.PostbackAction).Data = fmt.Sprintf("type=fav&id=%d&lecname=%s", info.ID, info.LectureName)
 
 	// 単位取得率
 	rakutanPercents := getRakutanPercent(info.Passed, info.Register)
 	for i := range info.Register.Elements {
-		rakutanDetail.Body.Contents[0].Contents[i+1].Contents[0].Text = fmt.Sprintf("%d年度", e.YEAR-i)
-		rakutanDetail.Body.Contents[0].Contents[i+1].Contents[1].Text = rakutanPercents[i]
+		flexContainer.Body.Contents[0].(*linebot.BoxComponent).Contents[i+1].(*linebot.BoxComponent).Contents[0].(*linebot.TextComponent).Text = fmt.Sprintf("%d年度", e.YEAR-i)
+		flexContainer.Body.Contents[0].(*linebot.BoxComponent).Contents[i+1].(*linebot.BoxComponent).Contents[1].(*linebot.TextComponent).Text = rakutanPercents[i]
 	}
 	rakutanJudge := getRakutanJudge(info)
 	offset := len(info.Register.Elements)
-	rakutanDetail.Body.Contents[0].Contents[offset+2].Contents[1].Text = rakutanJudge.rank
-	rakutanDetail.Body.Contents[0].Contents[offset+2].Contents[1].Color = rakutanJudge.color
+	flexContainer.Body.Contents[0].(*linebot.BoxComponent).Contents[offset+2].(*linebot.BoxComponent).Contents[1].(*linebot.TextComponent).Text = rakutanJudge.rank
+	flexContainer.Body.Contents[0].(*linebot.BoxComponent).Contents[offset+2].(*linebot.BoxComponent).Contents[1].(*linebot.TextComponent).Color = rakutanJudge.color
 
 	// 過去問リンク
 	// TODO: なんとかする
@@ -82,31 +83,31 @@ func CreateRakutanDetail(info RakutanInfo, e *Environments, o OmikujiType) FlexM
 		_, err := url.ParseRequestURI(info.KakomonURL)
 		switch {
 		case info.KakomonURL != "" && err == nil:
-			rakutanDetail.Body.Contents[0].Contents[offset+3].Contents[1].Text = "○"
-			rakutanDetail.Body.Contents[0].Contents[offset+3].Contents[1].Color = "#0fd142"
-			rakutanDetail.Body.Contents[0].Contents[offset+3].Contents[2].Text = "リンク"
-			rakutanDetail.Body.Contents[0].Contents[offset+3].Contents[2].Color = "#4c7cf5"
-			rakutanDetail.Body.Contents[0].Contents[offset+3].Contents[2].Action.URI = &info.KakomonURL
+			flexContainer.Body.Contents[0].(*linebot.BoxComponent).Contents[offset+3].(*linebot.BoxComponent).Contents[1].(*linebot.TextComponent).Text = "○"
+			flexContainer.Body.Contents[0].(*linebot.BoxComponent).Contents[offset+3].(*linebot.BoxComponent).Contents[1].(*linebot.TextComponent).Color = "#0fd142"
+			flexContainer.Body.Contents[0].(*linebot.BoxComponent).Contents[offset+3].(*linebot.BoxComponent).Contents[2].(*linebot.TextComponent).Text = "リンク"
+			flexContainer.Body.Contents[0].(*linebot.BoxComponent).Contents[offset+3].(*linebot.BoxComponent).Contents[2].(*linebot.TextComponent).Color = "#4c7cf5"
+			flexContainer.Body.Contents[0].(*linebot.BoxComponent).Contents[offset+3].(*linebot.BoxComponent).Contents[2].(*linebot.TextComponent).Action.(*linebot.URIAction).URI = info.KakomonURL
 		default:
-			rakutanDetail.Body.Contents[0].Contents[offset+3].Contents[1].Text = "×"
-			rakutanDetail.Body.Contents[0].Contents[offset+3].Contents[1].Color = "#ef1d2f"
-			rakutanDetail.Body.Contents[0].Contents[offset+3].Contents[2].Text = "提供する"
-			rakutanDetail.Body.Contents[0].Contents[offset+3].Contents[2].Action = &richmenu.URIAction{Type: "uri", Label: "action", URI: strToPtr("https://www.kuwiki.net/upload-exams")}
+			flexContainer.Body.Contents[0].(*linebot.BoxComponent).Contents[offset+3].(*linebot.BoxComponent).Contents[1].(*linebot.TextComponent).Text = "×"
+			flexContainer.Body.Contents[0].(*linebot.BoxComponent).Contents[offset+3].(*linebot.BoxComponent).Contents[1].(*linebot.TextComponent).Color = "#ef1d2f"
+			flexContainer.Body.Contents[0].(*linebot.BoxComponent).Contents[offset+3].(*linebot.BoxComponent).Contents[2].(*linebot.TextComponent).Text = "提供する"
+			flexContainer.Body.Contents[0].(*linebot.BoxComponent).Contents[offset+3].(*linebot.BoxComponent).Contents[2].(*linebot.TextComponent).Action.(*linebot.URIAction).URI = "https://www.kuwiki.net/upload-exams"
 		}
 	} else {
-		rakutanDetail.Body.Contents[0].Contents[offset+3].Contents[1].Flex = intToPtr(0)
-		rakutanDetail.Body.Contents[0].Contents[offset+3].Contents[1].Text = "△"
-		rakutanDetail.Body.Contents[0].Contents[offset+3].Contents[1].Color = "#ffb101"
-		rakutanDetail.Body.Contents[0].Contents[offset+3].Contents[2].Flex = intToPtr(7)
-		rakutanDetail.Body.Contents[0].Contents[offset+3].Contents[2].Text = "ユーザー認証が必要です"
-		rakutanDetail.Body.Contents[0].Contents[offset+3].Contents[2].Action = &richmenu.URIAction{Type: "message", Label: "action", Text: strToPtr("ユーザ認証")}
+		flexContainer.Body.Contents[0].(*linebot.BoxComponent).Contents[offset+3].(*linebot.BoxComponent).Contents[1].(*linebot.TextComponent).Flex = intToPtr(0)
+		flexContainer.Body.Contents[0].(*linebot.BoxComponent).Contents[offset+3].(*linebot.BoxComponent).Contents[1].(*linebot.TextComponent).Text = "△"
+		flexContainer.Body.Contents[0].(*linebot.BoxComponent).Contents[offset+3].(*linebot.BoxComponent).Contents[1].(*linebot.TextComponent).Color = "#ffb101"
+		flexContainer.Body.Contents[0].(*linebot.BoxComponent).Contents[offset+3].(*linebot.BoxComponent).Contents[2].(*linebot.TextComponent).Flex = intToPtr(7)
+		flexContainer.Body.Contents[0].(*linebot.BoxComponent).Contents[offset+3].(*linebot.BoxComponent).Contents[2].(*linebot.TextComponent).Text = "ユーザー認証が必要です"
+		//flexContainer.Body.Contents[0].(*linebot.BoxComponent).Contents[offset+3].(*linebot.BoxComponent).Contents[2].(*linebot.TextComponent).Action.(*linebot.MessageAction).Text = "ユーザ認証"
+		flexContainer.Body.Contents[0].(*linebot.BoxComponent).Contents[offset+3].(*linebot.BoxComponent).Contents[2].(*linebot.TextComponent).Action = &linebot.MessageAction{
+			Label: "action",
+			Text:  "ユーザ認証",
+		}
+
 	}
 
-	flex, err := rakutanDetail.Marshal()
-	if err != nil {
-		log.Fatal(err)
-	}
-	flexContainer, _ := linebot.UnmarshalFlexMessageJSON(flex)
 	altText := fmt.Sprintf("「%s」のらくたん情報", info.LectureName)
 
 	return FlexMessages{{FlexContainer: flexContainer, AltText: altText}}

@@ -9,9 +9,15 @@ import (
 	"log"
 	"net/http"
 	"strings"
+
+	_ "net/http/pprof"
 )
 
 func main() {
+	go func() {
+		log.Println(http.ListenAndServe("localhost:6060", nil))
+	}()
+
 	env := module.LoadEnv(true)
 	router := gin.Default()
 	router.GET("/hello", func(c *gin.Context) {

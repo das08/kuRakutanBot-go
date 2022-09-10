@@ -21,7 +21,9 @@ services:
       - postgres
       - redis
     ports:
+      - "6060:6060"
       - "8081:8081"
+      - "8082:8082"
 
   postgres:
     container_name: rakutan-db

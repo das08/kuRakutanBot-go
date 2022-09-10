@@ -3,7 +3,7 @@ package module
 import (
 	"context"
 	"fmt"
-	"github.com/go-redis/redis/v8"
+	"github.com/go-redis/redis/v9"
 	"github.com/goccy/go-json"
 	"log"
 	"time"
@@ -16,7 +16,8 @@ type Redis struct {
 
 func CreateRedisClient() *Redis {
 	rdb := redis.NewClient(&redis.Options{
-		Addr:     "redis:6379",
+		Network:  "unix",
+		Addr:     "/tmp/docker/redis.sock",
 		Password: "",
 		DB:       0,
 	})

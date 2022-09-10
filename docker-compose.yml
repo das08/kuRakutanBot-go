@@ -1,4 +1,4 @@
-version: '3.8'
+version: '2'
 
 networks:
   grafana:
@@ -17,6 +17,8 @@ services:
     volumes:
       - dbsocket:/var/run/postgresql
       - ./src/app:/usr/src/app
+    volumes_from:
+      - redissocket
     depends_on:
       - postgres
       - redis
@@ -46,16 +48,17 @@ services:
       POSTGRES_PASSWORD: admin
 
   redis:
-    image: redis:6.2.6
+    image: redis:7-alpine
     container_name: rakutan-redis
     networks:
       - rakutan
     restart: always
-    command: redis-server --appendonly yes
+    command: redis-server /usr/local/etc/redis/redis.conf --appendonly yes
     volumes:
       - redis:/data
-    ports:
-      - "6379:6379"
+      - ./redis/conf/redis.conf:/usr/local/etc/redis/redis.conf
+    volumes_from:
+      - redissocket
 
   kuwiki-mock:
     container_name: kuwiki-mock
@@ -95,6 +98,12 @@ services:
     volumes:
       - ./src/grafana:/etc/grafana/provisioning/
       - grafana:/var/lib/grafana
+
+  redissocket:
+    image: busybox
+    command: chmod -R 777 /tmp/docker
+    volumes:
+      - /tmp/docker/
 
 volumes:
   postgres:

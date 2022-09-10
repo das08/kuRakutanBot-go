@@ -18,7 +18,6 @@ func main() {
 	})
 
 	router.GET("/verification", func(c *gin.Context) {
-		// TODO: UIDも付与する
 		uid := c.Query("uid")
 		code := c.Query("code")
 		postgres := module.CreatePostgresClient(&env)
@@ -120,7 +119,7 @@ func main() {
 					case module.Fav:
 						// TODO: validate
 						postgres.InsertUserAction(uid, module.UserActionSetFav)
-						message, _ := postgres.SetFavorite(uid, id)
+						message, _ := postgres.ToggleFavorite(uid, id)
 						lb.SendTextMessage(message)
 					case module.Del:
 						// TODO: validate

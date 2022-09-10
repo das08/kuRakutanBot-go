@@ -200,7 +200,7 @@ func (p *Postgres) GetFavoriteByID(uid string, id int) (ExecStatus[RakutanInfos]
 	return status, true
 }
 
-func (p *Postgres) SetFavorite(uid string, id int) (string, bool) {
+func (p *Postgres) ToggleFavorite(uid string, id int) (string, bool) {
 	var favoriteIDs []int
 	rows, err := p.Client.Query(p.Ctx, "SELECT id FROM favorites WHERE uid = $1", uid)
 	if err != nil {
@@ -218,7 +218,13 @@ func (p *Postgres) SetFavorite(uid string, id int) (string, bool) {
 	}
 	for _, favoriteID := range favoriteIDs {
 		if favoriteID == id {
-			return ErrorMessageAlreadyFavError, false
+			_, err := p.Client.Exec(p.Ctx, "DELETE FROM favorites WHERE uid = $1 AND id = $2", uid, id)
+			if err != nil {
+				log.Println(err)
+				return ErrorMessageDeleteFavError, false
+			}
+			// TODO: 講義名を取得する
+			return fmt.Sprintf(SuccessMessageDeleteFav, ""), true
 		}
 	}
 	if len(favoriteIDs) >= 50 {

@@ -18,11 +18,10 @@ func main() {
 	})
 
 	router.GET("/verification", func(c *gin.Context) {
-		// TODO: UIDも付与する
 		uid := c.Query("uid")
 		code := c.Query("code")
 		postgres := module.CreatePostgresClient(&env)
-		defer postgres.Client.Close(postgres.Ctx)
+		defer postgres.Client.Close()
 
 		ok, err := postgres.CheckVerificationToken(uid, code)
 		if err != nil {
@@ -55,7 +54,7 @@ func main() {
 		}
 
 		postgres := module.CreatePostgresClient(&env)
-		defer postgres.Client.Close(postgres.Ctx)
+		defer postgres.Client.Close()
 
 		redis := module.CreateRedisClient()
 		clients := module.Clients{Postgres: postgres, Redis: redis}
@@ -120,7 +119,7 @@ func main() {
 					case module.Fav:
 						// TODO: validate
 						postgres.InsertUserAction(uid, module.UserActionSetFav)
-						message, _ := postgres.SetFavorite(uid, id)
+						message, _ := postgres.ToggleFavorite(uid, id)
 						lb.SendTextMessage(message)
 					case module.Del:
 						// TODO: validate

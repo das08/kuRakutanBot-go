@@ -1,0 +1,3 @@
+[submodule "src/kuwiki-mock"]
+	path = src/kuwiki-mock
+	url = git@github.com:tinaxd/ku-rakutanbot-external-api-mock.git

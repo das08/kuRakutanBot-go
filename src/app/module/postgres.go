@@ -5,20 +5,23 @@ import (
 	"fmt"
 	"github.com/jackc/pgtype"
 	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v4/pgxpool"
 	"log"
 	"os"
 	"time"
 )
 
 type Postgres struct {
-	Client *pgx.Conn
+	Client *pgxpool.Pool
 	Ctx    context.Context
 }
 
 func CreatePostgresClient(e *Environments) *Postgres {
 	ctx := context.Background()
 	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s", e.DbUser, e.DbPass, e.DbHost, e.DbPort, e.DbName)
-	db, err := pgx.Connect(ctx, dsn)
+	db, err := pgxpool.Connect(ctx, dsn)
+	db.Config().MaxConns = 10
+	db.Config().MaxConnIdleTime = 10 * time.Second
 	if err != nil {
 		fmt.Printf("Unable to connect to database: %v\n", err)
 		os.Exit(1)
@@ -200,7 +203,7 @@ func (p *Postgres) GetFavoriteByID(uid string, id int) (ExecStatus[RakutanInfos]
 	return status, true
 }
 
-func (p *Postgres) SetFavorite(uid string, id int) (string, bool) {
+func (p *Postgres) ToggleFavorite(uid string, id int) (string, bool) {
 	var favoriteIDs []int
 	rows, err := p.Client.Query(p.Ctx, "SELECT id FROM favorites WHERE uid = $1", uid)
 	if err != nil {
@@ -218,7 +221,13 @@ func (p *Postgres) SetFavorite(uid string, id int) (string, bool) {
 	}
 	for _, favoriteID := range favoriteIDs {
 		if favoriteID == id {
-			return ErrorMessageAlreadyFavError, false
+			_, err := p.Client.Exec(p.Ctx, "DELETE FROM favorites WHERE uid = $1 AND id = $2", uid, id)
+			if err != nil {
+				log.Println(err)
+				return ErrorMessageDeleteFavError, false
+			}
+			// TODO: 講義名を取得する
+			return fmt.Sprintf(SuccessMessageDeleteFav, ""), true
 		}
 	}
 	if len(favoriteIDs) >= 50 {

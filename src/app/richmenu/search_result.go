@@ -3,7 +3,7 @@
 package richmenu
 
 import (
-	"encoding/json"
+	"github.com/goccy/go-json"
 )
 
 func UnmarshalSearchResult(data []byte) (SearchResult, error) {

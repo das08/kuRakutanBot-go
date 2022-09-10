@@ -2,9 +2,9 @@ package module
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"github.com/go-redis/redis/v8"
+	"github.com/goccy/go-json"
 	"log"
 	"time"
 )

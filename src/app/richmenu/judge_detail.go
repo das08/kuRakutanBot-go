@@ -2,7 +2,7 @@
 
 package richmenu
 
-import "encoding/json"
+import "github.com/goccy/go-json"
 
 func UnmarshalJudgeDetail(data []byte) (JudgeDetail, error) {
 	var r JudgeDetail

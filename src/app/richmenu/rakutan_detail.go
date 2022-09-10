@@ -2,7 +2,7 @@
 
 package richmenu
 
-import "encoding/json"
+import "github.com/goccy/go-json"
 
 func UnmarshalRakutanDetail(data []byte) (RakutanDetail, error) {
 	var r RakutanDetail

@@ -2,7 +2,7 @@
 
 package richmenu
 
-import "encoding/json"
+import "github.com/goccy/go-json"
 
 func UnmarshalHelp(data []byte) (Help, error) {
 	var r Help

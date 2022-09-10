@@ -3,7 +3,7 @@
 package richmenu
 
 import (
-	"encoding/json"
+	"github.com/goccy/go-json"
 )
 
 func UnmarshalFavorites(data []byte) (Favorites, error) {

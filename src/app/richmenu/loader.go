@@ -5,40 +5,36 @@ import (
 	"log"
 )
 
-func LoadRakutanDetail() RakutanDetail {
-	jsonFile := LoadJSON("./assets/richmenu/rakutan_detail.json")
-	jsonData, err := UnmarshalRakutanDetail(jsonFile)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return jsonData
-}
+var (
+	RakutanDetailJson    *RakutanDetail
+	SearchResultJson     *SearchResult
+	SearchResultMoreJson *SearchResultMore
+	FavoritesJson        *Favorites
+)
 
-func LoadSearchResult() SearchResult {
-	jsonFile := LoadJSON("./assets/richmenu/search_result.json")
-	jsonData, err := UnmarshalSearchResult(jsonFile)
+func PreloadJson() {
+	var jsonFile []byte
+	var err error
+	jsonFile = LoadJSON("./assets/richmenu/rakutan_detail.json")
+	RakutanDetailJson, err = UnmarshalRakutanDetail(jsonFile)
 	if err != nil {
 		log.Fatal(err)
 	}
-	return jsonData
-}
-
-func LoadSearchResultMore() SearchResultMore {
-	jsonFile := LoadJSON("./assets/richmenu/search_result_more.json")
-	jsonData, err := UnmarshalSearchResultMore(jsonFile)
+	jsonFile = LoadJSON("./assets/richmenu/search_result.json")
+	SearchResultJson, err = UnmarshalSearchResult(jsonFile)
 	if err != nil {
 		log.Fatal(err)
 	}
-	return jsonData
-}
-
-func LoadFavorites() Favorites {
-	jsonFile := LoadJSON("./assets/richmenu/favorites.json")
-	jsonData, err := UnmarshalFavorites(jsonFile)
+	jsonFile = LoadJSON("./assets/richmenu/search_result_more.json")
+	SearchResultMoreJson, err = UnmarshalSearchResultMore(jsonFile)
 	if err != nil {
 		log.Fatal(err)
 	}
-	return jsonData
+	jsonFile = LoadJSON("./assets/richmenu/favorites.json")
+	FavoritesJson, err = UnmarshalFavorites(jsonFile)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func LoadJSON(filename string) []byte {

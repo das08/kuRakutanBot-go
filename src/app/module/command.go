@@ -6,6 +6,16 @@ import (
 	"strings"
 )
 
+var (
+	JudgeJson        *FlexMessages
+	InquiryJson      *FlexMessages
+	IconJson         *FlexMessages
+	InfoJson         *FlexMessages
+	VerifiedJson     *FlexMessages
+	VerificationJson *FlexMessages
+	HelpJson         *FlexMessages
+)
+
 type Command struct {
 	Keyword      string
 	SendFunction func(c Clients, env *Environments, lb *LINEBot)
@@ -40,6 +50,16 @@ var Commands = [...]Command{
 	{Keyword: "京大楽単bot", SendFunction: iconCmd},
 }
 
+func PreloadJson() {
+	HelpJson = loadFlexMessages("./assets/richmenu/help.json", "ヘルプ")
+	JudgeJson = loadFlexMessages("./assets/richmenu/judge_detail.json", "らくたん判定の詳細")
+	InquiryJson = loadFlexMessages("./assets/richmenu/inquiry.json", "お問い合わせ")
+	IconJson = loadFlexMessages("./assets/richmenu/icon.json", "京大楽単bot")
+	InfoJson = loadFlexMessages("./assets/richmenu/info.json", "お知らせ")
+	VerifiedJson = loadFlexMessages("./assets/richmenu/verified.json", "認証済み")
+	VerificationJson = loadFlexMessages("./assets/richmenu/verification.json", "認証")
+}
+
 func IsCommand(messageText string) (bool, func(c Clients, env *Environments, lb *LINEBot)) {
 	isCommand := false
 	var function func(c Clients, env *Environments, lb *LINEBot)
@@ -55,32 +75,27 @@ func IsCommand(messageText string) (bool, func(c Clients, env *Environments, lb 
 
 func helpCmd(c Clients, _ *Environments, lb *LINEBot) {
 	go c.Postgres.InsertUserAction(lb.senderUid, UserActionHelp)
-	flexMessages := loadFlexMessages("./assets/richmenu/help.json", "ヘルプ")
-	lb.SendFlexMessage(flexMessages)
+	lb.SendFlexMessage(*HelpJson)
 }
 
 func judgeDetailCmd(_ Clients, _ *Environments, lb *LINEBot) {
-	flexMessages := loadFlexMessages("./assets/richmenu/judge_detail.json", "らくたん判定の詳細")
-	lb.SendFlexMessage(flexMessages)
+	lb.SendFlexMessage(*JudgeJson)
 }
 
 func inquiryCmd(_ Clients, _ *Environments, lb *LINEBot) {
-	flexMessages := loadFlexMessages("./assets/richmenu/inquiry.json", "お問い合わせ")
-	lb.SendFlexMessage(flexMessages)
+	lb.SendFlexMessage(*InquiryJson)
 }
 
 func iconCmd(_ Clients, _ *Environments, lb *LINEBot) {
-	flexMessages := loadFlexMessages("./assets/richmenu/icon.json", "京大楽単bot")
-	lb.SendFlexMessage(flexMessages)
+	lb.SendFlexMessage(*IconJson)
 }
 
 func infoCmd(c Clients, _ *Environments, lb *LINEBot) {
 	go c.Postgres.InsertUserAction(lb.senderUid, UserActionInfo)
-	flexMessages := loadFlexMessages("./assets/richmenu/info.json", "お知らせ")
-	lb.SendFlexMessage(flexMessages)
+	lb.SendFlexMessage(*InfoJson)
 }
 
-func loadFlexMessages(filename string, altText string) FlexMessages {
+func loadFlexMessages(filename string, altText string) *FlexMessages {
 	json := richmenu.LoadJSON(filename)
 	return CreateFlexMessage(json, altText)
 }
@@ -128,13 +143,13 @@ func verificationCmd(c Clients, env *Environments, lb *LINEBot) {
 		lb.SendTextMessage(ErrorMessageCheckVerificateError)
 		return
 	}
-	var flexMessages FlexMessages
+	var flexMessages *FlexMessages
 	if verified {
-		flexMessages = loadFlexMessages("./assets/richmenu/verified.json", "ユーザー認証済み")
+		flexMessages = VerifiedJson
 	} else {
-		flexMessages = loadFlexMessages("./assets/richmenu/verification.json", "ユーザー認証をする")
+		flexMessages = VerificationJson
 	}
-	lb.SendFlexMessage(flexMessages)
+	lb.SendFlexMessage(*flexMessages)
 }
 
 func myUIDCmd(_ Clients, _ *Environments, lb *LINEBot) {

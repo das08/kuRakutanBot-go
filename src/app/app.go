@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/das08/kuRakutanBot-go/module"
+	"github.com/das08/kuRakutanBot-go/richmenu"
 	"github.com/gin-gonic/gin"
 	"github.com/line/line-bot-sdk-go/v7/linebot"
 	"log"
@@ -144,6 +145,9 @@ func main() {
 			}
 		}
 	})
+
+	module.PreloadJson()
+	richmenu.PreloadJson()
 
 	err := router.Run(":" + env.AppPort)
 	if err != nil {

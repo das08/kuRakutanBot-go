@@ -46,7 +46,7 @@ var omikujiType = map[OmikujiType]OmikujiText{
 }
 
 func CreateRakutanDetail(info RakutanInfo, e *Environments, o OmikujiType) FlexMessages {
-	rakutanDetail := richmenu.LoadRakutanDetail()
+	rakutanDetail := richmenu.RakutanDetailJson
 	rakutanDetail.Header.Contents[0].Contents[1].Text = strToPtr("Search ID:#" + toStr(info.ID))
 	rakutanDetail.Header.Contents[1].Text = &info.LectureName             // Lecture name
 	rakutanDetail.Header.Contents[3].Contents[1].Text = &info.FacultyName // Faculty name
@@ -114,8 +114,8 @@ func CreateRakutanDetail(info RakutanInfo, e *Environments, o OmikujiType) FlexM
 
 func CreateSearchResult(searchText string, infos RakutanInfos) FlexMessages {
 	var messages FlexMessages
-	searchResult := richmenu.LoadSearchResult()
-	searchResultMore := richmenu.LoadSearchResultMore()
+	searchResult := richmenu.SearchResultJson
+	searchResultMore := richmenu.SearchResultMoreJson
 
 	pageCount := 0
 	maxPageCount := len(infos)/MaxResultsPerPage + 1
@@ -130,7 +130,7 @@ func CreateSearchResult(searchText string, infos RakutanInfos) FlexMessages {
 
 			// Set body text
 			searchResult.Body.Contents[1].Contents = getLectureList(infos, pageCount)
-			flexContainer := toFlexContainer(&searchResult)
+			flexContainer := toFlexContainer(searchResult)
 			messages = append(messages, FlexMessage{FlexContainer: flexContainer, AltText: altText})
 		case pageCount >= 2:
 			// Set header text
@@ -138,7 +138,7 @@ func CreateSearchResult(searchText string, infos RakutanInfos) FlexMessages {
 
 			// Set body text
 			searchResultMore.Body.Contents[1].Contents = getLectureList(infos, pageCount)
-			flexContainer := toFlexContainer(&searchResultMore)
+			flexContainer := toFlexContainer(searchResultMore)
 			messages = append(messages, FlexMessage{FlexContainer: flexContainer, AltText: altText})
 		}
 	}
@@ -147,7 +147,7 @@ func CreateSearchResult(searchText string, infos RakutanInfos) FlexMessages {
 
 func CreateFavorites(r RakutanInfos) FlexMessages {
 	var messages FlexMessages
-	favorites := richmenu.LoadFavorites()
+	favorites := richmenu.FavoritesJson
 
 	pageCount := 0
 	maxPageCount := len(r)/MaxResultsPerPage + 1
@@ -156,19 +156,19 @@ func CreateFavorites(r RakutanInfos) FlexMessages {
 		altText := fmt.Sprintf("お気に入りリスト(%d/%d)", pageCount, maxPageCount)
 		// Set body text
 		favorites.Body.Contents[0].Contents = getFavoriteList(r, pageCount)
-		flexContainer := toFlexContainer(&favorites)
+		flexContainer := toFlexContainer(favorites)
 		messages = append(messages, FlexMessage{FlexContainer: flexContainer, AltText: altText})
 	}
 	return messages
 }
 
-func CreateFlexMessage(flex []byte, altText string) FlexMessages {
+func CreateFlexMessage(flex []byte, altText string) *FlexMessages {
 	flexContainer, _ := linebot.UnmarshalFlexMessageJSON(flex)
-	return FlexMessages{{FlexContainer: flexContainer, AltText: altText}}
+	return &FlexMessages{{FlexContainer: flexContainer, AltText: altText}}
 }
 
 func getLectureList(infos RakutanInfos, pageCount int) []richmenu.PurpleContent {
-	searchResult := richmenu.LoadSearchResult()
+	searchResult := richmenu.SearchResultJson
 	var lectureList []richmenu.PurpleContent
 	lecture := searchResult.Body.Contents[1].Contents[0]
 
@@ -190,7 +190,7 @@ func getLectureList(infos RakutanInfos, pageCount int) []richmenu.PurpleContent 
 }
 
 func getFavoriteList(r RakutanInfos, pageCount int) []richmenu.FavoritesBodyContents {
-	favorites := richmenu.LoadFavorites()
+	favorites := richmenu.FavoritesJson
 	var favoriteList []richmenu.FavoritesBodyContents
 	favorite := favorites.Body.Contents[0].Contents[0]
 

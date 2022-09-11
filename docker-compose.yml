@@ -60,17 +60,17 @@ services:
     volumes_from:
       - redissocket
 
-  kuwiki-mock:
-    container_name: kuwiki-mock
-    networks:
-      - rakutan
-    build:
-      context: ./src/kuwiki-mock
-      dockerfile: Dockerfile
-    restart: always
-    tty: true
-    ports:
-      - "127.0.0.1:8000:8000"
+#  kuwiki-mock:
+#    container_name: kuwiki-mock
+#    networks:
+#      - rakutan
+#    build:
+#      context: ./src/kuwiki-mock
+#      dockerfile: Dockerfile
+#    restart: always
+#    tty: true
+#    ports:
+#      - "127.0.0.1:8000:8000"
 
   influxdb:
     container_name: influxdb

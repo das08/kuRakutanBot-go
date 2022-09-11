@@ -35,3 +35,12 @@ docker compose up
 ```
 
 App runs on port 8081.
+
+
+# Debug
+- How to pprof
+```shell
+docker exec -it rakutan-app sh
+curl -s http://localhost:6060/debug/pprof/profile?seconds=30 > cpu.pprof
+go tool pprof -http=0.0.0.0:8082 /usr/local/bin/kuRakutanBot-go cpu.pprof
+```

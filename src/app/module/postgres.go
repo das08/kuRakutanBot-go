@@ -290,7 +290,13 @@ func GetRakutanInfo(c Clients, e *Environments, uid string, method FindByMethod,
 		}
 		status, ok = c.Postgres.GetRakutanInfoByLectureName(searchWord, subStringSearch)
 	case Omikuji:
-		status, ok = c.Postgres.GetRakutanInfoByOmikuji(value.(OmikujiType))
+		var id int
+		id, ok = c.Redis.GetOmikujiByID(value.(OmikujiType))
+		if !ok {
+			status, ok = c.Postgres.GetRakutanInfoByOmikuji(value.(OmikujiType))
+		} else {
+			status, ok = GetRakutanInfoByID(c, id)
+		}
 	}
 
 	// Set isVerified, isFavorite and kakomonURL

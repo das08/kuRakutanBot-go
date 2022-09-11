@@ -45,6 +45,23 @@ func (r *Redis) SAddRedis(key string, values []interface{}) {
 	}
 }
 
+func (r *Redis) GetOmikujiByID(types OmikujiType) (int, bool) {
+	var id int
+	key := fmt.Sprintf("set:%s", types)
+	result, err := r.Client.SRandMember(r.Ctx, key).Result()
+	if err != nil {
+		log.Println("[Redis] Error SRANDMEMBER:", err)
+		return 0, false
+	}
+	_, err = fmt.Sscanf(result, "%d", &id)
+	if err != nil {
+		log.Println("[Redis] Error SSCANF:", err)
+		return 0, false
+	}
+	log.Printf("[Redis] Get %d from %s", id, key)
+	return id, true
+}
+
 func (r *Redis) GetRakutanInfoByID(id int) (ExecStatus[RakutanInfos], bool) {
 	var status ExecStatus[RakutanInfos]
 	var rakutanInfo RakutanInfo

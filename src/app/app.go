@@ -153,24 +153,22 @@ func main() {
 	initialize(&env)
 
 	go func() {
-		t := time.NewTicker(5 * time.Second)
+		t := time.NewTicker(10 * time.Second)
 		defer t.Stop()
 		postgres := module.CreatePostgresClient(&env)
 		defer postgres.Client.Close()
 		for {
 			select {
 			case <-t.C:
-				// 5秒ごとにユーザーアクションログをDBに書き込む
+				// 10秒ごとにユーザーアクションログをDBに書き込む
 				err := postgres.BulkInsertUserAction()
 				if err != nil {
-					panic(err)
 					return
 				}
 				// UserActionLogPoolSizeが一定数を超えたらログをDBに書き込む
 			case <-module.UserActionLogPoolFull:
 				err := postgres.BulkInsertUserAction()
 				if err != nil {
-					panic(err)
 					return
 				}
 			}

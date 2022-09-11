@@ -17,7 +17,7 @@ type Postgres struct {
 }
 
 var UserActionLogPool [][]interface{}
-var UserActionLogPoolSize = 50
+var UserActionLogPoolSize = 200
 var UserActionLogPoolFull = make(chan bool)
 
 func CreatePostgresClient(e *Environments) *Postgres {

@@ -23,9 +23,9 @@ services:
       - postgres
       - redis
     ports:
-      - "6060:6060"
-      - "8081:8081"
-      - "8082:8082"
+      - "127.0.0.1:6060:6060"
+      - "127.0.0.1:8081:8081"
+      - "127.0.0.1:8082:8082"
 
   postgres:
     container_name: rakutan-db
@@ -42,7 +42,7 @@ services:
       - ./db/init:/docker-entrypoint-initdb.d
       - ./db/conf/postgresql.conf:/etc/postgresql/postgresql.conf
     ports:
-      - "5433:5432"
+      - "127.0.0.1:5433:5432"
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin
@@ -70,7 +70,7 @@ services:
     restart: always
     tty: true
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
 
   influxdb:
     container_name: influxdb

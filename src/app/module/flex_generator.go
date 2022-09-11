@@ -23,7 +23,7 @@ type RakutanJudge struct {
 	color        string
 }
 
-var MaxResultsPerPage = 25
+var MaxResultsPerPage = 30
 var judgeList = [9]RakutanJudge{
 	{percentBound: 90, rank: "SSS", color: "#c3c45b"},
 	{percentBound: 85, rank: "SS", color: "#c3c45b"},
@@ -39,6 +39,11 @@ var facultyAbbr = map[string]string{
 	"文学部": "文", "教育学部": "教", "法学部": "法", "経済学部": "経", "理学部": "理", "医学部": "医医",
 	"医学部（人間健康科学科）": "人健", "医学部(人間健康科学科)": "人健",
 	"薬学部": "薬", "工学部": "工", "農学部": "農", "総合人間学部": "総人", "国際高等教育院": "般教",
+	"文学研究科": "文研", "教育学研究科": "教研", "法学研究科": "法研", "経済学研究科": "経研", "理学研究科": "理研",
+	"医学研究科": "医研", "医学研究科(人間健康科学系専攻": "医研", "薬学研究科": "薬研", "工学研究科": "工研",
+	"農学研究科": "農研", "人間・環境学研究科": "人環", "エネルギー科学研究科": "エネ", "アジア・アフリカ地域研究研究科": "アア",
+	"情報学研究科": "情研", "生命科学研究科": "生命", "地球環境学舎": "地環", "公共政策教育部": "公政",
+	"経営管理教育部": "経営", "法学研究科(法科大学院)": "法科", "総合生存学館": "生存",
 }
 
 var omikujiType = map[OmikujiType]OmikujiText{
@@ -185,6 +190,8 @@ func getLectureList(infos RakutanInfos, pageCount int) []richmenu.PurpleContent 
 		abbr, ok := facultyAbbr[infos[i].FacultyName]
 		if ok {
 			tmp.Contents[0].Text = abbr
+		} else {
+			tmp.Contents[0].Text = "--"
 		}
 
 		lectureList = append(lectureList, tmp)

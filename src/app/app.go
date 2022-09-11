@@ -6,6 +6,7 @@ import (
 	"github.com/das08/kuRakutanBot-go/richmenu"
 	"github.com/gin-gonic/gin"
 	"github.com/line/line-bot-sdk-go/v7/linebot"
+	"golang.org/x/text/width"
 	"log"
 	"net/http"
 	_ "net/http/pprof"
@@ -104,7 +105,7 @@ func main() {
 
 					// その他講義名が送られてきた場合
 					module.AppendUserActionLogPool(uid, module.UserActionSearch)
-					searchStatus, ok := searchRakutan(clients, &env, uid, messageText)
+					searchStatus, ok := searchRakutan(clients, &env, uid, formatter(messageText))
 					log.Printf("[Bot] Search: %s", messageText)
 					if !ok {
 						lb.SendTextMessage(searchStatus.Err)
@@ -202,6 +203,13 @@ func initialize(e *module.Environments) {
 
 	module.PreloadJson()
 	richmenu.PreloadJson()
+}
+
+func formatter(text string) string {
+	text = strings.ReplaceAll(text, "�", "")
+	text = strings.TrimSpace(text)
+	text = width.Fold.String(text)
+	return text
 }
 
 func searchRakutan(c module.Clients, env *module.Environments, uid string, searchText string) (module.ExecStatus[module.FlexMessages], bool) {

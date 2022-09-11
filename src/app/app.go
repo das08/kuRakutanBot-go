@@ -136,10 +136,7 @@ func main() {
 						message, ok = postgres.UnsetFavorite(uid, id)
 					}
 					if ok {
-						status, found = redis.GetRakutanInfoByID(id)
-						if !ok {
-							status, found = postgres.GetRakutanInfoByID(id)
-						}
+						status, found = module.GetRakutanInfoByID(clients, id)
 						if found {
 							lb.SendTextMessage(fmt.Sprintf(message, status.Result[0].LectureName))
 						} else {

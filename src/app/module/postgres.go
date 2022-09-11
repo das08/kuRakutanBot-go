@@ -280,10 +280,7 @@ func GetRakutanInfo(c Clients, e *Environments, uid string, method FindByMethod,
 
 	switch method {
 	case ID:
-		status, ok = c.Redis.GetRakutanInfoByID(value.(int))
-		if !ok {
-			status, ok = c.Postgres.GetRakutanInfoByID(value.(int))
-		}
+		status, ok = GetRakutanInfoByID(c, value.(int))
 	case Name:
 		var subStringSearch bool
 		searchWord := value.(string)
@@ -312,5 +309,15 @@ func GetRakutanInfo(c Clients, e *Environments, uid string, method FindByMethod,
 		}
 	}
 
+	return status, ok
+}
+
+func GetRakutanInfoByID(c Clients, id int) (ExecStatus[RakutanInfos], bool) {
+	var status ExecStatus[RakutanInfos]
+	var ok bool
+	status, ok = c.Redis.GetRakutanInfoByID(id)
+	if !ok {
+		status, ok = c.Postgres.GetRakutanInfoByID(id)
+	}
 	return status, ok
 }

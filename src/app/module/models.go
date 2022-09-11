@@ -62,10 +62,12 @@ type RakutanInfos []RakutanInfo
 
 type FlexMessages []FlexMessage
 
+type RakutanInfoIDs []interface{}
+
 type KUWikiKakomon string
 
 type ReturnType interface {
-	RakutanInfos | FlexMessages | KUWikiKakomon
+	RakutanInfos | FlexMessages | RakutanInfoIDs | KUWikiKakomon
 }
 
 type ExecStatus[T ReturnType] struct {

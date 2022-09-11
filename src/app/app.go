@@ -64,6 +64,7 @@ func main() {
 		defer postgres.Client.Close()
 
 		redis := module.CreateRedisClient()
+		defer redis.Client.Close()
 		clients := module.Clients{Postgres: postgres, Redis: redis}
 
 		for _, event := range events {
@@ -152,14 +153,35 @@ func main() {
 		}
 	})
 
-	module.PreloadJson()
-	richmenu.PreloadJson()
+	initialize(&env)
 
 	err := router.Run(":" + env.AppPort)
 	if err != nil {
 		fmt.Println("Error: creating router failed.")
 		return
 	}
+}
+
+func initialize(e *module.Environments) {
+	postgres := module.CreatePostgresClient(e)
+	defer postgres.Client.Close()
+	redis := module.CreateRedisClient()
+	defer redis.Client.Close()
+
+	var ids module.RakutanInfoIDs
+	var ok bool
+
+	ids, ok = postgres.GetAllIDByOmikuji(module.Rakutan)
+	if ok {
+		redis.SAddRedis("set:rakutan", ids)
+	}
+	ids, ok = postgres.GetAllIDByOmikuji(module.Onitan)
+	if ok {
+		redis.SAddRedis("set:onitan", ids)
+	}
+
+	module.PreloadJson()
+	richmenu.PreloadJson()
 }
 
 func searchRakutan(c module.Clients, env *module.Environments, uid string, searchText string) (module.ExecStatus[module.FlexMessages], bool) {

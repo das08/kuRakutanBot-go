@@ -160,6 +160,27 @@ func (p *Postgres) GetRakutanInfoByLectureName(lectureName string, subStringSear
 	return status, true
 }
 
+func (p *Postgres) GetAllIDByOmikuji(types OmikujiType) (RakutanInfoIDs, bool) {
+	var ids RakutanInfoIDs
+	var query string
+	switch types {
+	case Rakutan:
+		query = "SELECT id, faculty_name, lecture_name, register, passed FROM mat_view_rakutan"
+	case Onitan:
+		query = "SELECT id, faculty_name, lecture_name, register, passed FROM mat_view_onitan"
+	}
+	rows, err := p.Client.Query(p.Ctx, query)
+	if err != nil {
+		log.Println(err)
+		return ids, false
+	}
+	rakutanInfos := ScanRakutanInfo(rows)
+	for _, rakutanInfo := range rakutanInfos {
+		ids = append(ids, rakutanInfo.ID)
+	}
+	return ids, true
+}
+
 func (p *Postgres) GetRakutanInfoByOmikuji(types OmikujiType) (ExecStatus[RakutanInfos], bool) {
 	var status ExecStatus[RakutanInfos]
 	var err error

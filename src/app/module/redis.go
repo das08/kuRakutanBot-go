@@ -36,6 +36,15 @@ func (r *Redis) SetRedis(key string, value interface{}, cacheTime time.Duration)
 	}
 }
 
+func (r *Redis) SAddRedis(key string, values []interface{}) {
+	err := r.Client.SAdd(r.Ctx, key, values...).Err()
+	if err != nil {
+		log.Println("[Redis] Error SADD:", err)
+	} else {
+		log.Printf("[Redis] SADD %s to redis", key)
+	}
+}
+
 func (r *Redis) GetRakutanInfoByID(id int) (ExecStatus[RakutanInfos], bool) {
 	var status ExecStatus[RakutanInfos]
 	var rakutanInfo RakutanInfo

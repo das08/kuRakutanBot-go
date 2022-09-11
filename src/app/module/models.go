@@ -1,6 +1,8 @@
 package module
 
-import "github.com/jackc/pgtype"
+import (
+	"github.com/jackc/pgtype"
+)
 
 type Clients struct {
 	Postgres *Postgres

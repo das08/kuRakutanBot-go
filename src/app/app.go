@@ -8,9 +8,9 @@ import (
 	"github.com/line/line-bot-sdk-go/v7/linebot"
 	"log"
 	"net/http"
-	"strings"
-
 	_ "net/http/pprof"
+	"strings"
+	"time"
 )
 
 func main() {
@@ -36,7 +36,7 @@ func main() {
 			return
 		}
 		if ok {
-			go postgres.InsertUserAction(uid, module.UserActionVerify)
+			module.AppendUserActionLogPool(uid, module.UserActionVerify)
 			err = postgres.UpdateUserVerification(uid)
 			if err != nil {
 				c.String(http.StatusOK, module.ErrorMessageDatabaseError)
@@ -95,7 +95,7 @@ func main() {
 						if verified {
 							lb.SendTextMessage(module.SuccessAlreadyVerified)
 						} else {
-							go postgres.InsertUserAction(uid, module.UserActionEmail)
+							module.AppendUserActionLogPool(uid, module.UserActionEmail)
 							log.Printf("[Bot] Sent verification")
 							module.SendVerificationCmd(clients, &env, lb, messageText)
 						}
@@ -103,7 +103,7 @@ func main() {
 					}
 
 					// その他講義名が送られてきた場合
-					go postgres.InsertUserAction(uid, module.UserActionSearch)
+					module.AppendUserActionLogPool(uid, module.UserActionSearch)
 					searchStatus, ok := searchRakutan(clients, &env, uid, messageText)
 					log.Printf("[Bot] Search: %s", messageText)
 					if !ok {
@@ -128,11 +128,11 @@ func main() {
 					switch params.Type {
 					case module.Fav:
 						// TODO: validate
-						go postgres.InsertUserAction(uid, module.UserActionSetFav)
+						module.AppendUserActionLogPool(uid, module.UserActionSetFav)
 						message, ok = postgres.ToggleFavorite(uid, id)
 					case module.Del:
 						// TODO: validate
-						go postgres.InsertUserAction(uid, module.UserActionUnsetFav)
+						module.AppendUserActionLogPool(uid, module.UserActionUnsetFav)
 						message, ok = postgres.UnsetFavorite(uid, id)
 					}
 					if ok {
@@ -151,6 +151,31 @@ func main() {
 	})
 
 	initialize(&env)
+
+	go func() {
+		t := time.NewTicker(5 * time.Second)
+		defer t.Stop()
+		postgres := module.CreatePostgresClient(&env)
+		defer postgres.Client.Close()
+		for {
+			select {
+			case <-t.C:
+				// 5秒ごとにユーザーアクションログをDBに書き込む
+				err := postgres.BulkInsertUserAction()
+				if err != nil {
+					panic(err)
+					return
+				}
+				// UserActionLogPoolSizeが一定数を超えたらログをDBに書き込む
+			case <-module.UserActionLogPoolFull:
+				err := postgres.BulkInsertUserAction()
+				if err != nil {
+					panic(err)
+					return
+				}
+			}
+		}
+	}()
 
 	err := router.Run(":" + env.AppPort)
 	if err != nil {

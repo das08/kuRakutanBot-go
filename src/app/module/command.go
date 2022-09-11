@@ -77,7 +77,7 @@ func IsCommand(messageText string) (bool, func(c Clients, env *Environments, lb 
 }
 
 func helpCmd(c Clients, _ *Environments, lb *LINEBot) {
-	go c.Postgres.InsertUserAction(lb.senderUid, UserActionHelp)
+	AppendUserActionLogPool(lb.senderUid, UserActionHelp)
 	log.Printf("helpCmd: %s %v", lb.senderUid, HelpJson)
 	lb.SendFlexMessage(HelpJson)
 }
@@ -95,7 +95,7 @@ func iconCmd(_ Clients, _ *Environments, lb *LINEBot) {
 }
 
 func infoCmd(c Clients, _ *Environments, lb *LINEBot) {
-	go c.Postgres.InsertUserAction(lb.senderUid, UserActionInfo)
+	AppendUserActionLogPool(lb.senderUid, UserActionInfo)
 	lb.SendFlexMessage(InfoJson)
 }
 
@@ -105,7 +105,7 @@ func loadFlexMessages(filename string, altText string) FlexMessages {
 }
 
 func rakutanCmd(c Clients, env *Environments, lb *LINEBot) {
-	go c.Postgres.InsertUserAction(lb.senderUid, UserActionRakutan)
+	AppendUserActionLogPool(lb.senderUid, UserActionRakutan)
 	status, ok := GetRakutanInfo(c, env, lb.senderUid, Omikuji, Rakutan)
 	if ok {
 		flexMessages := CreateRakutanDetail(status.Result[0], env, Rakutan)
@@ -116,7 +116,7 @@ func rakutanCmd(c Clients, env *Environments, lb *LINEBot) {
 }
 
 func onitanCmd(c Clients, env *Environments, lb *LINEBot) {
-	go c.Postgres.InsertUserAction(lb.senderUid, UserActionOnitan)
+	AppendUserActionLogPool(lb.senderUid, UserActionOnitan)
 	status, ok := GetRakutanInfo(c, env, lb.senderUid, Omikuji, Onitan)
 	if ok {
 		flexMessages := CreateRakutanDetail(status.Result[0], env, Rakutan)
@@ -127,7 +127,7 @@ func onitanCmd(c Clients, env *Environments, lb *LINEBot) {
 }
 
 func getFavoritesCmd(c Clients, env *Environments, lb *LINEBot) {
-	go c.Postgres.InsertUserAction(lb.senderUid, UserActionGetFav)
+	AppendUserActionLogPool(lb.senderUid, UserActionGetFav)
 	queryStatus, ok := c.Postgres.GetFavorites(lb.senderUid)
 	if !ok {
 		lb.SendTextMessage(queryStatus.Err)

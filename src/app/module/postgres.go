@@ -16,6 +16,10 @@ type Postgres struct {
 	Ctx    context.Context
 }
 
+var UserActionLogPool [][]interface{}
+var UserActionLogPoolSize = 50
+var UserActionLogPoolFull = make(chan bool)
+
 func CreatePostgresClient(e *Environments) *Postgres {
 	ctx := context.Background()
 	dsn := fmt.Sprintf("host=/var/run/postgresql port=%s user=%s password=%s dbname=%s sslmode=disable", e.DbPort, e.DbUser, e.DbPass, e.DbName)
@@ -71,6 +75,23 @@ func (p *Postgres) InsertUserAction(userID string, action UserAction) error {
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func (p *Postgres) BulkInsertUserAction() error {
+	copyCount, err := p.Client.CopyFrom(
+		p.Ctx,
+		pgx.Identifier{"user_logs"},
+		[]string{"uid", "action", "timestamp"},
+		pgx.CopyFromRows(UserActionLogPool),
+	)
+	if err != nil {
+		return err
+	}
+	if copyCount != 0 {
+		log.Printf("[Bulk] Copied %d rows\n", copyCount)
+	}
+	ClearUserActionLogPool()
 	return nil
 }
 
@@ -326,4 +347,15 @@ func GetRakutanInfoByID(c Clients, id int) (ExecStatus[RakutanInfos], bool) {
 		status, ok = c.Postgres.GetRakutanInfoByID(id)
 	}
 	return status, ok
+}
+
+func AppendUserActionLogPool(uid string, action UserAction) {
+	UserActionLogPool = append(UserActionLogPool, []interface{}{uid, action, time.Now()})
+	if len(UserActionLogPool) >= UserActionLogPoolSize {
+		UserActionLogPoolFull <- true
+	}
+}
+
+func ClearUserActionLogPool() {
+	UserActionLogPool = UserActionLogPool[:0]
 }

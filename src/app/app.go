@@ -136,7 +136,7 @@ func main() {
 						message, ok = postgres.UnsetFavorite(uid, id)
 					}
 					if ok {
-						status, found = module.GetRakutanInfoByID(clients, id)
+						status, found, _ = module.GetRakutanInfoByID(clients, id)
 						if found {
 							lb.SendTextMessage(fmt.Sprintf(message, status.Result[0].LectureName))
 						} else {

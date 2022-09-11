@@ -21,6 +21,7 @@ func CreateRedisClient() *Redis {
 		Password: "",
 		DB:       0,
 	})
+	rdb.Options().PoolSize = 50
 	ctx := context.Background()
 
 	return &Redis{Client: rdb, Ctx: ctx}

@@ -296,12 +296,12 @@ const (
 )
 
 func GetRakutanInfo(c Clients, e *Environments, uid string, method FindByMethod, value interface{}) (ExecStatus[RakutanInfos], bool) {
-	var ok bool
+	var ok, isFromDB bool
 	var status ExecStatus[RakutanInfos]
 
 	switch method {
 	case ID:
-		status, ok = GetRakutanInfoByID(c, value.(int))
+		status, ok, isFromDB = GetRakutanInfoByID(c, value.(int))
 	case Name:
 		var subStringSearch bool
 		searchWord := value.(string)
@@ -316,14 +316,16 @@ func GetRakutanInfo(c Clients, e *Environments, uid string, method FindByMethod,
 		if !ok {
 			status, ok = c.Postgres.GetRakutanInfoByOmikuji(value.(OmikujiType))
 		} else {
-			status, ok = GetRakutanInfoByID(c, id)
+			status, ok, isFromDB = GetRakutanInfoByID(c, id)
 		}
 	}
 
 	// Set isVerified, isFavorite and kakomonURL
 	if ok && len(status.Result) == 1 {
-		redisKey := fmt.Sprintf("rinfo:%d", status.Result[0].ID)
-		go c.Redis.SetRedis(redisKey, status.Result[0], 720*time.Hour)
+		if isFromDB {
+			redisKey := fmt.Sprintf("rinfo:%d", status.Result[0].ID)
+			go c.Redis.SetRedis(redisKey, status.Result[0], 720*time.Hour)
+		}
 
 		if faforites, ok := c.Postgres.GetFavoriteByID(uid, status.Result[0].ID); ok && len(faforites.Result) == 1 {
 			status.Result[0].IsFavorite = true
@@ -339,14 +341,15 @@ func GetRakutanInfo(c Clients, e *Environments, uid string, method FindByMethod,
 	return status, ok
 }
 
-func GetRakutanInfoByID(c Clients, id int) (ExecStatus[RakutanInfos], bool) {
+func GetRakutanInfoByID(c Clients, id int) (ExecStatus[RakutanInfos], bool, bool) {
 	var status ExecStatus[RakutanInfos]
-	var ok bool
+	var ok, isFromDB bool
 	status, ok = c.Redis.GetRakutanInfoByID(id)
 	if !ok {
 		status, ok = c.Postgres.GetRakutanInfoByID(id)
+		isFromDB = true
 	}
-	return status, ok
+	return status, ok, isFromDB
 }
 
 func AppendUserActionLogPool(uid string, action UserAction) {

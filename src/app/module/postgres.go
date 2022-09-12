@@ -181,6 +181,20 @@ func (p *Postgres) GetRakutanInfoByLectureName(lectureName string, subStringSear
 	return status, true
 }
 
+func (p *Postgres) GetAllRakutanInfo() (RakutanInfoIDs, bool) {
+	var ids RakutanInfoIDs
+	rows, err := p.Client.Query(p.Ctx, "SELECT id, faculty_name, lecture_name, register, passed FROM rakutan")
+	if err != nil {
+		log.Println(err)
+		return ids, false
+	}
+	rakutanInfos := ScanRakutanInfo(rows)
+	for _, rakutanInfo := range rakutanInfos {
+		ids = append(ids, rakutanInfo.ID)
+	}
+	return ids, true
+}
+
 func (p *Postgres) GetAllIDByOmikuji(types OmikujiType) (RakutanInfoIDs, bool) {
 	var ids RakutanInfoIDs
 	var query string
@@ -324,7 +338,7 @@ func GetRakutanInfo(c Clients, e *Environments, uid string, method FindByMethod,
 	if ok && len(status.Result) == 1 {
 		if isFromDB {
 			redisKey := fmt.Sprintf("rinfo:%d", status.Result[0].ID)
-			go c.Redis.SetRedis(redisKey, status.Result[0], 720*time.Hour)
+			go c.Redis.SetRedis(redisKey, status.Result[0], 0)
 		}
 
 		if faforites, ok := c.Postgres.GetFavoriteByID(uid, status.Result[0].ID); ok && len(faforites.Result) == 1 {

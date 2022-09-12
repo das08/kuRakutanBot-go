@@ -46,6 +46,15 @@ func (r *Redis) SAddRedis(key string, values []interface{}) {
 	}
 }
 
+func (r *Redis) DelRedis(key string) {
+	err := r.Client.Del(r.Ctx, key).Err()
+	if err != nil {
+		log.Println("[Redis] Error DEL:", err)
+	} else {
+		log.Printf("[Redis] DEL %s from redis", key)
+	}
+}
+
 func (r *Redis) GetOmikujiByID(types OmikujiType) (int, bool) {
 	var id int
 	key := fmt.Sprintf("set:%s", types)

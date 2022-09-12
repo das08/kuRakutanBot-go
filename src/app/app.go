@@ -192,6 +192,15 @@ func initialize(e *module.Environments) {
 	var ids module.RakutanInfoIDs
 	var ok bool
 
+	// Redisのキャッシュ削除
+	redis.DelRedis("set:all")
+	redis.DelRedis("set:rakutan")
+	redis.DelRedis("set:onitan")
+
+	ids, ok = postgres.GetAllRakutanInfo()
+	if ok {
+		redis.SAddRedis("set:all", ids)
+	}
 	ids, ok = postgres.GetAllIDByOmikuji(module.Rakutan)
 	if ok {
 		redis.SAddRedis("set:rakutan", ids)

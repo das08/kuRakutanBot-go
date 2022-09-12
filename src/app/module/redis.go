@@ -97,6 +97,41 @@ func (r *Redis) GetRakutanInfoByID(id int) (ExecStatus[RakutanInfos], bool) {
 	return status, true
 }
 
+func (r *Redis) GetRakutanInfoByIDs(ids []int) (ExecStatus[RakutanInfos], []int) {
+	//ids = []int{18090, 18090, 18090, 18090, 18090, 18090, 18090, 18090, 18090, 18090}
+	log.Printf("[Redis] Getting RakutanInfo by IDs: %v", ids)
+	var status ExecStatus[RakutanInfos]
+	var missingIds []int
+	var redisKeys []string
+	for _, id := range ids {
+		redisKey := fmt.Sprintf("rinfo:%d", id)
+		redisKeys = append(redisKeys, redisKey)
+	}
+	result, err := r.Client.MGet(r.Ctx, redisKeys...).Result()
+	if err != nil {
+		log.Println("[Redis] Error:", err)
+		status.Err = ErrorMessageRedisGetFailed
+		return status, ids
+	}
+	var rakutanInfos RakutanInfos
+	for i, v := range result {
+		var rakutanInfo RakutanInfo
+		if v == nil {
+			missingIds = append(missingIds, ids[i])
+			continue
+		}
+		err = json.Unmarshal([]byte(v.(string)), &rakutanInfo)
+		if err != nil {
+			log.Println("[Redis] Error:", err)
+			status.Err = ErrorMessageRedisGetFailed
+			return status, ids
+		}
+		rakutanInfos = append(rakutanInfos, rakutanInfo)
+	}
+	status.Result = rakutanInfos
+	return status, missingIds
+}
+
 func (r *Redis) GetKakomonURL(key string) (ExecStatus[KUWikiKakomon], bool) {
 	var status ExecStatus[KUWikiKakomon]
 	var kakomonURL KUWikiKakomon

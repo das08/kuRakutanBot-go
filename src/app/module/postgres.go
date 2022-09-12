@@ -162,6 +162,18 @@ func (p *Postgres) GetRakutanInfoByID(id int) (ExecStatus[RakutanInfos], bool) {
 	return status, true
 }
 
+func (p *Postgres) GetRakutanInfoByIds(ids []int) (ExecStatus[RakutanInfos], bool) {
+	var status ExecStatus[RakutanInfos]
+	rows, err := p.Client.Query(p.Ctx, "SELECT * FROM rakutan WHERE id = ANY($1)", ids)
+	if err != nil {
+		log.Println(err)
+		status.Err = ErrorMessageGetRakutanInfoByIDError
+		return status, false
+	}
+	status.Result = ScanRakutanInfo(rows)
+	return status, true
+}
+
 func (p *Postgres) GetRakutanInfoByLectureName(lectureName string, subStringSearch bool) (ExecStatus[RakutanInfos], bool) {
 	var status ExecStatus[RakutanInfos]
 	var rows pgx.Rows
@@ -181,9 +193,9 @@ func (p *Postgres) GetRakutanInfoByLectureName(lectureName string, subStringSear
 	return status, true
 }
 
-func (p *Postgres) GetAllRakutanInfo() (RakutanInfoIDs, bool) {
+func (p *Postgres) GetAllIDByOmikuji10() (RakutanInfoIDs, bool) {
 	var ids RakutanInfoIDs
-	rows, err := p.Client.Query(p.Ctx, "SELECT id, faculty_name, lecture_name, register, passed FROM rakutan")
+	rows, err := p.Client.Query(p.Ctx, "SELECT id, faculty_name, lecture_name, register, passed FROM mat_view_omikuji10")
 	if err != nil {
 		log.Println(err)
 		return ids, false
@@ -337,9 +349,14 @@ func GetRakutanInfo(c Clients, e *Environments, uid string, method FindByMethod,
 	case Omikuji10:
 		var ids []int
 		ids, ok = c.Redis.GetRandomOmikuji(value.(OmikujiType), 10)
-		//if ok {
-		//	status.Result, ok = c.Postgres.GetRakutanInfoByIDs(ids)
-		//}
+		if ok {
+			status, ok = GetRakutanInfoByIDs(c, ids)
+			for _, v := range status.Result {
+				log.Printf("id: %d, name: %s\n", v.ID, v.LectureName)
+			}
+		} else {
+			status.Err = ErrorMessageGetRakutanInfoIDsByOmikujiError
+		}
 	}
 
 	// Set isVerified, isFavorite and kakomonURL
@@ -369,6 +386,27 @@ func GetRakutanInfoByID(c Clients, id int) (ExecStatus[RakutanInfos], bool) {
 			go c.Redis.SetRedis(redisKey, status.Result[0], 0)
 		}
 	}
+	return status, ok
+}
+
+func GetRakutanInfoByIDs(c Clients, ids []int) (ExecStatus[RakutanInfos], bool) {
+	var status ExecStatus[RakutanInfos]
+	var ok bool
+	var missingIDs []int
+	status, missingIDs = c.Redis.GetRakutanInfoByIDs(ids)
+	if len(missingIDs) == 0 {
+		return status, true
+	}
+	var pStatus ExecStatus[RakutanInfos]
+	pStatus, ok = c.Postgres.GetRakutanInfoByIds(missingIDs)
+	if ok {
+		status.Result = append(status.Result, pStatus.Result...)
+		for _, v := range pStatus.Result {
+			redisKey := fmt.Sprintf("rinfo:%d", v.ID)
+			go c.Redis.SetRedis(redisKey, v, 0)
+		}
+	}
+
 	return status, ok
 }
 

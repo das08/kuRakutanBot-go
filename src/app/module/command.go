@@ -1,7 +1,6 @@
 package module
 
 import (
-	richmenu2 "github.com/das08/kuRakutanBot-go/assets/richmenu"
 	"github.com/das08/kuRakutanBot-go/richmenu"
 	"github.com/google/uuid"
 	"log"
@@ -130,15 +129,13 @@ func onitanCmd(c Clients, env *Environments, lb *LINEBot) {
 
 func omikuji10Cmd(c Clients, env *Environments, lb *LINEBot) {
 	AppendUserActionLogPool(lb.senderUid, UserActionOmikuji10)
-	flexMessages := FlexMessages{{FlexContainer: richmenu2.LoadOmikuji10(), AltText: "altText"}}
-	lb.SendFlexMessage(flexMessages)
-	//status, ok := GetRakutanInfo(c, env, lb.senderUid, Omikuji, Rakutan)
-	//if ok {
-	//	flexMessages := CreateRakutanDetail(status.Result[0], env, Rakutan)
-	//	lb.SendFlexMessage(flexMessages)
-	//} else {
-	//	lb.SendTextMessage(status.Err)
-	//}
+	status, ok := GetRakutanInfo(c, env, lb.senderUid, Omikuji10, Ten)
+	if ok {
+		flexMessages := CreateOmikuji10(status.Result)
+		lb.SendFlexMessage(flexMessages)
+	} else {
+		lb.SendTextMessage(status.Err)
+	}
 }
 
 func getFavoritesCmd(c Clients, env *Environments, lb *LINEBot) {

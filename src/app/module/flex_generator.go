@@ -4,11 +4,11 @@ import (
 	"fmt"
 	richmenu2 "github.com/das08/kuRakutanBot-go/assets/richmenu"
 	"github.com/das08/kuRakutanBot-go/richmenu"
-	"github.com/jackc/pgtype"
 	"github.com/line/line-bot-sdk-go/v7/linebot"
 	"log"
 	"math"
 	"net/url"
+	"sort"
 	"strconv"
 )
 
@@ -72,7 +72,7 @@ func CreateRakutanDetail(info RakutanInfo, e *Environments, o OmikujiType) FlexM
 	flexContainer.Header.Contents[0].(*linebot.BoxComponent).Contents[0].(*linebot.ImageComponent).Action.(*linebot.PostbackAction).Data = fmt.Sprintf("type=fav&id=%d&lecname=%s", info.ID, info.LectureName)
 
 	// 単位取得率
-	rakutanPercents := getRakutanPercent(info.Passed, info.Register)
+	rakutanPercents := info.GetRakutanPercentBreakdown()
 	for i := range info.Register.Elements {
 		flexContainer.Body.Contents[0].(*linebot.BoxComponent).Contents[i+1].(*linebot.BoxComponent).Contents[0].(*linebot.TextComponent).Text = fmt.Sprintf("%d年度", e.YEAR-i)
 		flexContainer.Body.Contents[0].(*linebot.BoxComponent).Contents[i+1].(*linebot.BoxComponent).Contents[1].(*linebot.TextComponent).Text = rakutanPercents[i]
@@ -151,6 +151,25 @@ func CreateSearchResult(searchText string, infos RakutanInfos) FlexMessages {
 	return messages
 }
 
+func CreateOmikuji10(r RakutanInfos) FlexMessages {
+	flexContainer := richmenu2.LoadOmikuji10()
+
+	// sort by percentage
+	sort.Slice(r, func(i, j int) bool {
+		return r[i].GetRakutanPercent() > r[j].GetRakutanPercent()
+	})
+
+	for i, info := range r {
+		rakutanJudge := getRakutanJudge(info)
+		flexContainer.Body.Contents[1].(*linebot.BoxComponent).Contents[i].(*linebot.BoxComponent).Contents[0].(*linebot.TextComponent).Text = rakutanJudge.rank
+		flexContainer.Body.Contents[1].(*linebot.BoxComponent).Contents[i].(*linebot.BoxComponent).Contents[0].(*linebot.TextComponent).Color = rakutanJudge.color
+		flexContainer.Body.Contents[1].(*linebot.BoxComponent).Contents[i].(*linebot.BoxComponent).Contents[1].(*linebot.TextComponent).Text = info.LectureName
+		flexContainer.Body.Contents[1].(*linebot.BoxComponent).Contents[i].(*linebot.BoxComponent).Contents[2].(*linebot.TextComponent).Action.(*linebot.MessageAction).Text = fmt.Sprintf("#%d", info.ID)
+	}
+
+	return FlexMessages{{FlexContainer: flexContainer, AltText: "🎊10連！らくたんおみくじ🎊"}}
+}
+
 func CreateFavorites(r RakutanInfos) FlexMessages {
 	var messages FlexMessages
 	favorites := richmenu.FavoritesJson
@@ -225,21 +244,6 @@ func toFlexContainer(json richmenu.Marshal) linebot.FlexContainer {
 	}
 	flexContainer, _ := linebot.UnmarshalFlexMessageJSON(flex)
 	return flexContainer
-}
-
-func getRakutanPercent(passed pgtype.Int2Array, register pgtype.Int2Array) []string {
-	var rakutanPercent []string
-	for i := 0; i < len(passed.Elements); i++ {
-		p := int(passed.Elements[i].Int)
-		r := int(register.Elements[i].Int)
-		breakdown := fmt.Sprintf("(%d/%d)", p, r)
-		if register.Elements[i].Status == pgtype.Null {
-			rakutanPercent = append(rakutanPercent, "---% "+breakdown)
-		} else {
-			rakutanPercent = append(rakutanPercent, fmt.Sprintf("%.1f%% ", getPercentage(p, r))+breakdown)
-		}
-	}
-	return rakutanPercent
 }
 
 func getRakutanJudge(r RakutanInfo) RakutanJudge {

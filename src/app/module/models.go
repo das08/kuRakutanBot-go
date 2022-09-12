@@ -1,6 +1,7 @@
 package module
 
 import (
+	"fmt"
 	"github.com/jackc/pgtype"
 )
 
@@ -15,7 +16,7 @@ const (
 	Normal  OmikujiType = "normal"
 	Rakutan OmikujiType = "rakutan"
 	Onitan  OmikujiType = "onitan"
-	Ten     OmikujiType = "all"
+	Ten     OmikujiType = "omikuji10"
 )
 
 type OmikujiText struct {
@@ -60,6 +61,26 @@ func (r *RakutanInfo) GetLatestDetail() (int, int) {
 		}
 	}
 	return passed, register
+}
+
+func (r *RakutanInfo) GetRakutanPercent() float32 {
+	p, reg := r.GetLatestDetail()
+	return getPercentage(p, reg)
+}
+
+func (r *RakutanInfo) GetRakutanPercentBreakdown() []string {
+	var rakutanPercent []string
+	for i := 0; i < len(r.Passed.Elements); i++ {
+		p := int(r.Passed.Elements[i].Int)
+		reg := int(r.Register.Elements[i].Int)
+		breakdown := fmt.Sprintf("(%d/%d)", p, reg)
+		if r.Register.Elements[i].Status == pgtype.Null {
+			rakutanPercent = append(rakutanPercent, "---% "+breakdown)
+		} else {
+			rakutanPercent = append(rakutanPercent, fmt.Sprintf("%.1f%% ", getPercentage(p, reg))+breakdown)
+		}
+	}
+	return rakutanPercent
 }
 
 type RakutanInfos []RakutanInfo

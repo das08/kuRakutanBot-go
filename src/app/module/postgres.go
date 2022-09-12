@@ -351,9 +351,6 @@ func GetRakutanInfo(c Clients, e *Environments, uid string, method FindByMethod,
 		ids, ok = c.Redis.GetRandomOmikuji(value.(OmikujiType), 10)
 		if ok {
 			status, ok = GetRakutanInfoByIDs(c, ids)
-			for _, v := range status.Result {
-				log.Printf("id: %d, name: %s\n", v.ID, v.LectureName)
-			}
 		} else {
 			status.Err = ErrorMessageGetRakutanInfoIDsByOmikujiError
 		}

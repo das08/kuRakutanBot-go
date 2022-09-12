@@ -1,0 +1,484 @@
+{
+  "type": "bubble",
+  "header": {
+    "type": "box",
+    "layout": "vertical",
+    "contents": [
+      {
+        "type": "text",
+        "text": "🎊10連！らくたんおみくじ🎊",
+        "weight": "bold",
+        "color": "#ffc107",
+        "size": "sm",
+        "wrap": true,
+        "align": "center"
+      }
+    ],
+    "spacing": "md",
+    "paddingTop": "18px",
+    "paddingBottom": "18px"
+  },
+  "body": {
+    "type": "box",
+    "layout": "vertical",
+    "contents": [
+      {
+        "type": "box",
+        "layout": "horizontal",
+        "contents": [
+          {
+            "type": "text",
+            "text": "おみくじ結果",
+            "size": "xxs",
+            "color": "#aaaaaa",
+            "flex": 0
+          }
+        ]
+      },
+      {
+        "type": "box",
+        "layout": "vertical",
+        "margin": "md",
+        "contents": [
+          {
+            "type": "box",
+            "layout": "horizontal",
+            "contents": [
+              {
+                "type": "text",
+                "text": "SSS",
+                "flex": 2,
+                "size": "sm",
+                "weight": "bold",
+                "color": "#c3c45b",
+                "align": "start",
+                "style": "italic"
+              },
+              {
+                "type": "text",
+                "text": "自然地理学",
+                "size": "sm",
+                "color": "#666666",
+                "flex": 11,
+                "wrap": true
+              },
+              {
+                "type": "text",
+                "text": "選択",
+                "size": "md",
+                "color": "#4c7cf5",
+                "align": "end",
+                "weight": "bold",
+                "decoration": "underline",
+                "margin": "none",
+                "action": {
+                  "type": "message",
+                  "label": "action",
+                  "text": "#123456"
+                },
+                "offsetBottom": "3px",
+                "flex": 2
+              }
+            ],
+            "margin": "lg"
+          },
+          {
+            "type": "box",
+            "layout": "horizontal",
+            "contents": [
+              {
+                "type": "text",
+                "text": "SSS",
+                "flex": 2,
+                "size": "sm",
+                "weight": "bold",
+                "color": "#c3c45b",
+                "align": "start",
+                "style": "italic"
+              },
+              {
+                "type": "text",
+                "text": "自然地理学",
+                "size": "sm",
+                "color": "#666666",
+                "flex": 11,
+                "wrap": true
+              },
+              {
+                "type": "text",
+                "text": "選択",
+                "size": "md",
+                "color": "#4c7cf5",
+                "align": "end",
+                "weight": "bold",
+                "decoration": "underline",
+                "margin": "none",
+                "action": {
+                  "type": "message",
+                  "label": "action",
+                  "text": "#123456"
+                },
+                "offsetBottom": "3px",
+                "flex": 2
+              }
+            ],
+            "margin": "lg"
+          },
+          {
+            "type": "box",
+            "layout": "horizontal",
+            "contents": [
+              {
+                "type": "text",
+                "text": "SSS",
+                "flex": 2,
+                "size": "sm",
+                "weight": "bold",
+                "color": "#c3c45b",
+                "align": "start",
+                "style": "italic"
+              },
+              {
+                "type": "text",
+                "text": "自然地理学",
+                "size": "sm",
+                "color": "#666666",
+                "flex": 11,
+                "wrap": true
+              },
+              {
+                "type": "text",
+                "text": "選択",
+                "size": "md",
+                "color": "#4c7cf5",
+                "align": "end",
+                "weight": "bold",
+                "decoration": "underline",
+                "margin": "none",
+                "action": {
+                  "type": "message",
+                  "label": "action",
+                  "text": "#123456"
+                },
+                "offsetBottom": "3px",
+                "flex": 2
+              }
+            ],
+            "margin": "lg"
+          },
+          {
+            "type": "box",
+            "layout": "horizontal",
+            "contents": [
+              {
+                "type": "text",
+                "text": "SSS",
+                "flex": 2,
+                "size": "sm",
+                "weight": "bold",
+                "color": "#c3c45b",
+                "align": "start",
+                "style": "italic"
+              },
+              {
+                "type": "text",
+                "text": "自然地理学",
+                "size": "sm",
+                "color": "#666666",
+                "flex": 11,
+                "wrap": true
+              },
+              {
+                "type": "text",
+                "text": "選択",
+                "size": "md",
+                "color": "#4c7cf5",
+                "align": "end",
+                "weight": "bold",
+                "decoration": "underline",
+                "margin": "none",
+                "action": {
+                  "type": "message",
+                  "label": "action",
+                  "text": "#123456"
+                },
+                "offsetBottom": "3px",
+                "flex": 2
+              }
+            ],
+            "margin": "lg"
+          },
+          {
+            "type": "box",
+            "layout": "horizontal",
+            "contents": [
+              {
+                "type": "text",
+                "text": "SSS",
+                "flex": 2,
+                "size": "sm",
+                "weight": "bold",
+                "color": "#c3c45b",
+                "align": "start",
+                "style": "italic"
+              },
+              {
+                "type": "text",
+                "text": "自然地理学",
+                "size": "sm",
+                "color": "#666666",
+                "flex": 11,
+                "wrap": true
+              },
+              {
+                "type": "text",
+                "text": "選択",
+                "size": "md",
+                "color": "#4c7cf5",
+                "align": "end",
+                "weight": "bold",
+                "decoration": "underline",
+                "margin": "none",
+                "action": {
+                  "type": "message",
+                  "label": "action",
+                  "text": "#123456"
+                },
+                "offsetBottom": "3px",
+                "flex": 2
+              }
+            ],
+            "margin": "lg"
+          },
+          {
+            "type": "box",
+            "layout": "horizontal",
+            "contents": [
+              {
+                "type": "text",
+                "text": "SSS",
+                "flex": 2,
+                "size": "sm",
+                "weight": "bold",
+                "color": "#c3c45b",
+                "align": "start",
+                "style": "italic"
+              },
+              {
+                "type": "text",
+                "text": "自然地理学",
+                "size": "sm",
+                "color": "#666666",
+                "flex": 11,
+                "wrap": true
+              },
+              {
+                "type": "text",
+                "text": "選択",
+                "size": "md",
+                "color": "#4c7cf5",
+                "align": "end",
+                "weight": "bold",
+                "decoration": "underline",
+                "margin": "none",
+                "action": {
+                  "type": "message",
+                  "label": "action",
+                  "text": "#123456"
+                },
+                "offsetBottom": "3px",
+                "flex": 2
+              }
+            ],
+            "margin": "lg"
+          },
+          {
+            "type": "box",
+            "layout": "horizontal",
+            "contents": [
+              {
+                "type": "text",
+                "text": "SSS",
+                "flex": 2,
+                "size": "sm",
+                "weight": "bold",
+                "color": "#c3c45b",
+                "align": "start",
+                "style": "italic"
+              },
+              {
+                "type": "text",
+                "text": "自然地理学",
+                "size": "sm",
+                "color": "#666666",
+                "flex": 11,
+                "wrap": true
+              },
+              {
+                "type": "text",
+                "text": "選択",
+                "size": "md",
+                "color": "#4c7cf5",
+                "align": "end",
+                "weight": "bold",
+                "decoration": "underline",
+                "margin": "none",
+                "action": {
+                  "type": "message",
+                  "label": "action",
+                  "text": "#123456"
+                },
+                "offsetBottom": "3px",
+                "flex": 2
+              }
+            ],
+            "margin": "lg"
+          },
+          {
+            "type": "box",
+            "layout": "horizontal",
+            "contents": [
+              {
+                "type": "text",
+                "text": "SSS",
+                "flex": 2,
+                "size": "sm",
+                "weight": "bold",
+                "color": "#c3c45b",
+                "align": "start",
+                "style": "italic"
+              },
+              {
+                "type": "text",
+                "text": "自然地理学",
+                "size": "sm",
+                "color": "#666666",
+                "flex": 11,
+                "wrap": true
+              },
+              {
+                "type": "text",
+                "text": "選択",
+                "size": "md",
+                "color": "#4c7cf5",
+                "align": "end",
+                "weight": "bold",
+                "decoration": "underline",
+                "margin": "none",
+                "action": {
+                  "type": "message",
+                  "label": "action",
+                  "text": "#123456"
+                },
+                "offsetBottom": "3px",
+                "flex": 2
+              }
+            ],
+            "margin": "lg"
+          },
+          {
+            "type": "box",
+            "layout": "horizontal",
+            "contents": [
+              {
+                "type": "text",
+                "text": "SSS",
+                "flex": 2,
+                "size": "sm",
+                "weight": "bold",
+                "color": "#c3c45b",
+                "align": "start",
+                "style": "italic"
+              },
+              {
+                "type": "text",
+                "text": "自然地理学",
+                "size": "sm",
+                "color": "#666666",
+                "flex": 11,
+                "wrap": true
+              },
+              {
+                "type": "text",
+                "text": "選択",
+                "size": "md",
+                "color": "#4c7cf5",
+                "align": "end",
+                "weight": "bold",
+                "decoration": "underline",
+                "margin": "none",
+                "action": {
+                  "type": "message",
+                  "label": "action",
+                  "text": "#123456"
+                },
+                "offsetBottom": "3px",
+                "flex": 2
+              }
+            ],
+            "margin": "lg"
+          },
+          {
+            "type": "box",
+            "layout": "horizontal",
+            "contents": [
+              {
+                "type": "text",
+                "text": "SSS",
+                "flex": 2,
+                "size": "sm",
+                "weight": "bold",
+                "color": "#c3c45b",
+                "align": "start",
+                "style": "italic"
+              },
+              {
+                "type": "text",
+                "text": "自然地理学",
+                "size": "sm",
+                "color": "#666666",
+                "flex": 11,
+                "wrap": true
+              },
+              {
+                "type": "text",
+                "text": "選択",
+                "size": "md",
+                "color": "#4c7cf5",
+                "align": "end",
+                "weight": "bold",
+                "decoration": "underline",
+                "margin": "none",
+                "action": {
+                  "type": "message",
+                  "label": "action",
+                  "text": "#123456"
+                },
+                "offsetBottom": "3px",
+                "flex": 2
+              }
+            ],
+            "margin": "lg"
+          }
+        ]
+      },
+      {
+        "type": "separator",
+        "margin": "lg"
+      }
+    ]
+  },
+  "styles": {
+    "header": {
+      "backgroundColor": "#3C3C3A"
+    },
+    "body": {
+      "backgroundColor": "#F4F3F9"
+    },
+    "footer": {
+      "separator": true,
+      "backgroundColor": "#E7E8E3",
+      "separatorColor": "#D6D6D4"
+    }
+  }
+}

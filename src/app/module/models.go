@@ -25,16 +25,17 @@ type OmikujiText struct {
 type UserAction string
 
 const (
-	UserActionSearch   UserAction = "search"
-	UserActionRakutan  UserAction = "rakutan"
-	UserActionOnitan   UserAction = "onitan"
-	UserActionSetFav   UserAction = "set_fav"
-	UserActionUnsetFav UserAction = "unset_fav"
-	UserActionGetFav   UserAction = "get_fav"
-	UserActionInfo     UserAction = "info"
-	UserActionHelp     UserAction = "help"
-	UserActionEmail    UserAction = "email"
-	UserActionVerify   UserAction = "verify"
+	UserActionSearch    UserAction = "search"
+	UserActionRakutan   UserAction = "rakutan"
+	UserActionOnitan    UserAction = "onitan"
+	UserActionOmikuji10 UserAction = "omikuji10"
+	UserActionSetFav    UserAction = "set_fav"
+	UserActionUnsetFav  UserAction = "unset_fav"
+	UserActionGetFav    UserAction = "get_fav"
+	UserActionInfo      UserAction = "info"
+	UserActionHelp      UserAction = "help"
+	UserActionEmail     UserAction = "email"
+	UserActionVerify    UserAction = "verify"
 )
 
 type RakutanInfo struct {

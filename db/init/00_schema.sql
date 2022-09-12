@@ -2,7 +2,7 @@ CREATE DATABASE rakutan;
 
 \c rakutan
 
-CREATE TYPE user_action AS ENUM ('search', 'rakutan', 'onitan', 'set_fav', 'unset_fav', 'get_fav', 'info', 'help', 'email', 'verify');
+CREATE TYPE user_action AS ENUM ('search', 'rakutan', 'omikuji10', 'onitan', 'set_fav', 'unset_fav', 'get_fav', 'info', 'help', 'email', 'verify');
 
 CREATE TABLE users (
     uid VARCHAR(64) NOT NULL,

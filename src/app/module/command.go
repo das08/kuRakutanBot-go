@@ -1,6 +1,7 @@
 package module
 
 import (
+	richmenu2 "github.com/das08/kuRakutanBot-go/assets/richmenu"
 	"github.com/das08/kuRakutanBot-go/richmenu"
 	"github.com/google/uuid"
 	"log"
@@ -33,6 +34,7 @@ var Commands = [...]Command{
 	{Keyword: "楽単詳細", SendFunction: judgeDetailCmd},
 	{Keyword: "楽単", SendFunction: rakutanCmd},
 	{Keyword: "おみくじ", SendFunction: rakutanCmd},
+	{Keyword: "10連おみくじ", SendFunction: omikuji10Cmd},
 	{Keyword: "楽単おみくじ", SendFunction: rakutanCmd},
 	{Keyword: "鬼単", SendFunction: onitanCmd},
 	{Keyword: "鬼単おみくじ", SendFunction: onitanCmd},
@@ -124,6 +126,19 @@ func onitanCmd(c Clients, env *Environments, lb *LINEBot) {
 	} else {
 		lb.SendTextMessage(status.Err)
 	}
+}
+
+func omikuji10Cmd(c Clients, env *Environments, lb *LINEBot) {
+	AppendUserActionLogPool(lb.senderUid, UserActionOmikuji10)
+	flexMessages := FlexMessages{{FlexContainer: richmenu2.LoadOmikuji10(), AltText: "altText"}}
+	lb.SendFlexMessage(flexMessages)
+	//status, ok := GetRakutanInfo(c, env, lb.senderUid, Omikuji, Rakutan)
+	//if ok {
+	//	flexMessages := CreateRakutanDetail(status.Result[0], env, Rakutan)
+	//	lb.SendFlexMessage(flexMessages)
+	//} else {
+	//	lb.SendTextMessage(status.Err)
+	//}
 }
 
 func getFavoritesCmd(c Clients, env *Environments, lb *LINEBot) {

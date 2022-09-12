@@ -15,6 +15,7 @@ const (
 	Normal  OmikujiType = "normal"
 	Rakutan OmikujiType = "rakutan"
 	Onitan  OmikujiType = "onitan"
+	Ten     OmikujiType = "all"
 )
 
 type OmikujiText struct {

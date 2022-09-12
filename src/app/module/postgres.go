@@ -307,15 +307,16 @@ const (
 	Name FindByMethod = iota
 	ID
 	Omikuji
+	Omikuji10
 )
 
 func GetRakutanInfo(c Clients, e *Environments, uid string, method FindByMethod, value interface{}) (ExecStatus[RakutanInfos], bool) {
-	var ok, isFromDB bool
+	var ok bool
 	var status ExecStatus[RakutanInfos]
 
 	switch method {
 	case ID:
-		status, ok, isFromDB = GetRakutanInfoByID(c, value.(int))
+		status, ok = GetRakutanInfoByID(c, value.(int))
 	case Name:
 		var subStringSearch bool
 		searchWord := value.(string)
@@ -325,22 +326,24 @@ func GetRakutanInfo(c Clients, e *Environments, uid string, method FindByMethod,
 		}
 		status, ok = c.Postgres.GetRakutanInfoByLectureName(searchWord, subStringSearch)
 	case Omikuji:
-		var id int
-		id, ok = c.Redis.GetOmikujiByID(value.(OmikujiType))
+		var ids []int
+		ids, ok = c.Redis.GetRandomOmikuji(value.(OmikujiType), 1)
 		if !ok {
 			status, ok = c.Postgres.GetRakutanInfoByOmikuji(value.(OmikujiType))
 		} else {
-			status, ok, isFromDB = GetRakutanInfoByID(c, id)
+			status, ok = GetRakutanInfoByID(c, ids[0])
 		}
+
+	case Omikuji10:
+		var ids []int
+		ids, ok = c.Redis.GetRandomOmikuji(value.(OmikujiType), 10)
+		//if ok {
+		//	status.Result, ok = c.Postgres.GetRakutanInfoByIDs(ids)
+		//}
 	}
 
 	// Set isVerified, isFavorite and kakomonURL
 	if ok && len(status.Result) == 1 {
-		if isFromDB {
-			redisKey := fmt.Sprintf("rinfo:%d", status.Result[0].ID)
-			go c.Redis.SetRedis(redisKey, status.Result[0], 0)
-		}
-
 		if faforites, ok := c.Postgres.GetFavoriteByID(uid, status.Result[0].ID); ok && len(faforites.Result) == 1 {
 			status.Result[0].IsFavorite = true
 		}
@@ -355,15 +358,18 @@ func GetRakutanInfo(c Clients, e *Environments, uid string, method FindByMethod,
 	return status, ok
 }
 
-func GetRakutanInfoByID(c Clients, id int) (ExecStatus[RakutanInfos], bool, bool) {
+func GetRakutanInfoByID(c Clients, id int) (ExecStatus[RakutanInfos], bool) {
 	var status ExecStatus[RakutanInfos]
-	var ok, isFromDB bool
+	var ok bool
 	status, ok = c.Redis.GetRakutanInfoByID(id)
 	if !ok {
 		status, ok = c.Postgres.GetRakutanInfoByID(id)
-		isFromDB = true
+		if ok {
+			redisKey := fmt.Sprintf("rinfo:%d", status.Result[0].ID)
+			go c.Redis.SetRedis(redisKey, status.Result[0], 0)
+		}
 	}
-	return status, ok, isFromDB
+	return status, ok
 }
 
 func AppendUserActionLogPool(uid string, action UserAction) {

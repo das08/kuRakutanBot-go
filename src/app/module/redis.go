@@ -6,6 +6,7 @@ import (
 	"github.com/go-redis/redis/v9"
 	"github.com/goccy/go-json"
 	"log"
+	"strconv"
 	"time"
 )
 
@@ -55,21 +56,23 @@ func (r *Redis) DelRedis(key string) {
 	}
 }
 
-func (r *Redis) GetOmikujiByID(types OmikujiType) (int, bool) {
-	var id int
+func (r *Redis) GetRandomOmikuji(types OmikujiType, count int64) ([]int, bool) {
+	var ids []int
 	key := fmt.Sprintf("set:%s", types)
-	result, err := r.Client.SRandMember(r.Ctx, key).Result()
+	result, err := r.Client.SRandMemberN(r.Ctx, key, count).Result()
 	if err != nil {
 		log.Println("[Redis] Error SRANDMEMBER:", err)
-		return 0, false
+		return ids, false
 	}
-	_, err = fmt.Sscanf(result, "%d", &id)
-	if err != nil {
-		log.Println("[Redis] Error SSCANF:", err)
-		return 0, false
+	for _, v := range result {
+		i, err := strconv.Atoi(v)
+		if err != nil {
+			log.Println("[Redis] Error Atoi:", err)
+			return ids, false
+		}
+		ids = append(ids, i)
 	}
-	log.Printf("[Redis] Get %d from %s", id, key)
-	return id, true
+	return ids, true
 }
 
 func (r *Redis) GetRakutanInfoByID(id int) (ExecStatus[RakutanInfos], bool) {

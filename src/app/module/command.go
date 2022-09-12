@@ -120,7 +120,7 @@ func onitanCmd(c Clients, env *Environments, lb *LINEBot) {
 	AppendUserActionLogPool(lb.senderUid, UserActionOnitan)
 	status, ok := GetRakutanInfo(c, env, lb.senderUid, Omikuji, Onitan)
 	if ok {
-		flexMessages := CreateRakutanDetail(status.Result[0], env, Rakutan)
+		flexMessages := CreateRakutanDetail(status.Result[0], env, Onitan)
 		lb.SendFlexMessage(flexMessages)
 	} else {
 		lb.SendTextMessage(status.Err)

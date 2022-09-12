@@ -15,22 +15,22 @@ var (
 func PreloadJson() {
 	var jsonFile []byte
 	var err error
-	jsonFile = LoadJSON("./assets/richmenu/rakutan_detail.json")
+	jsonFile = LoadJSON("./assets/flexmessage/rakutan_detail.json")
 	RakutanDetailJson, err = UnmarshalRakutanDetail(jsonFile)
 	if err != nil {
 		log.Fatal(err)
 	}
-	jsonFile = LoadJSON("./assets/richmenu/search_result.json")
+	jsonFile = LoadJSON("./assets/flexmessage/search_result.json")
 	SearchResultJson, err = UnmarshalSearchResult(jsonFile)
 	if err != nil {
 		log.Fatal(err)
 	}
-	jsonFile = LoadJSON("./assets/richmenu/search_result_more.json")
+	jsonFile = LoadJSON("./assets/flexmessage/search_result_more.json")
 	SearchResultMoreJson, err = UnmarshalSearchResultMore(jsonFile)
 	if err != nil {
 		log.Fatal(err)
 	}
-	jsonFile = LoadJSON("./assets/richmenu/favorites.json")
+	jsonFile = LoadJSON("./assets/flexmessage/favorites.json")
 	FavoritesJson, err = UnmarshalFavorites(jsonFile)
 	if err != nil {
 		log.Fatal(err)

@@ -53,13 +53,13 @@ var Commands = [...]Command{
 }
 
 func PreloadJson() {
-	HelpJson = loadFlexMessages("./assets/richmenu/help.json", "ヘルプ")
-	JudgeJson = loadFlexMessages("./assets/richmenu/judge_detail.json", "らくたん判定の詳細")
-	InquiryJson = loadFlexMessages("./assets/richmenu/inquiry.json", "お問い合わせ")
-	IconJson = loadFlexMessages("./assets/richmenu/icon.json", "京大楽単bot")
-	InfoJson = loadFlexMessages("./assets/richmenu/info.json", "お知らせ")
-	VerifiedJson = loadFlexMessages("./assets/richmenu/verified.json", "認証済み")
-	VerificationJson = loadFlexMessages("./assets/richmenu/verification.json", "認証")
+	HelpJson = loadFlexMessages("./assets/flexmessage/help.json", "ヘルプ")
+	JudgeJson = loadFlexMessages("./assets/flexmessage/judge_detail.json", "らくたん判定の詳細")
+	InquiryJson = loadFlexMessages("./assets/flexmessage/inquiry.json", "お問い合わせ")
+	IconJson = loadFlexMessages("./assets/flexmessage/icon.json", "京大楽単bot")
+	InfoJson = loadFlexMessages("./assets/flexmessage/info.json", "お知らせ")
+	VerifiedJson = loadFlexMessages("./assets/flexmessage/verified.json", "認証済み")
+	VerificationJson = loadFlexMessages("./assets/flexmessage/verification.json", "認証")
 	log.Println("PreloadJson: Done")
 	log.Printf("PreloadJson: %v", HelpJson)
 }

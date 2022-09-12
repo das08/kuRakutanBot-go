@@ -2,7 +2,7 @@ package module
 
 import (
 	"fmt"
-	richmenu2 "github.com/das08/kuRakutanBot-go/assets/richmenu"
+	"github.com/das08/kuRakutanBot-go/assets/flexmessage"
 	"github.com/das08/kuRakutanBot-go/richmenu"
 	"github.com/line/line-bot-sdk-go/v7/linebot"
 	"log"
@@ -52,7 +52,7 @@ var omikujiType = map[OmikujiType]OmikujiText{
 }
 
 func CreateRakutanDetail(info RakutanInfo, e *Environments, o OmikujiType) FlexMessages {
-	flexContainer := richmenu2.LoadRakutanDetail()
+	flexContainer := flexmessage.LoadRakutanDetail()
 	flexContainer.Header.Contents[0].(*linebot.BoxComponent).Contents[1].(*linebot.TextComponent).Text = "Search ID:#" + toStr(info.ID)
 	flexContainer.Header.Contents[1].(*linebot.TextComponent).Text = info.LectureName                                     // Lecture name
 	flexContainer.Header.Contents[3].(*linebot.BoxComponent).Contents[1].(*linebot.TextComponent).Text = info.FacultyName // Faculty name
@@ -152,7 +152,7 @@ func CreateSearchResult(searchText string, infos RakutanInfos) FlexMessages {
 }
 
 func CreateOmikuji10(r RakutanInfos) FlexMessages {
-	flexContainer := richmenu2.LoadOmikuji10()
+	flexContainer := flexmessage.LoadOmikuji10()
 
 	// sort by percentage
 	sort.Slice(r, func(i, j int) bool {

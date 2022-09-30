@@ -95,8 +95,8 @@ func (p *Postgres) BulkInsertUserAction() error {
 	return nil
 }
 
-func (p *Postgres) InsertVerificationToken(uid string, token string) error {
-	_, err := p.Client.Exec(p.Ctx, "INSERT INTO verification_tokens (uid, token, created_at) VALUES ($1, $2, $3)", uid, token, time.Now())
+func (p *Postgres) UpsertVerificationToken(uid string, token string) error {
+	_, err := p.Client.Exec(p.Ctx, "INSERT INTO verification_tokens (uid, token, created_at) VALUES ($1, $2, $3) ON CONFLICT (uid) DO UPDATE SET token = $2, created_at = $3", uid, token, time.Now())
 	if err != nil {
 		return err
 	}

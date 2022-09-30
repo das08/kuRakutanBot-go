@@ -176,7 +176,7 @@ func SendVerificationCmd(c Clients, env *Environments, lb *LINEBot, email string
 	uuidObj, _ := uuid.NewUUID()
 	data := []byte(lb.senderUid)
 	code := uuid.NewSHA1(uuidObj, data).String()
-	err := c.Postgres.InsertVerificationToken(lb.senderUid, code)
+	err := c.Postgres.UpsertVerificationToken(lb.senderUid, code)
 	if err != nil {
 		lb.SendTextMessage(ErrorMessageInsertVerificateError)
 		return

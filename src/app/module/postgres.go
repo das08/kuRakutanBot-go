@@ -179,9 +179,9 @@ func (p *Postgres) GetRakutanInfoByLectureName(lectureName string, subStringSear
 	var rows pgx.Rows
 	var err error
 	if subStringSearch {
-		rows, err = p.Client.Query(p.Ctx, "SELECT * FROM rakutan WHERE lecture_name LIKE CONCAT('%%', $1::text,'%%')", lectureName)
+		rows, err = p.Client.Query(p.Ctx, "SELECT * FROM rakutan WHERE lecture_name ILIKE CONCAT('%%', $1::text,'%%')", lectureName)
 	} else {
-		rows, err = p.Client.Query(p.Ctx, "SELECT * FROM rakutan WHERE lecture_name LIKE CONCAT($1::text,'%%')", lectureName)
+		rows, err = p.Client.Query(p.Ctx, "SELECT * FROM rakutan WHERE lecture_name ILIKE CONCAT($1::text,'%%')", lectureName)
 	}
 
 	if err != nil {

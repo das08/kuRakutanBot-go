@@ -26,13 +26,11 @@ services:
       - "127.0.0.1:8082:8082"
 
   postgres:
+    image: postgres:14.4-alpine
     container_name: rakutan-db
     networks:
       - grafana
       - rakutan
-    build:
-      context: ./db
-      dockerfile: Dockerfile
     command: -c 'config_file=/etc/postgresql/postgresql.conf'
     volumes:
       - postgres:/var/lib/postgresql/data

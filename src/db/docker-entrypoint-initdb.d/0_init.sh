@@ -1,1 +1,0 @@
-mongoimport --authenticationDatabase admin --username rakutanbot --password QoS64f4wXSeoj67Or2u5 --db rakutanDB --collection rakutan2021 --drop --file /docker-entrypoint-initdb.d/rakutan2021.json --jsonArray

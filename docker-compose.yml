@@ -15,7 +15,6 @@ services:
     restart: always
     tty: true
     volumes:
-      - dbsocket:/var/run/postgresql
       - ./src/app:/usr/src/app
     depends_on:
       - postgres
@@ -34,7 +33,6 @@ services:
     command: -c 'config_file=/etc/postgresql/postgresql.conf'
     volumes:
       - postgres:/var/lib/postgresql/data
-      - dbsocket:/var/run/postgresql
       - ./db/init:/docker-entrypoint-initdb.d
       - ./db/conf/postgresql.conf:/etc/postgresql/postgresql.conf
     ports:
@@ -100,6 +98,5 @@ services:
 volumes:
   postgres:
   redis:
-  dbsocket:
   influx:
   grafana:

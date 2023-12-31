@@ -17,8 +17,7 @@ type Redis struct {
 
 func CreateRedisClient() *Redis {
 	rdb := redis.NewClient(&redis.Options{
-		Network:  "unix",
-		Addr:     "/tmp/docker/redis.sock",
+		Addr:     "redis:6379",
 		Password: "",
 		DB:       0,
 	})

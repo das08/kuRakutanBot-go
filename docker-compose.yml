@@ -1,4 +1,4 @@
-version: '2'
+version: '3.8'
 
 networks:
   grafana:
@@ -17,8 +17,6 @@ services:
     volumes:
       - dbsocket:/var/run/postgresql
       - ./src/app:/usr/src/app
-    volumes_from:
-      - redissocket
     depends_on:
       - postgres
       - redis
@@ -53,24 +51,39 @@ services:
     networks:
       - rakutan
     restart: always
-    command: redis-server /usr/local/etc/redis/redis.conf --appendonly yes
+    command: redis-server --appendonly yes
     volumes:
       - redis:/data
-      - ./redis/conf/redis.conf:/usr/local/etc/redis/redis.conf
-    volumes_from:
-      - redissocket
 
-#  kuwiki-mock:
-#    container_name: kuwiki-mock
-#    networks:
-#      - rakutan
-#    build:
-#      context: ./src/kuwiki-mock
-#      dockerfile: Dockerfile
-#    restart: always
-#    tty: true
-#    ports:
-#      - "127.0.0.1:8000:8000"
+  kuwiki-mock:
+    container_name: kuwiki-mock
+    networks:
+      - rakutan
+    build:
+      context: ./src/kuwiki-mock
+      dockerfile: Dockerfile
+    restart: always
+    tty: true
+    ports:
+      - "127.0.0.1:8000:8000"
+    profiles:
+      - mock
+
+  grafana:
+    image: grafana/grafana:latest
+    networks:
+      - grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_BASIC_ENABLED=false
+    profiles:
+      - metrics
+    volumes:
+      - ./src/grafana:/etc/grafana/provisioning/
+      - grafana:/var/lib/grafana
 
   influxdb:
     container_name: influxdb
@@ -81,29 +94,10 @@ services:
       - "8086:8086"
     environment:
       - INFLUXDB_DB=k6
+    profiles:
+      - metrics
     volumes:
       - influx:/var/lib/influxdb
-
-  grafana:
-    image: grafana/grafana:latest
-    networks:
-      - grafana
-      - rakutan
-    ports:
-      - "3000:3000"
-    environment:
-      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
-      - GF_AUTH_ANONYMOUS_ENABLED=true
-      - GF_AUTH_BASIC_ENABLED=false
-    volumes:
-      - ./src/grafana:/etc/grafana/provisioning/
-      - grafana:/var/lib/grafana
-
-  redissocket:
-    image: busybox
-    command: chmod -R 777 /tmp/docker
-    volumes:
-      - /tmp/docker/
 
 volumes:
   postgres:

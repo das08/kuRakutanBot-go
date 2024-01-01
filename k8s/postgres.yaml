@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rakutan-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rakutan-db
+  template:
+    metadata:
+      labels:
+        app: rakutan-db
+    spec:
+      initContainers:
+      - name: rakutan-db-init
+        image: busybox
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          wget -O /docker-entrypoint-initdb.d/00_schema.sql https://raw.githubusercontent.com/das08/kuRakutanBot-go/master/db/init/00_schema.sql && \
+          wget -O /docker-entrypoint-initdb.d/01_initialize.sql https://raw.githubusercontent.com/das08/kuRakutanBot-go/master/db/init/01_initialize.sql && \
+          wget -O /docker-entrypoint-initdb.d/10_index.sql https://raw.githubusercontent.com/das08/kuRakutanBot-go/master/db/init/10_index.sql && \
+          wget -O /docker-entrypoint-initdb.d/30_views.sql https://raw.githubusercontent.com/das08/kuRakutanBot-go/master/db/init/30_views.sql && \
+          wget -O /docker-entrypoint-initdb.d/2021.csv https://raw.githubusercontent.com/das08/kuRakutanBot-go/master/db/init/2021.csv && \
+          wget -O /etc/postgresql/postgresql.conf https://raw.githubusercontent.com/das08/kuRakutanBot-go/master/db/conf/postgresql.conf
+        volumeMounts:
+        - name: postgres-data
+          mountPath: /docker-entrypoint-initdb.d
+        - name: postgres-config
+          mountPath: /etc/postgresql
+      containers:
+      - name: rakutan-db
+        image: postgres:14.4-alpine
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_USER
+          value: admin
+        - name: POSTGRES_PASSWORD
+          value: admin
+        volumeMounts:
+        - name: postgres-data
+          mountPath: /docker-entrypoint-initdb.d
+        - name: postgres-config
+          mountPath: /etc/postgresql
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+      volumes:
+      - name: postgres-config
+        persistentVolumeClaim:
+          claimName: postgres-config-pvc
+      - name: postgres-data
+        persistentVolumeClaim:
+          claimName: postgres-data-pvc
+      - name: postgres-storage
+        persistentVolumeClaim:
+          claimName: postgres-storage-pvc
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: rakutan-db
+spec:
+  type: ClusterIP
+  selector:
+    app: rakutan-db
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432

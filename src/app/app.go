@@ -2,16 +2,17 @@ package main
 
 import (
 	"fmt"
-	"github.com/das08/kuRakutanBot-go/module"
-	"github.com/das08/kuRakutanBot-go/richmenu"
-	"github.com/gin-gonic/gin"
-	"github.com/line/line-bot-sdk-go/v7/linebot"
-	"golang.org/x/text/width"
 	"log"
 	"net/http"
 	_ "net/http/pprof"
 	"strings"
 	"time"
+
+	"github.com/das08/kuRakutanBot-go/module"
+	"github.com/das08/kuRakutanBot-go/richmenu"
+	"github.com/gin-gonic/gin"
+	"github.com/line/line-bot-sdk-go/v7/linebot"
+	"golang.org/x/text/width"
 )
 
 func main() {
@@ -19,7 +20,7 @@ func main() {
 		log.Println(http.ListenAndServe("localhost:6060", nil))
 	}()
 
-	env := module.LoadEnv(true)
+	env := module.LoadEnv()
 	router := gin.Default()
 	router.GET("/hello", func(c *gin.Context) {
 		c.String(http.StatusOK, "Hello World!!")

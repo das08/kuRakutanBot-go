@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rakutan-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rakutan-app
+  template:
+    metadata:
+      labels:
+        app: rakutan-app
+    spec:
+      containers:
+      - name: rakutan-app
+        image: das08/rakutan-app:v1.0.0
+        ports:
+        - containerPort: 8081
+        envFrom:
+        - configMapRef:
+            name: rakutan-app-env
+        tty: true
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: rakutan-app
+spec:
+  type: ClusterIP
+  selector:
+    app: rakutan-app
+  ports:
+    - protocol: TCP
+      port: 8081
+      targetPort: 8081

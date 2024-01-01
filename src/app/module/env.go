@@ -4,8 +4,6 @@ import (
 	"log"
 	"os"
 	"strconv"
-
-	"github.com/joho/godotenv"
 )
 
 type Environments struct {
@@ -27,38 +25,36 @@ type Environments struct {
 	GmailPassword          string
 }
 
-func LoadEnv(debug bool) Environments {
-	var err error
-	// LOADS .env file
-	if debug {
-		err = godotenv.Load(".env")
-	} else {
-		err = godotenv.Load(".env_prod")
+func getEnv(key string) string {
+	// Get environment value
+	value := os.Getenv(key)
+	if value == "" {
+		log.Fatalf("Error: %s is not set.", key)
 	}
+	log.Println(key, "=", value)
+	return value
+}
 
-	if err != nil {
-		log.Fatal("Err: Loading .env failed.")
-	}
-
+func LoadEnv() Environments {
 	env := new(Environments)
 
 	// Load environment values
-	env.AppPort = os.Getenv("APP_PORT")
-	env.AppHost = os.Getenv("APP_HOST")
-	env.YEAR, _ = strconv.Atoi(os.Getenv("YEAR"))
-	env.LineChannelAccessToken = os.Getenv("LINE_CHANNEL_ACCESS_TOKEN")
-	env.LineChannelSecret = os.Getenv("LINE_CHANNEL_SECRET")
-	env.LineAdminUid = os.Getenv("LINE_ADMIN_UID")
-	env.LineMockUid = os.Getenv("LINE_MOCK_UID")
-	env.DbHost = os.Getenv("DB_HOST")
-	env.DbPort = os.Getenv("DB_PORT")
-	env.DbUser = os.Getenv("DB_USER")
-	env.DbPass = os.Getenv("DB_PASS")
-	env.DbName = os.Getenv("DB_NAME")
-	env.KuwikiEndpoint = os.Getenv("KUWIKI_ENDPOINT")
-	env.KuwikiAccessToken = os.Getenv("KUWIKI_ACCESS_TOKEN")
-	env.GmailId = os.Getenv("GMAIL_ID")
-	env.GmailPassword = os.Getenv("GMAIL_PASSWORD")
+	env.AppPort = getEnv("APP_PORT")
+	env.AppHost = getEnv("APP_HOST")
+	env.YEAR, _ = strconv.Atoi(getEnv("YEAR"))
+	env.LineChannelAccessToken = getEnv("LINE_CHANNEL_ACCESS_TOKEN")
+	env.LineChannelSecret = getEnv("LINE_CHANNEL_SECRET")
+	env.LineAdminUid = getEnv("LINE_ADMIN_UID")
+	env.LineMockUid = getEnv("LINE_MOCK_UID")
+	env.DbHost = getEnv("DB_HOST")
+	env.DbPort = getEnv("DB_PORT")
+	env.DbUser = getEnv("DB_USER")
+	env.DbPass = getEnv("DB_PASS")
+	env.DbName = getEnv("DB_NAME")
+	env.KuwikiEndpoint = getEnv("KUWIKI_ENDPOINT")
+	env.KuwikiAccessToken = getEnv("KUWIKI_ACCESS_TOKEN")
+	env.GmailId = getEnv("GMAIL_ID")
+	env.GmailPassword = getEnv("GMAIL_PASSWORD")
 
 	return *env
 }

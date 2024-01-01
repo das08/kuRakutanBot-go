@@ -1,0 +1,55 @@
+version: '3.8'
+
+networks:
+  rakutan:
+
+services:
+  rakutan-app:
+    image: das08/rakutan-app:v1.0.0
+    container_name: rakutan-app
+    # build:
+    #   context: ./src/app
+    #   dockerfile: Dockerfile
+    networks:
+      - rakutan
+    restart: always
+    tty: true
+    depends_on:
+      - postgres
+      - redis
+    env_file:
+      - .env
+    ports:
+      - "127.0.0.1:8081:8081"
+
+  postgres:
+    image: postgres:14.4-alpine
+    container_name: rakutan-db
+    networks:
+      - rakutan
+    command: -c 'config_file=/etc/postgresql/postgresql.conf'
+    volumes:
+      - postgres:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d
+      - ./db/conf/postgresql.conf:/etc/postgresql/postgresql.conf
+    ports:
+      - "127.0.0.1:5433:5432"
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+
+  redis:
+    image: redis:7-alpine
+    container_name: rakutan-redis
+    networks:
+      - rakutan
+    restart: always
+    command: redis-server --appendonly yes
+    ports:
+      - "127.0.0.1:16379:6379"
+    volumes:
+      - redis:/data
+
+volumes:
+  postgres:
+  redis:

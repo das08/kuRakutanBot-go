@@ -44,3 +44,21 @@ docker exec -it rakutan-app sh
 curl -s http://localhost:6060/debug/pprof/profile?seconds=30 > cpu.pprof
 go tool pprof -http=0.0.0.0:8082 /usr/local/bin/kuRakutanBot-go cpu.pprof
 ```
+
+
+# k8s
+## Setup
+```bash
+cd k8s
+kubectl apply -f .
+```
+
+## Check ip
+```bash
+kubectl get nodes -o wide
+```
+Use `INTERNAL-IP` to connect to the app.
+
+```bash
+curl http://<INTERNAL-IP>:30081/hello
+```

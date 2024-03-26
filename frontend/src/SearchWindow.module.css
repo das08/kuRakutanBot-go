@@ -1,15 +1,29 @@
-.inputContainer {
-    display: flex;
-    flex-direction: row;
-    margin-left: 10px;
-    align-items: center;
-    justify-content: center;
+.searchContainer {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  grid-template-rows: auto auto auto;
+  text-align: center;
 }
 
-.searchContainer {
-    display: flex;
-    flex-direction: column;
-    /* justify-content: flex-start; */
-    align-items: center;
-    
+.searchInput {
+  grid-column: 1/ 5;
+}
+
+.searchButton {
+  grid-column: 5/7;
+}
+
+.rakutanButton {
+  grid-column: 1/3;
+  background-color: lightgreen;
+}
+
+.onitanButton {
+  grid-column: 3/5;
+  background-color: lightcoral;
+}
+
+.tenButton {
+  grid-column: 5/7;
+  background-color: gold;
 }

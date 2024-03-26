@@ -9,7 +9,7 @@ function App() {
   return (
     <FluentProvider theme={webLightTheme}>
       <div className="App">
-        <h1 className="title">京大落単検索 Web</h1>
+        <h1 className="title">京大楽単検索 Web</h1>
         <div>
           <SearchWindow />
         </div>
